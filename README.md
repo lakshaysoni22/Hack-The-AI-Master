@@ -79,8 +79,8 @@ Hack The AI is fully optimized across all form factors:
 ### Installation
 ```bash
 # 1. Clone the repository
-git clone https://github.com/lakshaysoni22/Hack-The-AI-Master.git
-cd Hack-The-AI-Master
+git clone https://github.com/lakshaysoni22/hack-the-ai.git
+cd hack-the-ai
 
 # 2. Create and activate a virtual environment
 python -m venv venv
@@ -99,15 +99,24 @@ Open your browser and navigate to `http://127.0.0.1:5000/`.
 
 ---
 
-## 📄 Complete Project Documentation Report
+## 📄 Comprehensive Project & Investigation Reports
 
-A complete technical specification and architectural report is included in the root directory:
-👉 **[`HACK_THE_AI_COMPLETE_PROJECT_REPORT.pdf`](HACK_THE_AI_COMPLETE_PROJECT_REPORT.pdf)**
+The following complete, professional technical reports and forensic investigation case studies are included in the repository:
+
+1. 📘 **[Complete Platform Technical Report](HACK_THE_AI_COMPLETE_PROJECT_REPORT.pdf)** (`HACK_THE_AI_COMPLETE_PROJECT_REPORT.pdf`)  
+   *Comprehensive architecture, security controls, serverless database lifecycle, and full platform overview.*
+2. 📗 **[PRO Lab 1 Technical & Investigation Report](PRO_LAB_1_THE_GHOST_IN_THE_LEDGER_REPORT.pdf)** (`PRO_LAB_1_THE_GHOST_IN_THE_LEDGER_REPORT.pdf`)  
+   *Case NEX-042: The Ghost in the Ledger — Web3 bridge compromise, AI context injection, and RBAC escalation analysis.*
+3. 📙 **[PRO Lab 2 Technical & Investigation Report](PRO_LAB_2_THE_VANISHING_CONSENSUS_REPORT.pdf)** (`PRO_LAB_2_THE_VANISHING_CONSENSUS_REPORT.pdf`)  
+   *Case NEX-071: The Vanishing Consensus — Industrial IoT sensor synthesis, BFT validator split, and poisoned oracle forensics.*
 
 ---
 
-## 👤 Author & Architecture
+## 👤 Author & Organization
 
-**Designed & Developed by Lakshay Soni**  
-* GitHub: [@lakshaysoni22](https://github.com/lakshaysoni22)
-* Live Platform: [https://hack-the-ai-labs.vercel.app/](https://hack-the-ai-labs.vercel.app/)
+* **Author:** **Lakshay Soni**
+* **Role:** Security Analyst
+* **Organization:** TrinetLayer
+* **GitHub:** [@lakshaysoni22](https://github.com/lakshaysoni22)
+* **Repository:** [https://github.com/lakshaysoni22/hack-the-ai](https://github.com/lakshaysoni22/hack-the-ai)
+* **Live Deployment:** [https://hack-the-ai-labs.vercel.app/](https://hack-the-ai-labs.vercel.app/)
