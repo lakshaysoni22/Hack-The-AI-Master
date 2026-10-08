@@ -22,12 +22,12 @@
 
 ## 🎯 Flagship Forensic Investigations (PRO Labs)
 
-### 🕵️‍♂️ Lab 1: The Ghost in the Ledger (Case NEX-042)
+### 🕵️‍♂️ Lab 1: The Ghost in the Ledger 
 * **XP Stakes:** 250 XP | **Duration:** 45-60 min
 * **Domain:** Web3 Bridge Forensics × AI Context Injection × RBAC Escalation
 * **Scenario:** 82,400 NXR tokens are siphoned from a secured treasury without an alarm. Investigators trace the breach to a forged intelligence feed (`NOVA-INTEL-FEED / NIF-2038`) that forced the ORION neural engine to report 99.2% confidence, triggering automated settlement through an over-privileged service account (`INTEL-INGESTOR-02`).
 
-### ⚡ Lab 2: The Vanishing Consensus (Case NEX-071)
+### ⚡ Lab 2: The Vanishing Consensus 
 * **XP Stakes:** 300 XP | **Duration:** 55-65 min
 * **Domain:** IoT Edge Telemetry × Web3 Oracles × AI Model Poisoning × BFT Consensus
 * **Scenario:** 184 industrial sensors across 14 geographic sites begin transmitting identical synthetic telemetry (0.00% jitter). The corrupted feed enters the multi-sig oracle aggregator, inducing a 3:2 derived state fork in the validator cluster while the poisoned AI security sentinel suppresses critical volatility alarms.
