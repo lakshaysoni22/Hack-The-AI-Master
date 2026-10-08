@@ -1,0 +1,845 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   PRO LAB 01 — THE GHOST IN THE LEDGER
+   Custom Workstation CSS for Nexora Intelligence Systems investigation
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Layout ──────────────────────────────────────────────────────────── */
+.ghost-ledger-workstation {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-height));
+  background: #020408;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle animated grid background */
+.ghost-ledger-workstation::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: gridPulse 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Scanline overlay */
+.ghost-ledger-workstation::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.15) 50%);
+  background-size: 100% 2px;
+  pointer-events: none;
+  z-index: 200;
+}
+
+/* ── Top Bar ─────────────────────────────────────────────────────────── */
+.gl-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1.5rem;
+  background: rgba(5, 8, 15, 0.95);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+  z-index: 10;
+  position: relative;
+  backdrop-filter: blur(10px);
+}
+
+.gl-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gl-org-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px var(--accent-glow);
+  padding: 0.25rem 0.75rem;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  background: rgba(0, 240, 255, 0.05);
+}
+
+.gl-case-id {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--warning);
+  letter-spacing: 1px;
+}
+
+.gl-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gl-timer {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+.gl-exit-btn {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid rgba(255, 0, 60, 0.4);
+  color: var(--danger);
+  background: rgba(255, 0, 60, 0.08);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.gl-exit-btn:hover {
+  background: rgba(255, 0, 60, 0.2);
+  border-color: var(--danger);
+  box-shadow: 0 0 15px rgba(255, 0, 60, 0.3);
+}
+
+/* ── Main Split Layout ───────────────────────────────────────────────── */
+.gl-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  z-index: 1;
+  position: relative;
+}
+
+/* ── Investigation Graph Panel (Left) ────────────────────────────────── */
+.gl-graph-panel {
+  width: 320px;
+  min-width: 320px;
+  background: rgba(5, 8, 15, 0.9);
+  border-right: 1px solid rgba(0, 240, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gl-graph-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+}
+.gl-graph-header h3 {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+  text-shadow: 0 0 8px var(--accent-glow);
+}
+
+.gl-graph-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+/* Investigation nodes */
+.gl-inv-node {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+.gl-inv-node:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 1.65rem;
+  bottom: -0.25rem;
+  width: 1px;
+  height: 0.5rem;
+  background: rgba(0, 240, 255, 0.15);
+}
+.gl-inv-node:hover {
+  background: rgba(0, 240, 255, 0.05);
+  border-color: rgba(0, 240, 255, 0.15);
+}
+.gl-inv-node.active {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.1) inset;
+}
+.gl-inv-node.completed {
+  border-color: rgba(57, 255, 20, 0.2);
+}
+.gl-inv-node.locked {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.gl-node-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  background: rgba(0, 240, 255, 0.05);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.gl-inv-node.completed .gl-node-icon {
+  border-color: rgba(57, 255, 20, 0.5);
+  color: var(--success);
+  background: rgba(57, 255, 20, 0.1);
+}
+.gl-inv-node.locked .gl-node-icon {
+  border-color: rgba(100, 116, 139, 0.3);
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.gl-node-info h4 {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  margin: 0 0 0.15rem;
+  letter-spacing: 0.5px;
+}
+.gl-node-info span {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+.gl-inv-node.completed .gl-node-info h4 {
+  color: var(--success);
+}
+
+.gl-node-status {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  padding: 0.15rem 0.5rem;
+  border-radius: 1px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.gl-node-status.verified {
+  color: var(--success);
+  border: 1px solid rgba(57, 255, 20, 0.3);
+  background: rgba(57, 255, 20, 0.08);
+}
+.gl-node-status.active-status {
+  color: var(--warning);
+  border: 1px solid rgba(255, 184, 0, 0.3);
+  background: rgba(255, 184, 0, 0.08);
+  animation: statusPulse 2s ease-in-out infinite;
+}
+.gl-node-status.locked-status {
+  color: var(--text-muted);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Evidence summary in graph panel */
+.gl-evidence-summary {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(0, 240, 255, 0.1);
+  background: rgba(5, 8, 15, 0.8);
+}
+.gl-evidence-summary h4 {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  letter-spacing: 1.5px;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+.gl-evidence-count {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  color: var(--accent);
+  text-shadow: 0 0 15px var(--accent-glow);
+  font-weight: 700;
+}
+.gl-evidence-count span {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* ── Content Panel (Right) ───────────────────────────────────────────── */
+.gl-content-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Content tabs */
+.gl-content-tabs {
+  display: flex;
+  background: rgba(5, 8, 15, 0.95);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+  padding: 0 0.5rem;
+}
+
+.gl-tab-btn {
+  padding: 0.6rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+.gl-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(0, 240, 255, 0.03);
+}
+.gl-tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  text-shadow: 0 0 5px var(--accent-glow);
+}
+
+/* Content panels */
+.gl-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  display: none;
+}
+.gl-panel.active {
+  display: block;
+}
+
+/* ── Mission Briefing ────────────────────────────────────────────────── */
+.gl-mission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.gl-chapter-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 8px var(--accent-glow);
+}
+
+.gl-mission-title {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.gl-domain-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid rgba(255, 184, 0, 0.4);
+  color: var(--warning);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(255, 184, 0, 0.05);
+}
+
+/* Story narrative block */
+.gl-narrative {
+  background: rgba(10, 15, 29, 0.6);
+  border-left: 2px solid rgba(0, 240, 255, 0.3);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.gl-narrative .speaker {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* System console display */
+.gl-console {
+  background: #000;
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  padding: 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.gl-console::before {
+  content: "SECURITY OPERATIONS CONSOLE";
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.55rem;
+  color: rgba(0, 240, 255, 0.3);
+  letter-spacing: 2px;
+  padding: 0.25rem 0.5rem;
+}
+.gl-console .label {
+  color: var(--text-secondary);
+}
+.gl-console .value {
+  color: var(--accent);
+}
+.gl-console .value-warn {
+  color: var(--warning);
+}
+.gl-console .value-danger {
+  color: var(--danger);
+}
+.gl-console .value-success {
+  color: var(--success);
+}
+
+/* ── Evidence Card ───────────────────────────────────────────────────── */
+.gl-evidence-card {
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  background: rgba(0, 240, 255, 0.03);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  position: relative;
+  transition: all var(--transition-normal);
+}
+.gl-evidence-card:hover {
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+}
+.gl-evidence-card.locked {
+  opacity: 0.3;
+  border-color: rgba(100, 116, 139, 0.2);
+  background: transparent;
+  pointer-events: none;
+}
+.gl-evidence-card.collected {
+  border-color: rgba(57, 255, 20, 0.3);
+  background: rgba(57, 255, 20, 0.03);
+}
+
+.gl-evidence-id {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  margin-bottom: 0.5rem;
+}
+.gl-evidence-card.collected .gl-evidence-id {
+  color: var(--success);
+}
+
+.gl-evidence-title {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.gl-evidence-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.gl-evidence-status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+}
+
+/* ── Quiz / Knowledge Check ──────────────────────────────────────────── */
+.gl-quiz-block {
+  margin-top: 2rem;
+  border: 1px solid rgba(255, 184, 0, 0.3);
+  background: rgba(255, 184, 0, 0.03);
+  padding: 1.5rem;
+  box-shadow: 0 0 20px rgba(255, 184, 0, 0.05) inset;
+}
+
+.gl-quiz-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--warning);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.gl-quiz-question {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.gl-quiz-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.gl-quiz-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 184, 0, 0.3);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.gl-quiz-input:focus {
+  border-color: var(--warning);
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.15);
+}
+
+.gl-quiz-submit {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.5rem 1.25rem;
+  background: rgba(255, 184, 0, 0.15);
+  border: 1px solid rgba(255, 184, 0, 0.4);
+  color: var(--warning);
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all var(--transition-fast);
+}
+.gl-quiz-submit:hover {
+  background: rgba(255, 184, 0, 0.25);
+  box-shadow: 0 0 15px rgba(255, 184, 0, 0.2);
+}
+
+.gl-quiz-feedback {
+  margin-top: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 0.75rem;
+  display: none;
+}
+.gl-quiz-feedback.correct {
+  display: block;
+  color: var(--success);
+  border: 1px solid rgba(57, 255, 20, 0.3);
+  background: rgba(57, 255, 20, 0.05);
+}
+.gl-quiz-feedback.incorrect {
+  display: block;
+  color: var(--danger);
+  border: 1px solid rgba(255, 0, 60, 0.3);
+  background: rgba(255, 0, 60, 0.05);
+}
+
+/* ── Flag Submission ─────────────────────────────────────────────────── */
+.gl-flag-block {
+  margin-top: 2rem;
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  padding: 2rem;
+  text-align: center;
+  background: rgba(0, 240, 255, 0.03);
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.08) inset;
+}
+
+.gl-flag-title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.gl-flag-input-row {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.gl-flag-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  padding: 0.6rem 1rem;
+  text-align: center;
+  letter-spacing: 2px;
+  outline: none;
+}
+.gl-flag-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.gl-flag-submit {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 0.6rem 1.5rem;
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid rgba(0, 240, 255, 0.5);
+  color: var(--accent);
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all var(--transition-fast);
+}
+.gl-flag-submit:hover {
+  background: rgba(0, 240, 255, 0.25);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+/* ── Attack Graph Visual ─────────────────────────────────────────────── */
+.gl-attack-graph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 2rem 1rem;
+}
+
+.gl-graph-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 220px;
+  padding: 0.6rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  background: rgba(0, 240, 255, 0.03);
+  color: var(--text-primary);
+  text-align: center;
+  position: relative;
+  transition: all 0.5s ease;
+}
+.gl-graph-node.highlight {
+  border-color: rgba(0, 240, 255, 0.6);
+  background: rgba(0, 240, 255, 0.1);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.2);
+  color: var(--accent);
+}
+.gl-graph-node.danger {
+  border-color: rgba(255, 0, 60, 0.4);
+  background: rgba(255, 0, 60, 0.05);
+  color: var(--danger);
+}
+.gl-graph-node.warning {
+  border-color: rgba(255, 184, 0, 0.4);
+  background: rgba(255, 184, 0, 0.05);
+  color: var(--warning);
+}
+.gl-graph-node.success {
+  border-color: rgba(57, 255, 20, 0.4);
+  background: rgba(57, 255, 20, 0.05);
+  color: var(--success);
+}
+
+.gl-graph-connector {
+  width: 1px;
+  height: 24px;
+  background: rgba(0, 240, 255, 0.2);
+  position: relative;
+}
+.gl-graph-connector::after {
+  content: "▼";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.5rem;
+  color: rgba(0, 240, 255, 0.3);
+}
+
+/* Animated connector for attack flow */
+.gl-graph-connector.animated {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--accent),
+    transparent
+  );
+  background-size: 100% 200%;
+  animation: flowDown 1.5s ease-in-out infinite;
+}
+@keyframes flowDown {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 200%; }
+}
+
+.gl-graph-branch {
+  display: flex;
+  gap: 2rem;
+  position: relative;
+}
+.gl-graph-branch::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 25%;
+  right: 25%;
+  height: 1px;
+  background: rgba(0, 240, 255, 0.15);
+}
+
+/* ── SOC Alert Animation ─────────────────────────────────────────────── */
+.gl-soc-alert {
+  background: rgba(255, 0, 60, 0.05);
+  border: 1px solid rgba(255, 0, 60, 0.3);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  animation: alertFlash 3s ease-in-out infinite;
+}
+@keyframes alertFlash {
+  0%, 100% { border-color: rgba(255, 0, 60, 0.3); }
+  50% { border-color: rgba(255, 0, 60, 0.6); box-shadow: 0 0 20px rgba(255, 0, 60, 0.15); }
+}
+
+.gl-soc-alert .alert-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.gl-soc-alert .alert-header span {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--danger);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── Hint Button ─────────────────────────────────────────────────────── */
+.gl-hint-btn {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  color: var(--text-secondary);
+  background: transparent;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all var(--transition-fast);
+  margin-top: 1rem;
+}
+.gl-hint-btn:hover {
+  border-color: rgba(255, 184, 0, 0.4);
+  color: var(--warning);
+  background: rgba(255, 184, 0, 0.05);
+}
+
+.gl-hint-text {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 184, 0, 0.2);
+  background: rgba(255, 184, 0, 0.03);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--warning);
+  display: none;
+}
+.gl-hint-text.visible {
+  display: block;
+}
+
+/* ── Completion State ────────────────────────────────────────────────── */
+.gl-completed-overlay {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.gl-completed-overlay h2 {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  color: var(--success);
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 15px var(--secondary-glow);
+}
+
+.gl-final-notification {
+  max-width: 400px;
+  margin: 2rem auto;
+  border: 1px solid rgba(255, 0, 60, 0.4);
+  padding: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  line-height: 1.8;
+  background: rgba(255, 0, 60, 0.03);
+  animation: alertFlash 3s ease-in-out infinite;
+}
+.gl-final-notification .campaign-status {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .gl-main {
+    flex-direction: column;
+  }
+  .gl-graph-panel {
+    width: 100%;
+    min-width: unset;
+    max-height: 200px;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+  }
+}

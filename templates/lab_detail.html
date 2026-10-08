@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lab.name }} - HACK THE AI{% endblock %}
+{% block page_title %}{{ lab.name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/labs.css') }}">
+<style>
+.lab-summary-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-8);
+}
+.lab-summary-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    position: relative;
+    overflow: hidden;
+}
+.lab-summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--accent);
+}
+.lab-summary-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+}
+.lab-summary-title span.icon {
+    color: var(--accent);
+}
+.lab-summary-text {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+}
+.lab-summary-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-3);
+}
+.lab-summary-list li {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    line-height: 1.5;
+}
+.lab-summary-list li::before {
+    content: "•";
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+.lab-flowchart-box {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4) var(--space-6);
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 1.8;
+}
+.lab-flow-node {
+    display: inline-block;
+    padding: 4px 14px;
+    background: rgba(0, 240, 255, 0.08);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-weight: 600;
+}
+.lab-flow-arrow {
+    color: var(--accent);
+    font-weight: bold;
+    margin: 4px 0;
+}
+.lab-outcome-highlight {
+    background: rgba(0, 240, 255, 0.05);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    font-style: italic;
+    color: #e2e8f0;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+.lab-watermark {
+    margin-top: var(--space-8);
+    padding-top: var(--space-4);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container" style="max-width: 1000px;">
+    
+    <a href="{{ url_for('labs.labs') }}" class="btn btn-secondary btn-sm" style="margin-bottom: var(--space-4);">
+        ← Back to Labs
+    </a>
+
+    <!-- Lab Hero Section -->
+    <div class="lab-detail-header">
+        <div style="display: flex; gap: var(--space-2); margin-bottom: var(--space-4); flex-wrap: wrap;">
+            {% if lab.id == 'lab6' %}
+            <span class="badge badge-secondary">WEB3 × AI × CYBERSECURITY</span>
+            <span class="badge badge-warning">PRO</span>
+            <span class="badge badge-info">250 XP</span>
+            {% elif lab.id == 'lab7' %}
+            <span class="badge badge-secondary">WEB3 × AI × CYBERSECURITY × IoT</span>
+            <span class="badge badge-warning">PRO</span>
+            <span class="badge badge-info">300 XP</span>
+            {% else %}
+            <span class="badge badge-secondary">{{ lab.topic }}</span>
+            <span class="badge badge-success">{{ 'Pro' if lab.difficulty == 'Intermediate' else lab.difficulty }}</span>
+            <span class="badge badge-info">250 XP</span>
+            {% endif %}
+        </div>
+        
+        <h1 style="font-size: 2.5rem; margin-bottom: var(--space-3);">{{ lab.name }}</h1>
+        <p style="font-size: 1.1rem; max-width: 850px; color: var(--text-primary); line-height: 1.6;">
+            {% if lab.id == 'lab6' %}
+            A simulated enterprise AI-blockchain breach investigation in the Security Operations Center. Uncover unauthorized fund transfers, investigate poisoned AI context, trace compromised RBAC permissions, and contain a sophisticated cross-chain adversary.
+            {% elif lab.id == 'lab7' %}
+            A cross-layer investigation linking physical IoT telemetry, Web3 oracle aggregation, AI anomaly detection, and distributed state divergence across consensus validators.
+            {% else %}
+            {{ lab.description }}
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- LAB SUMMARY & INVESTIGATION OVERVIEW (7 STRUCTURED SECTIONS)    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="lab-summary-section">
+
+        {% if lab.id == 'lab6' %}
+        <!-- LAB 1: THE GHOST IN THE LEDGER -->
+
+        <!-- 1. LAB SUMMARY -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">📋</span> 1. LAB SUMMARY</div>
+            <p class="lab-summary-text">
+                "The Ghost in the Ledger is a simulated enterprise cybersecurity investigation.<br><br>
+                A suspicious treasury transaction has moved 82,400 NXR to an unknown wallet.<br><br>
+                The blockchain transaction itself appears valid, but the AI security system has classified the destination as trusted.<br><br>
+                The investigation requires the learner to trace how untrusted intelligence, AI context, automated authorization, and Web3 transaction logic combined to create a dangerous trust chain.<br><br>
+                The goal is not simply to find a compromised component.<br><br>
+                The learner must discover how multiple individually trusted systems can produce an unsafe final decision."
+            </p>
+        </div>
+
+        <!-- 2. LEARNING OBJECTIVES -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">🎯</span> 2. LEARNING OBJECTIVES</div>
+            <p class="lab-summary-text" style="margin-bottom: var(--space-3);">The learner should understand:</p>
+            <ul class="lab-summary-list">
+                <li>Web3 transaction investigation</li>
+                <li>AI decision-making and confidence</li>
+                <li>Threat-intelligence poisoning</li>
+                <li>Trust-chain vulnerabilities</li>
+                <li>RBAC and authorization concepts</li>
+                <li>Automated transaction workflows</li>
+                <li>Security monitoring</li>
+                <li>Evidence correlation</li>
+                <li>Root-cause analysis</li>
+                <li>Defensive security controls</li>
+            </ul>
+        </div>
+
+        <!-- 3. BUSINESS IMPACT -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">💼</span> 3. BUSINESS IMPACT</div>
+            <p class="lab-summary-text" style="margin-bottom: var(--space-3);">
+                A real-world version of this type of failure could result in:
+            </p>
+            <ul class="lab-summary-list">
+                <li>Unauthorized financial transfers</li>
+                <li>Loss of digital assets</li>
+                <li>Incorrect automated decisions</li>
+                <li>Regulatory and compliance risk</li>
+                <li>Loss of customer trust</li>
+                <li>Operational disruption</li>
+                <li>Incident-response costs</li>
+                <li>Reputation damage</li>
+            </ul>
+        </div>
+
+        <!-- 4. HOW IT WORKS -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">🔄</span> 4. HOW IT WORKS</div>
+            <p class="lab-summary-text" style="margin-bottom: var(--space-3);">
+                The investigation flow follows the enterprise trust chain where trust was introduced and became dangerous:
+            </p>
+            <div class="lab-flowchart-box">
+                <div><span class="lab-flow-node">Threat Intelligence</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">AI Context</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">AI Decision</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">Authorization Policy</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">Automated Signing</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">Web3 Transaction</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">Blockchain Record</span></div>
+            </div>
+        </div>
+
+        <!-- 5. ATTACK SURFACE -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">🛡️</span> 5. ATTACK SURFACE</div>
+            <ul class="lab-summary-list">
+                <li><strong>Web3 wallet interactions:</strong> Unallowlisted destination wallets receiving high-value asset flows.</li>
+                <li><strong>Threat-intelligence feeds:</strong> Ingestion pipelines accepting unverified external context feeds.</li>
+                <li><strong>AI decision context:</strong> Decision engine context windows vulnerable to data poisoning.</li>
+                <li><strong>Internal APIs:</strong> Microservice communication channels with excessive privilege scopes.</li>
+                <li><strong>Authorization policies:</strong> Policy rules permitting automated settlement upon high confidence scores.</li>
+                <li><strong>Automated transaction systems:</strong> Headless signing daemons lacking multisig checks.</li>
+                <li><strong>Signing infrastructure:</strong> Key custody systems exposed to automated pipeline triggers.</li>
+                <li><strong>Blockchain transaction layer:</strong> Irreversible on-chain settlement records.</li>
+            </ul>
+        </div>
+
+        <!-- 6. SKILLS YOU WILL PRACTICE -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">⚡</span> 6. SKILLS YOU WILL PRACTICE</div>
+            <ul class="lab-summary-list">
+                <li>Web3 forensics</li>
+                <li>AI security analysis</li>
+                <li>Threat intelligence analysis</li>
+                <li>Log analysis</li>
+                <li>Evidence correlation</li>
+                <li>Trust-boundary analysis</li>
+                <li>Incident investigation</li>
+                <li>Root-cause identification</li>
+            </ul>
+        </div>
+
+        <!-- 7. INVESTIGATION OUTCOME -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">🔍</span> 7. INVESTIGATION OUTCOME</div>
+            <div class="lab-outcome-highlight">
+                "How did trusted intelligence become a trusted AI decision, and how did that decision ultimately authorize an unauthorized Web3 transaction?"
+            </div>
+        </div>
+
+        {% elif lab.id == 'lab7' %}
+        <!-- LAB 2: THE VANISHING CONSENSUS -->
+
+        <!-- 1. LAB SUMMARY -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">📋</span> 1. LAB SUMMARY</div>
+            <p class="lab-summary-text">
+                "The Vanishing Consensus is a PRO-level cross-layer cybersecurity investigation involving connected IoT systems, AI security, Web3 data infrastructure, and distributed trust.<br><br>
+                The Security Operations Center detects an impossible blockchain state.<br><br>
+                Several IoT devices begin producing unusually synchronized telemetry.<br><br>
+                That telemetry enters a Web3 oracle/data layer.<br><br>
+                The AI security system interprets the manipulated behavior as normal.<br><br>
+                Different validators eventually process different derived states.<br><br>
+                The network begins to disagree with itself.<br><br>
+                The learner must investigate the entire attack chain from the IoT environment to the Web3 layer and determine how the attacker manipulated trust across multiple systems."
+            </p>
+        </div>
+
+        <!-- 2. LEARNING OBJECTIVES -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">🎯</span> 2. LEARNING OBJECTIVES</div>
+            <p class="lab-summary-text" style="margin-bottom: var(--space-3);">The learner should understand:</p>
+            <ul class="lab-summary-list">
+                <li>IoT security fundamentals</li>
+                <li>IoT telemetry integrity</li>
+                <li>Device and gateway trust</li>
+                <li>Web3 oracle concepts</li>
+                <li>AI anomaly detection</li>
+                <li>AI model poisoning</li>
+                <li>Cross-layer attacks</li>
+                <li>Validator/state divergence</li>
+                <li>Web3 security</li>
+                <li>Blockchain consensus as part of Web3</li>
+                <li>Trust-boundary analysis</li>
+                <li>Incident reconstruction</li>
+            </ul>
+        </div>
+
+        <!-- 3. BUSINESS IMPACT -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">💼</span> 3. BUSINESS IMPACT</div>
+            <p class="lab-summary-text" style="margin-bottom: var(--space-3);">
+                Potential business impact in production deployments:
+            </p>
+            <ul class="lab-summary-list">
+                <li>Manipulated operational data</li>
+                <li>Incorrect automated decisions</li>
+                <li>Industrial/IoT disruption</li>
+                <li>Financial losses</li>
+                <li>Web3 asset manipulation</li>
+                <li>Service interruption</li>
+                <li>Loss of data integrity</li>
+                <li>Safety risks in connected environments</li>
+                <li>Regulatory exposure</li>
+                <li>Loss of trust in automated systems</li>
+            </ul>
+        </div>
+
+        <!-- 4. HOW IT WORKS -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">🔄</span> 4. HOW IT WORKS</div>
+            <p class="lab-summary-text" style="margin-bottom: var(--space-3);">
+                The cross-layer attack chain moves from physical sensors into distributed Web3 consensus:
+            </p>
+            <div class="lab-flowchart-box">
+                <div><span class="lab-flow-node">IoT Devices</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">Telemetry Gateway</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">Data Aggregation</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">Web3 Oracle</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">AI Security Analysis</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">Web3 / Distributed State</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">Validator Divergence</span></div>
+                <div class="lab-flow-arrow">↓</div>
+                <div><span class="lab-flow-node">Consensus Risk</span></div>
+            </div>
+            <p class="lab-summary-text" style="font-size: 0.85rem; color: var(--text-muted); margin-top: var(--space-2); text-align: center;">
+                * Blockchain consensus is investigated as a core component of the Web3 infrastructure.
+            </p>
+        </div>
+
+        <!-- 5. ATTACK SURFACE -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">🛡️</span> 5. ATTACK SURFACE</div>
+            <ul class="lab-summary-list">
+                <li><strong>IoT sensors:</strong> Physical edge devices reporting environment telemetry.</li>
+                <li><strong>IoT gateways:</strong> Concentrator nodes aggregating edge sensor packets.</li>
+                <li><strong>Telemetry APIs:</strong> Ingestion endpoints relaying physical metrics to data buses.</li>
+                <li><strong>Data aggregation layer:</strong> Middleware summarizing multi-region readings.</li>
+                <li><strong>Web3 oracle:</strong> Smart contract bridge injecting off-chain data on-chain.</li>
+                <li><strong>AI anomaly detection:</strong> Sentinel models filtering telemetry outliers.</li>
+                <li><strong>AI training data:</strong> Historical baseline datasets susceptible to poisoning.</li>
+                <li><strong>Web3 smart-contract dependencies:</strong> Execution logic relying on oracle feeds.</li>
+                <li><strong>Validator nodes:</strong> Distributed nodes computing state transitions.</li>
+                <li><strong>Distributed state:</strong> Merkle state roots across independent validator nodes.</li>
+                <li><strong>Monitoring systems:</strong> SOC alarm infrastructure and circuit breakers.</li>
+            </ul>
+        </div>
+
+        <!-- 6. SKILLS YOU WILL PRACTICE -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">⚡</span> 6. SKILLS YOU WILL PRACTICE</div>
+            <ul class="lab-summary-list">
+                <li>IoT forensic analysis</li>
+                <li>Telemetry analysis</li>
+                <li>Web3 security</li>
+                <li>AI security</li>
+                <li>Model-poisoning detection</li>
+                <li>Log analysis</li>
+                <li>API/data-flow analysis</li>
+                <li>Trust-boundary analysis</li>
+                <li>Distributed-system reasoning</li>
+                <li>Cross-layer attack reconstruction</li>
+            </ul>
+        </div>
+
+        <!-- 7. INVESTIGATION OUTCOME -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">🔍</span> 7. INVESTIGATION OUTCOME</div>
+            <div class="lab-outcome-highlight">
+                "How did manipulated IoT telemetry travel through the Web3 data layer, influence AI analysis, and eventually create inconsistent distributed states?"
+            </div>
+        </div>
+
+        {% else %}
+        <!-- GENERIC LAB SUMMARY -->
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">📋</span> LAB SUMMARY</div>
+            <p class="lab-summary-text">{{ lab.description }}</p>
+        </div>
+        <div class="lab-summary-card">
+            <div class="lab-summary-title"><span class="icon">🎯</span> LEARNING OBJECTIVES</div>
+            <ul class="lab-summary-list">
+                <li>Understand the core concepts of {{ lab.topic }}.</li>
+                <li>Identify vulnerabilities in simulated environments.</li>
+                <li>Exploit security misconfigurations safely.</li>
+                <li>Learn mitigation and defense strategies.</li>
+            </ul>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ENTER INVESTIGATION ACTION BAR                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="card elevated" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-6); margin-bottom: var(--space-8); flex-wrap: wrap; gap: var(--space-4); background: linear-gradient(135deg, rgba(0,240,255,0.06), var(--bg-card)); border-color: rgba(0,240,255,0.3);">
+        <div>
+            <h3 style="margin-bottom: var(--space-1); font-size: 1.25rem;">Ready to Begin Investigation?</h3>
+            <p class="text-secondary" style="font-size: 0.9rem; margin: 0;">Access the interactive forensics workstation and live simulated tools.</p>
+        </div>
+        <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+            {% if lab.id == 'lab6' %}
+            <a href="{{ url_for('labs.ghost_ledger_workstation') }}" class="btn btn-primary btn-lg" id="btn-enter-investigation">
+                🔍 Enter Investigation
+            </a>
+            {% elif lab.id == 'lab7' %}
+            <a href="{{ url_for('labs.vanishing_consensus_workstation') }}" class="btn btn-primary btn-lg" id="btn-enter-investigation">
+                🔍 Enter Investigation
+            </a>
+            {% else %}
+            <a href="{{ url_for('labs.workstation', lab_id=lab.id) }}" class="btn btn-primary btn-lg" id="btn-enter-investigation">
+                Enter Workstation
+            </a>
+            {% endif %}
+            <button type="button" onclick="restartLab('{{ lab.id }}')" class="btn btn-outline btn-lg" id="restart-lab-btn">
+                🔄 Restart Lab
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- CHAPTER MISSIONS PROGRESS                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="card">
+        <h3 style="margin-bottom: var(--space-4); font-size: 1.25rem;">Investigation Missions</h3>
+        <div class="mission-list">
+            {% if missions %}
+                {% for m in missions %}
+                <div class="mission-item">
+                    <div class="mission-status-icon {% if m.status == 'COMPLETED' %}completed{% elif m.status in ['AVAILABLE', 'IN PROGRESS'] %}inprogress{% else %}locked{% endif %}">
+                        {% if m.status == 'COMPLETED' %}✓{% elif m.status in ['AVAILABLE', 'IN PROGRESS'] %}●{% else %}🔒{% endif %}
+                    </div>
+                    <div class="mission-info">
+                        <h4>Chapter {{ m.mission_number }}: {{ m.title }}</h4>
+                        <span class="text-secondary" style="font-size: 0.875rem;">{{ m.description }}</span>
+                    </div>
+                    <div>
+                        {% if m.status == 'COMPLETED' %}
+                        <span class="badge badge-success">Completed</span>
+                        {% elif m.status in ['AVAILABLE', 'IN PROGRESS'] %}
+                        <span class="badge badge-primary">Active</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Locked</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="mission-item">
+                    <div class="mission-status-icon inprogress">●</div>
+                    <div class="mission-info">
+                        <h4>Chapter 1: Reconnaissance</h4>
+                        <span class="text-secondary" style="font-size: 0.875rem;">Explore the target environment.</span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Watermark / Credit -->
+    <div class="lab-watermark">
+        Designed &amp; Developed by Lakshay Soni
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function restartLab(labId) {
+    if (!confirm('Are you sure you want to restart this lab? Your progress will be reset.')) return;
+    fetch('/api/lab/restart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.csrfToken
+        },
+        body: JSON.stringify({ lab_id: labId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to restart lab');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Network error. Could not restart lab.');
+    });
+}
+</script>
+{% endblock %}

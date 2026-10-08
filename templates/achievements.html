@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Achievements - HACK THE AI{% endblock %}
+{% block page_title %}Achievements{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="card elevated" style="margin-bottom: var(--space-6);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4);">
+            <div>
+                <h3 style="margin: 0;">Your Trophy Room</h3>
+                <p class="text-secondary text-sm" style="margin-top: var(--space-1);">Track your milestones, forensic investigations, and security mastery.</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+                <span class="badge badge-accent" style="font-size: 0.9rem; padding: 6px 12px;">
+                    🏆 {{ unlocked_count }} / {{ total_count }} Unlocked
+                </span>
+            </div>
+        </div>
+
+        <div style="background-color: var(--bg-primary); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: var(--space-6);">
+            <div style="background: linear-gradient(90deg, #10b981, #06b6d4, #6366f1); width: {{ (unlocked_count / total_count * 100)|round|int }}%; height: 100%; transition: width 0.4s ease;"></div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4);">
+            {% for ach in achievements %}
+            <div class="card" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between; {% if ach.unlocked %}background-color: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08);{% else %}opacity: 0.55; filter: grayscale(90%); border-color: var(--border-color);{% endif %}">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                        <span class="text-xs text-muted uppercase tracking-wider" style="font-size: 0.7rem;">{{ ach.category }}</span>
+                        {% if ach.unlocked %}
+                        <span class="badge badge-success" style="font-size: 0.7rem; padding: 2px 6px;">✓ Unlocked</span>
+                        {% else %}
+                        <span class="badge badge-secondary" style="font-size: 0.7rem; padding: 2px 6px;">🔒 Locked</span>
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 3rem; margin: var(--space-2) 0;">{{ ach.icon }}</div>
+                    <h4 style="margin-bottom: var(--space-1); color: {% if ach.unlocked %}var(--text-primary){% else %}var(--text-secondary){% endif %};">{{ ach.title }}</h4>
+                    <p class="text-secondary text-sm" style="line-height: 1.4;">{{ ach.description }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

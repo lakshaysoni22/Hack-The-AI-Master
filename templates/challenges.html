@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Challenges - HACK THE AI{% endblock %}
+{% block page_title %}Challenges{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="card elevated" style="margin-bottom: var(--space-6); text-align: center;">
+        <h2 class="gradient-text">Capture The Flag Challenges</h2>
+        <p class="text-secondary" style="max-width: 600px; margin: 0 auto;">
+            Test your skills in isolated, single-objective environments. Find the flag and submit it below to earn points!
+        </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-4);">
+        {% for challenge in challenges %}
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-2);">
+                    <h3 style="margin: 0; font-size: 1.25rem;">{{ challenge.name }}</h3>
+                    <span class="badge badge-info">{{ challenge.category }}</span>
+                </div>
+                <div style="margin-bottom: var(--space-4); color: var(--text-secondary); min-height: 40px;">
+                    {{ challenge.description }}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                    <span style="font-weight: 600; color: var(--accent);">{{ challenge.points }} pts</span>
+                    {% if challenge.id in completed_ids %}
+                        <span class="badge badge-success">✓ Completed</span>
+                    {% endif %}
+                </div>
+
+                {% if challenge.id in launch_urls %}
+                    <a href="{{ launch_urls[challenge.id] }}" target="_blank" rel="noopener"
+                       class="btn btn-outline btn-block" style="margin-bottom: var(--space-2);">
+                        🚀 Launch Lab Environment
+                    </a>
+                {% endif %}
+
+                {% if challenge.id not in completed_ids %}
+                    <form class="challenge-submit-form" data-challenge-id="{{ challenge.id }}">
+                        <div class="form-group" style="margin-bottom: var(--space-2);">
+                            <input type="text" class="form-control" name="flag" placeholder="Enter Flag (e.g., TECHCORP{...})" required>
+                        </div>
+                        <button type="submit" class="btn btn-outline btn-block">Submit Flag</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="card" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">
+                No challenges available yet. Check back soon!
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.challenge-submit-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const challengeId = this.dataset.challengeId;
+            const flag = this.querySelector('input[name="flag"]').value;
+            const btn = this.querySelector('button[type="submit"]');
+            
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            
+            fetch('/api/challenges/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.csrfToken
+                },
+                body: JSON.stringify({ challenge_id: challengeId, flag: flag })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Success! ' + data.message);
+                    window.location.reload();
+                } else {
+                    alert('Failed: ' + data.message);
+                    btn.disabled = false;
+                    btn.textContent = 'Submit Flag';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('An error occurred.');
+                btn.disabled = false;
+                btn.textContent = 'Submit Flag';
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,98 @@
+:root {
+  /* ── Futuristic Cybersecurity Theme ──────────────────────────────── */
+  --bg-primary: #05080f; /* Deepest black/blue */
+  --bg-secondary: #0a0f1d;
+  --bg-card: rgba(13, 17, 28, 0.7); /* Glassmorphism base */
+  --bg-elevated: rgba(20, 27, 45, 0.85);
+  --bg-inverse: #e0f7fa;
+
+  --bg: var(--bg-secondary);
+  --surface: var(--bg-card);
+  --surface-1: var(--bg-card);
+  --surface-2: var(--bg-elevated);
+  --surface-hover: rgba(30, 41, 59, 0.9);
+  --gradient-primary: linear-gradient(135deg, var(--accent), var(--secondary));
+
+  --border-light: rgba(0, 240, 255, 0.1);
+  --border: rgba(0, 240, 255, 0.2);
+  --border-hover: rgba(0, 240, 255, 0.5);
+
+  --text-primary: #e0f7fa;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --text-inverse: #05080f;
+
+  /* Accent - Neon Cyan & Hacker Green */
+  --accent: #00f0ff;
+  --accent-hover: #00c3d9;
+  --accent-rgb: 0, 240, 255;
+  --accent-glow: rgba(0, 240, 255, 0.4);
+
+  --secondary: #39ff14; /* Hacker Green */
+  --secondary-rgb: 57, 255, 20;
+  --secondary-glow: rgba(57, 255, 20, 0.4);
+
+  --success: #39ff14;
+  --success-rgb: 57, 255, 20;
+  --warning: #ffb800;
+  --warning-rgb: 255, 184, 0;
+  --danger: #ff003c;
+  --danger-rgb: 255, 0, 60;
+  --info: #00f0ff;
+  --info-rgb: 0, 240, 255;
+
+  /* Cyber Glow Shadows */
+  --shadow-xs: 0 0 5px rgba(0, 240, 255, 0.1);
+  --shadow-sm: 0 0 10px rgba(0, 240, 255, 0.2);
+  --shadow-md: 0 0 15px rgba(0, 240, 255, 0.3);
+  --shadow-lg: 0 0 25px rgba(0, 240, 255, 0.4);
+  --shadow-xl: 0 0 40px rgba(0, 240, 255, 0.5);
+
+  /* Blurs for Glassmorphism */
+  --blur-sm: blur(4px);
+  --blur-md: blur(12px);
+  --blur-lg: blur(24px);
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', 'JetBrains Mono', monospace;
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 70px;
+  --header-height: 72px;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  /* Radii - Sharper corners for cyber feel */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Workstation variables can be mapped directly to global for consistency now */
+:root {
+  --ws-bg: #03050a;
+  --ws-bg-elevated: #05080f;
+  --ws-bg-panel: rgba(10, 15, 29, 0.8);
+  --ws-border: rgba(0, 240, 255, 0.15);
+  --ws-text: #e0f7fa;
+  --ws-text-secondary: #64748b;
+  --ws-accent: #00f0ff;
+  --ws-success: #39ff14;
+  --ws-danger: #ff003c;
+  --ws-warning: #ffb800;
+}

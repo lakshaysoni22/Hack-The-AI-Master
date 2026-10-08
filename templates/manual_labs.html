@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}MANUAL LABS | HACK THE AI{% endblock %}
+{% block page_title %}MANUAL LABS{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <p class="subtitle">Practice cybersecurity by investigating real isolated targets.</p>
+</div>
+
+<div class="filters-bar" style="margin-bottom: 2rem; display: flex; gap: 1rem;">
+    <button class="btn btn-primary filter-btn" data-filter="all">All</button>
+    <button class="btn btn-secondary filter-btn" data-filter="Beginner">Beginner</button>
+    <button class="btn btn-secondary filter-btn" data-filter="Easy">Easy</button>
+    <button class="btn btn-secondary filter-btn" data-filter="Pro">Pro</button>
+    <button class="btn btn-secondary filter-btn" data-filter="Hard">Hard</button>
+    <button class="btn btn-secondary filter-btn" data-filter="Expert">Expert</button>
+</div>
+
+<div class="labs-grid">
+    {% for lab in labs %}
+    <div class="card lab-card">
+        <div class="card-header">
+            <h3 class="card-title">{{ lab.name }}</h3>
+            <span class="badge badge-primary">{{ lab.topic }}</span>
+        </div>
+        <div class="card-body">
+            <div class="lab-meta" style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+                <span>Difficulty: {{ 'Pro' if lab.difficulty == 'Intermediate' else lab.difficulty }}</span> | 
+                <span>Target: {{ lab.target_type|upper }}</span>
+            </div>
+            
+            {% if lab.status == 'COMPLETED' %}
+                <div class="progress-bar-container" style="margin-bottom: 1rem;">
+                    <div class="progress-bar" style="width: 100%; background: var(--success);"></div>
+                </div>
+                <p class="text-success">Completed</p>
+            {% elif lab.status == 'IN PROGRESS' %}
+                <div class="progress-bar-container" style="margin-bottom: 1rem;">
+                    <div class="progress-bar" style="width: 50%;"></div>
+                </div>
+                <p class="text-warning">In Progress</p>
+            {% else %}
+                <div class="progress-bar-container" style="margin-bottom: 1rem;">
+                    <div class="progress-bar" style="width: 0%;"></div>
+                </div>
+                <p class="text-muted">Not Started</p>
+            {% endif %}
+        </div>
+        <div class="card-footer" style="display: flex; gap: 0.5rem;">
+            <a href="{{ url_for('labs.manual_lab_detail', lab_id=lab.id) }}" class="btn btn-primary" style="flex: 1;">View Lab</a>
+            <button type="button" class="btn btn-outline btn-sm restart-manual-lab-btn" onclick="restartManualLab('{{ lab.id }}')" title="Restart Lab">🔄 Restart</button>
+        </div>
+    </div>
+    {% else %}
+    <p id="no-labs-msg" style="display: none;">No manual labs available for this difficulty.</p>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function restartManualLab(labId) {
+        if (!confirm('Are you sure you want to restart this lab? Your progress will be reset.')) return;
+        fetch('/api/manual-lab/restart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.csrfToken
+            },
+            body: JSON.stringify({ lab_id: labId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Failed to restart lab');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Network error while restarting lab.');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const labCards = document.querySelectorAll('.lab-card');
+        const noLabsMsg = document.getElementById('no-labs-msg');
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active button styling
+                filterBtns.forEach(b => {
+                    b.classList.remove('btn-primary');
+                    b.classList.add('btn-secondary');
+                });
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-primary');
+                
+                const filter = btn.getAttribute('data-filter');
+                let visibleCount = 0;
+                
+                labCards.forEach(card => {
+                    const diffText = card.querySelector('.lab-meta').innerText;
+                    if (filter === 'all' || diffText.includes('Difficulty: ' + filter) || (filter === 'Pro' && diffText.includes('Difficulty: Intermediate'))) {
+                        card.style.display = 'flex';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                if (visibleCount === 0) {
+                    noLabsMsg.style.display = 'block';
+                } else {
+                    noLabsMsg.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

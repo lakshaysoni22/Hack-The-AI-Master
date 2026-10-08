@@ -1,0 +1,121 @@
+.labs-header {
+  margin-bottom: var(--space-6);
+}
+
+.labs-filters {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.filter-btn.active, .filter-btn:hover {
+  background-color: var(--accent-glow);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.labs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-6);
+}
+
+.lab-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.lab-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-2);
+}
+
+.lab-topic {
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.lab-card h3 {
+  margin-bottom: var(--space-2);
+}
+
+.lab-card p {
+  font-size: 0.875rem;
+  flex: 1;
+}
+
+.lab-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Lab Detail Specific */
+.lab-detail-header {
+  background: linear-gradient(to right, var(--accent-glow), transparent);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-8);
+}
+
+.mission-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.mission-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background-color: var(--bg-card);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.mission-status-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+}
+.mission-status-icon.completed { color: var(--success); }
+.mission-status-icon.inprogress { color: var(--warning); }
+.mission-status-icon.locked { color: var(--text-muted); }
+
+.mission-info {
+  flex: 1;
+}
+.mission-info h4 {
+  margin-bottom: 0;
+  font-size: 1rem;
+}

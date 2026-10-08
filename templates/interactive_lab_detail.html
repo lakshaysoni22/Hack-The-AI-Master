@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lab.title }} - HACK THE AI{% endblock %}
+{% block page_title %}{{ lab.title }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/lab_engine.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <a href="{{ url_for('labs.interactive_labs') }}" class="btn btn-outline btn-sm" style="margin-bottom: var(--space-4);">← Back to Labs</a>
+
+    <div class="lab-detail-hero">
+        <div class="lab-detail-hero-inner">
+            <div class="lab-detail-badges">
+                <span class="ilab-difficulty-badge diff-{{ 'pro' if lab.difficulty|lower == 'intermediate' else lab.difficulty|lower }}">{{ 'Pro' if lab.difficulty == 'Intermediate' else lab.difficulty }}</span>
+                <span class="ilab-meta-item">🏷️ {{ lab.category }}</span>
+                {% if lab.concept %}<span class="ilab-meta-item">🔐 {{ lab.concept }}</span>{% endif %}
+            </div>
+
+            <h1 class="lab-detail-title">{{ lab.title }}</h1>
+
+            {% if lab.description %}
+            <p class="lab-detail-description">{{ lab.description }}</p>
+            {% endif %}
+
+            <div class="lab-detail-stats">
+                <div class="lab-stat">
+                    <span class="lab-stat-value">{{ lab.missions|length }}</span>
+                    <span class="lab-stat-label">Missions</span>
+                </div>
+                <div class="lab-stat">
+                    <span class="lab-stat-value">{{ lab.estimated_time }}</span>
+                    <span class="lab-stat-label">Minutes</span>
+                </div>
+                <div class="lab-stat">
+                    <span class="lab-stat-value">{{ lab.total_points }}</span>
+                    <span class="lab-stat-label">Points</span>
+                </div>
+            </div>
+
+            {% if lab.storyline %}
+            <div class="lab-detail-storyline">
+                <h3>📖 Scenario</h3>
+                <p>{{ lab.storyline[:500] }}{% if lab.storyline|length > 500 %}...{% endif %}</p>
+            </div>
+            {% endif %}
+
+            <div class="lab-detail-missions-preview">
+                <h3>🎯 Mission Overview</h3>
+                {% for mission in lab.missions %}
+                <div class="mission-preview-item">
+                    <span class="mission-number">{{ mission.mission_number }}</span>
+                    <span class="mission-title">{{ mission.title }}</span>
+                    <span class="mission-points">{{ mission.points }} pts</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="margin-top: var(--space-6); text-align: center; display: flex; gap: var(--space-3); justify-content: center; align-items: center; flex-wrap: wrap;">
+                {% if user_session and user_session.status == 'ACTIVE' %}
+                <a href="{{ url_for('labs.interactive_lab_play', lab_id=lab.id) }}" class="btn btn-primary btn-lg" style="padding: var(--space-4) var(--space-8); font-size: 1.1rem;">
+                    ▶ Continue Lab Session
+                </a>
+                <button type="button" onclick="restartInteractiveLab('{{ lab.id }}')" class="btn btn-outline btn-lg" style="padding: var(--space-4) var(--space-8); font-size: 1.1rem;">
+                    🔄 Restart Lab
+                </button>
+                {% elif user_session and user_session.status == 'COMPLETED' %}
+                <a href="{{ url_for('labs.interactive_lab_play', lab_id=lab.id) }}" class="btn btn-primary btn-lg" style="padding: var(--space-4) var(--space-8); font-size: 1.1rem;">
+                    👁 View Lab
+                </a>
+                <button type="button" onclick="restartInteractiveLab('{{ lab.id }}')" class="btn btn-outline btn-lg" style="padding: var(--space-4) var(--space-8); font-size: 1.1rem;">
+                    🔄 Restart Lab
+                </button>
+                <p class="text-secondary" style="margin-top: var(--space-2); width: 100%;">You've already completed this lab.</p>
+                {% else %}
+                <a href="{{ url_for('labs.interactive_lab_play', lab_id=lab.id) }}" class="btn btn-primary btn-lg" style="padding: var(--space-4) var(--space-8); font-size: 1.1rem;">
+                    🚀 Start Lab
+                </a>
+                <button type="button" onclick="restartInteractiveLab('{{ lab.id }}')" class="btn btn-outline btn-lg" style="padding: var(--space-4) var(--space-8); font-size: 1.1rem;">
+                    🔄 Restart Lab
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function restartInteractiveLab(labId) {
+    if (!confirm('Are you sure you want to restart this lab? Your session will be reset.')) return;
+    fetch('/api/lab-engine/restart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.csrfToken
+        },
+        body: JSON.stringify({ lab_id: labId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = "{{ url_for('labs.interactive_lab_play', lab_id=lab.id) }}";
+        } else {
+            alert(data.message || 'Failed to restart lab');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Network error while restarting lab.');
+    });
+}
+</script>
+{% endblock %}

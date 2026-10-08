@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - HACK THE AI{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    {% if error %}
+    <div class="alert alert-danger" style="margin-bottom: var(--space-4); color: var(--danger);">
+        {{ error }}
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success" style="margin-bottom: var(--space-4); color: var(--success);">
+        {{ success }}
+    </div>
+    {% endif %}
+
+    <div class="card elevated" style="margin-bottom: var(--space-6);">
+        <h3 style="margin-bottom: var(--space-4);">Add New Manual Lab</h3>
+        <p class="text-secondary" style="margin-bottom: var(--space-4);">Adding a lab will automatically notify all registered users via email.</p>
+        
+        <form action="{{ url_for('admin.add_lab') }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                <div class="form-group">
+                    <label class="form-label" for="lab_id">Lab ID (e.g. mlab4)</label>
+                    <input type="text" class="form-control" id="lab_id" name="lab_id" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="name">Lab Name</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="topic">Topic</label>
+                    <input type="text" class="form-control" id="topic" name="topic" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="difficulty">Difficulty</label>
+                    <select class="form-control" id="difficulty" name="difficulty" required>
+                        <option value="Beginner">Beginner</option>
+                        <option value="Pro">Pro</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label" for="target_type">Target Type (vm/container/web)</label>
+                    <input type="text" class="form-control" id="target_type" name="target_type" required>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label" for="flag_value">Lab Flag</label>
+                    <input type="text" class="form-control" id="flag_value" name="flag_value" placeholder="e.g., TECHCORP{...}" required>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label" for="lab_zip">Lab ZIP File</label>
+                    <input type="file" class="form-control" id="lab_zip" name="lab_zip" accept=".zip" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: var(--space-4);">Add Lab & Notify Users</button>
+        </form>
+    </div>
+
+    <div class="card elevated" style="margin-bottom: var(--space-6);">
+        <h3 style="margin-bottom: var(--space-4);">Manage Manual Labs</h3>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <th style="padding: var(--space-2); color: var(--text-secondary);">ID</th>
+                        <th style="padding: var(--space-2); color: var(--text-secondary);">Name</th>
+                        <th style="padding: var(--space-2); color: var(--text-secondary);">Topic</th>
+                        <th style="padding: var(--space-2); color: var(--text-secondary);">Difficulty</th>
+                        <th style="padding: var(--space-2); color: var(--text-secondary);">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lab in manual_labs %}
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: var(--space-2);">{{ lab.id }}</td>
+                            <td style="padding: var(--space-2);">{{ lab.name }}</td>
+                            <td style="padding: var(--space-2);">{{ lab.topic }}</td>
+                            <td style="padding: var(--space-2);">{{ lab.difficulty }}</td>
+                            <td style="padding: var(--space-2);">
+                                <form action="{{ url_for('admin.manual_lab_delete', lab_id=lab.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this lab? This cannot be undone.');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger); padding: var(--space-1) var(--space-2); font-size: 0.875rem;">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="padding: var(--space-4); text-align: center; color: var(--text-muted);">No manual labs found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card elevated">
+        <h3 style="margin-bottom: var(--space-4);">Recent Audit Logs</h3>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <th style="padding: var(--space-2); color: var(--text-secondary);">User</th>
+                        <th style="padding: var(--space-2); color: var(--text-secondary);">Action</th>
+                        <th style="padding: var(--space-2); color: var(--text-secondary);">Details</th>
+                        <th style="padding: var(--space-2); color: var(--text-secondary);">Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: var(--space-2);">{{ log.username or 'System' }}</td>
+                            <td style="padding: var(--space-2);"><span class="badge badge-secondary">{{ log.action }}</span></td>
+                            <td style="padding: var(--space-2);">{{ log.details }}</td>
+                            <td style="padding: var(--space-2); color: var(--text-muted); font-size: 0.875rem;">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

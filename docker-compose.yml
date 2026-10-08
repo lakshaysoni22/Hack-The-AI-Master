@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: gunicorn --bind 0.0.0.0:8000 app:app --workers 4
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://ctfuser:ctfpass@db:5432/ctfdb
+      - REDIS_URL=redis://redis:6379/0
+      - SENTRY_DSN
+      # Use an environment variable for SECRET_KEY in production! If unset,
+      # the app now persists a generated one to database/.secret_key so all
+      # 4 gunicorn workers share the same key (instead of each generating
+      # its own and invalidating each other's sessions) - but an explicit
+      # value here is still recommended for real deployments.
+      # - SECRET_KEY=your_secure_secret_key_here
+      # Only set this to true once nginx/nginx.conf actually terminates TLS
+      # (its HTTPS server block and cert mount are commented out by
+      # default). Turning it on without real TLS in front makes the app
+      # mark cookies Secure while served over plain HTTP, which browsers
+      # then silently refuse to store - every request looks logged out.
+      # - FORCE_HTTPS=true
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=ctfuser
+      - POSTGRES_PASSWORD=ctfpass
+      - POSTGRES_DB=ctfdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Uncomment to mount SSL certificates
+      # - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+    restart: always
+
+  reaper:
+    build: .
+    command: python reaper.py
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+
+  # CyberLab Sim -- the 5 beginner CTF labs surfaced on the /challenges
+  # page. This is a self-contained Flask app with its own Dockerfile; it
+  # runs as an independent service rather than being merged into `web`
+  # so its intentionally-vulnerable code stays isolated from the main
+  # platform. Bound to 127.0.0.1 only, same as its standalone
+  # docker-compose.yml -- it is meant to be reached by the student's own
+  # browser on the box the platform is running on, not exposed publicly.
+  # If you deploy the platform remotely and still want students to reach
+  # this lab, put it behind its own authenticated reverse-proxy path
+  # instead of widening this bind address.
+  cyberlab:
+    build: ./cyberlab
+    ports:
+      - "127.0.0.1:5050:5000"
+    environment:
+      - FLASK_DEBUG=0
+      # - SECRET_KEY=set-your-own-value-here
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: always
+
+volumes:
+  pgdata:

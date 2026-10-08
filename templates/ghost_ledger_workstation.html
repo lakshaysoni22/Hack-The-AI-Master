@@ -1,0 +1,1507 @@
+{% extends "base.html" %}
+
+{% block title %}The Ghost in the Ledger - HACK THE AI{% endblock %}
+{% block page_title %}Case NEX-042{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/ghost_ledger.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/ghost_ledger_desktop.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="gl-lab-shell">
+
+    <!-- Mobile View Mode Switcher (Visible on mobile/tablet <= 1024px) -->
+    <div class="gl-mobile-mode-switcher">
+        <button type="button" class="gl-mobile-tab-btn active" id="gl-btn-mobile-tasks" onclick="glSwitchMobileView('tasks')">
+            📋 Investigation Tasks
+        </button>
+        <button type="button" class="gl-mobile-tab-btn" id="gl-btn-mobile-desktop" onclick="glSwitchMobileView('desktop')">
+            💻 Investigation Desktop
+        </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- LEFT PANEL — Investigation Tasks                               -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="gl-task-panel">
+
+        <!-- Header -->
+        <div class="gl-task-header">
+            <div class="gl-breadcrumb">Hack The AI &gt; Labs &gt; PRO Lab 01</div>
+            <h1 class="gl-room-title">The Ghost in the Ledger</h1>
+            <p class="gl-room-subtitle">Hack The AI Security Lab — Case NEX-042</p>
+            <div class="gl-room-meta">
+                <span>🏢 Security Operations Center</span>
+                <span>⚡ PRO</span>
+                <span>⏱ 50-65 min</span>
+                <span>🔬 5 Chapters</span>
+            </div>
+            <div class="gl-control-row">
+                <button class="gl-pill-btn primary" id="gl-start-lab-btn" onclick="startInvestigation()">🔍 Start Investigation</button>
+                <button class="gl-pill-btn danger" id="gl-header-restart-btn" onclick="restartLab('{{ lab_id }}')" title="Reset all progress and restart investigation from beginning">🔄 Restart Lab</button>
+                <a href="{{ url_for('labs.labs') }}" class="gl-pill-btn" style="color:#94a3b8; border-color:rgba(255,255,255,0.15);">✕ Exit</a>
+                <span class="gl-status-dot" id="gl-status-dot"></span>
+                <span class="gl-timer-text" id="gl-timer-text">00:00:00</span>
+                <span style="font-family: var(--font-mono); font-size: 11px; color: #64748b;" title="Auto-restart at 65m limit">(Limit: 65m)</span>
+            </div>
+        </div>
+
+        <!-- Opening Incident Briefing -->
+        <div class="gl-story-block" style="border-left: 3px solid var(--accent); background: rgba(0, 240, 255, 0.03); margin-bottom: 14px;">
+            <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--accent); letter-spacing: 1.2px; font-weight: 700; margin-bottom: 6px;">
+                ⚡ THE GHOST IN THE LEDGER // INCIDENT BRIEFING
+            </div>
+            <div style="font-size: 12.5px; color: #cbd5e1; line-height: 1.55; display: flex; flex-direction: column; gap: 4px;">
+                <p style="margin:0;">01:47 AM. The Security Operations Center is almost silent when a Priority-0 alert appears.</p>
+                <p style="margin:0;">82,400 NXR has been transferred from the company treasury to an unknown wallet.</p>
+                <p style="margin:0;">The blockchain confirms the transaction is valid, and ORION AI has marked the wallet as TRUSTED with 99.2% confidence.</p>
+                <p style="margin:0;">But Finance has no record of approving the transfer.</p>
+                <p style="margin:0;">There is no obvious stolen credential, no broken smart contract, and no invalid signature.</p>
+                <p style="margin:0;">Every system appears to have done exactly what it was designed to do.</p>
+                <p style="margin:0; color: #ff5f57; font-weight: 700;">Someone didn't break the system. Someone convinced the system to trust the wrong thing.</p>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="gl-progress-bar">
+            <div class="gl-progress-fill" id="gl-progress-fill" style="width: {{ (evidence_collected / 5 * 100)|int }}%"></div>
+        </div>
+        <div class="gl-progress-label">{{ evidence_collected }}/5 Chapters Verified</div>
+
+        <!-- Investigation Chapters (Accordion Tasks) -->
+        <div class="gl-tasks-container">
+
+            {% for m in missions %}
+            <div class="gl-task-block {% if m.status == 'COMPLETED' %}completed{% elif m.status in ['AVAILABLE', 'IN PROGRESS'] %}active{% else %}locked{% endif %}"
+                 id="gl-task-{{ m.mission_number }}" data-mission-id="{{ m.id }}">
+
+                <div class="gl-task-header-row" onclick="toggleTask({{ m.mission_number }})">
+                    <div class="gl-task-check {% if m.status == 'COMPLETED' %}done{% endif %}">
+                        {% if m.status == 'COMPLETED' %}✓{% else %}{{ m.mission_number }}{% endif %}
+                    </div>
+                    <div class="gl-task-title">
+                        <strong>Chapter {{ m.mission_number }}: {{ m.title }}</strong>
+                        <span class="gl-task-domain">
+                            {% if m.mission_number == 1 %}Web3 Security
+                            {% elif m.mission_number == 2 %}AI Security
+                            {% elif m.mission_number == 3 %}Threat Intelligence
+                            {% elif m.mission_number == 4 %}AI Governance
+                            {% else %}Full Reconstruction{% endif %}
+                        </span>
+                    </div>
+                    <span class="gl-task-arrow">▼</span>
+                </div>
+
+                <div class="gl-task-body">
+                    <!-- Chapter Story Dialogues -->
+                    <div class="gl-story-block" id="chapter-story-block-{{ m.mission_number }}">
+                        <div style="font-family: var(--font-mono); font-size: 10px; color: var(--accent); letter-spacing: 1px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase;">
+                            🎙️ INVESTIGATION DIALOGUE // CHAPTER {{ m.mission_number }}
+                        </div>
+
+                        <!-- Dialogue Stream Container -->
+                        <div class="gl-dialogue-stream" id="dialogue-stream-{{ m.mission_number }}">
+                            {% if m.mission_number == 1 %}
+                            <div class="gl-dialogue-line" data-step="1">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"Start with the transaction itself. The blockchain shows 82,400 NXR moving to 0x7C41...9B2D. The signature is valid, so we aren't looking at a simple forged transaction."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="2">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"I checked the destination wallet. It's extremely young, has almost no legitimate history, and there's no known internal relationship. For a treasury transaction this large, that's a serious anomaly."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="3">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"That's where it gets interesting. ORION classified the wallet as TRUSTED and gave it a 99.2% confidence score. The model isn't treating this as suspicious at all."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="4">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"Wait. Blockchain says UNKNOWN, while the AI says TRUSTED. Both systems are looking at the same wallet. They shouldn't be producing completely different realities."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="5">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"Look at the wallet's transaction history again. There are bridge interactions and downstream addresses that appear after the initial transfer. Someone may have designed the wallet activity to look legitimate."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="6">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"Then we need to know one thing before anything else: if our organization never trusted this wallet, who told ORION that it was trusted?"</div>
+                            </div>
+
+                            {% elif m.mission_number == 2 %}
+                            <div class="gl-dialogue-line" data-step="1">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"I've isolated the decision that approved the transaction. It's ORION-DEC-7741. The confidence is 99.2%, but confidence isn't the strange part — the context behind that confidence is."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="2">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"What context?"</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="3">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"ORION didn't independently establish that the wallet was trusted. It received a pre-built intelligence context containing the label TRUSTED."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="4">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"And the source of that context is NIF-2038. That's an intelligence reference I don't recognize from our approved threat-intelligence registry."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="5">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"So the AI didn't actually discover anything about the wallet. It made a high-confidence decision based on information another system supplied to it."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="6">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"Exactly. If the input was wrong, ORION could produce a perfectly confident answer to a completely false question. Find NIF-2038. That's where the trust signal entered the system."</div>
+                            </div>
+
+                            {% elif m.mission_number == 3 %}
+                            <div class="gl-dialogue-line" data-step="1">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"NIF-2038 came through NOVA-INTEL-FEED. At first glance it looks legitimate — proper formatting, timestamps, wallet metadata, even a threat classification."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="2">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"Is NOVA-INTEL-FEED an approved intelligence source?"</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="3">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"That's the problem. It isn't in the approved registry, and there are no previous records showing this source being trusted by our security systems."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="4">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"Then someone got untrusted intelligence into an internal system. Find out which service accepted it and what that service was allowed to do."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="5">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"Found it. INTEL-INGESTOR-02. Its documented role is to create intelligence records, but its actual permissions include modifying wallet reputation."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="6">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"That changes everything. If the service can modify reputation, it can influence what ORION sees before ORION ever makes a decision."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="7">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"Then the attacker didn't need to manipulate the AI directly. They manipulated the information flowing into it. Now we need to know what happened after the AI believed the lie."</div>
+                            </div>
+
+                            {% elif m.mission_number == 4 %}
+                            <div class="gl-dialogue-line" data-step="1">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"I traced the transaction after ORION's decision. It went through the Action Broker and then into the settlement policy. That's where the real authorization happened."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="2">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"Show me the policy."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="3">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"ORION-SETTLEMENT-V2. It says: if AI confidence is above 95%, automated settlement is allowed. This transaction had a confidence score of 99.2%."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="4">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"So the policy didn't verify whether Finance authorized the payment. It only verified whether the AI was confident enough."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="5">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"That's the vulnerability. Someone didn't need to control the signing key. They only needed to influence the information that made ORION confident."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="6">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"Which means AI confidence became a substitute for authorization. The system effectively said: 'If the AI is confident, we trust the transaction.'"</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="7">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"Then the blockchain didn't approve the transfer. The signer didn't approve it either. The chain of trust approved it. Now let's find out whether this was one transaction or part of something bigger."</div>
+                            </div>
+
+                            {% elif m.mission_number == 5 %}
+                            <div class="gl-dialogue-line" data-step="1">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"Put everything on the board. NIF-2038 entered through the intelligence pipeline and changed the reputation of the unknown wallet."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="2">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"Then ORION consumed that information as trusted context. It generated a 99.2% confidence score and classified the wallet as low risk."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="3">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"The Action Broker accepted the AI decision. ORION-SETTLEMENT-V2 treated that confidence as sufficient authorization and triggered automated settlement."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="4">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"The signing service executed the transaction exactly as configured. The blockchain recorded it correctly, and the funds moved to 0x7C41...9B2D."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="5">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"So which system was actually compromised? The AI? The API? The signer? The blockchain?"</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="6">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"Maybe that's the wrong question. None of them had to be broken. The attacker compromised the trust between them."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="7">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"We kept searching for the system that was hacked. But the real attack was much quieter. Someone taught the first system to trust the wrong data — and every other system trusted the decision that followed."</div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Dialogue Stepper Navigation -->
+                        <div class="gl-dialogue-nav" id="dialogue-nav-{{ m.mission_number }}">
+                            <button type="button" class="gl-dialogue-btn" onclick="stepDialogue({{ m.mission_number }}, -1)" id="dlg-prev-{{ m.mission_number }}" disabled>← BACK</button>
+                            <span class="gl-dialogue-stepper" id="dlg-stepper-{{ m.mission_number }}">Dialogue 1</span>
+                            <button type="button" class="gl-dialogue-btn" onclick="stepDialogue({{ m.mission_number }}, 1)" id="dlg-next-{{ m.mission_number }}">NEXT →</button>
+                        </div>
+                    </div>
+
+                    <!-- System Telemetry & Evidence Badges -->
+                    <div class="gl-system-data">
+                        {% if m.mission_number == 1 %}
+                        <div><span class="gl-lbl">Transaction:</span> <span class="gl-val-cyan">TX-NEX-7741</span></div>
+                        <div><span class="gl-lbl">Wallet:</span> <span class="gl-val-yellow">0x7C41...9B2D</span></div>
+                        <div><span class="gl-lbl">Wallet Age:</span> <span class="gl-val-red">3 DAYS</span></div>
+                        <div><span class="gl-lbl">Bridge Adapter:</span> <span class="gl-val-yellow">DETECTED</span></div>
+                        <div><span class="gl-lbl">AI Risk Rating:</span> <span class="gl-val-green">LOW</span></div>
+                        <div><span class="gl-lbl">Blockchain Status:</span> <span class="gl-val-red">UNKNOWN</span></div>
+                        <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08);">
+                            <span class="gl-lbl">Key Evidence:</span>
+                            <div class="gl-evidence-badge-list">
+                                <span class="gl-evidence-badge">WEB3-E01</span>
+                                <span class="gl-evidence-badge">TX-NEX-7741</span>
+                                <span class="gl-evidence-badge">0x7C41...9B2D</span>
+                            </div>
+                        </div>
+
+                        {% elif m.mission_number == 2 %}
+                        <div><span class="gl-lbl">Decision ID:</span> <span class="gl-val-cyan">ORION-DEC-7741</span></div>
+                        <div><span class="gl-lbl">Confidence:</span> <span class="gl-val-yellow">99.2%</span></div>
+                        <div><span class="gl-lbl">AI Reputation:</span> <span class="gl-val-red">TRUSTED ⚠</span></div>
+                        <div><span class="gl-lbl">Intelligence Ref:</span> <span class="gl-val-cyan">NIF-2038</span></div>
+                        <div><span class="gl-lbl">Source Feed:</span> <span class="gl-val-yellow">NOVA-INTEL-FEED</span></div>
+                        <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08);">
+                            <span class="gl-lbl">Key Evidence:</span>
+                            <div class="gl-evidence-badge-list">
+                                <span class="gl-evidence-badge">AI-E02</span>
+                                <span class="gl-evidence-badge">ORION-DEC-7741</span>
+                                <span class="gl-evidence-badge">NIF-2038</span>
+                                <span class="gl-evidence-badge">NOVA-INTEL-FEED</span>
+                            </div>
+                        </div>
+
+                        {% elif m.mission_number == 3 %}
+                        <div><span class="gl-lbl">NOVA-INTEL-FEED:</span> <span class="gl-val-red">NOT REGISTERED</span></div>
+                        <div><span class="gl-lbl">Service:</span> <span class="gl-val-yellow">INTEL-INGESTOR-02</span></div>
+                        <div><span class="gl-lbl">Expected:</span> <span class="gl-val-cyan">Create Intelligence Records</span></div>
+                        <div><span class="gl-lbl">Actual:</span> <span class="gl-val-red">Create Records + Modify Wallet Reputation</span></div>
+                        <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08);">
+                            <span class="gl-lbl">Key Evidence:</span>
+                            <div class="gl-evidence-badge-list">
+                                <span class="gl-evidence-badge">CYBER-E03</span>
+                                <span class="gl-evidence-badge">NIF-2038</span>
+                                <span class="gl-evidence-badge">NOVA-INTEL-FEED</span>
+                                <span class="gl-evidence-badge">INTEL-GW-04</span>
+                                <span class="gl-evidence-badge">INTEL-INGESTOR-02</span>
+                            </div>
+                        </div>
+
+                        {% elif m.mission_number == 4 %}
+                        <div><span class="gl-lbl">Profile:</span> <span class="gl-val-cyan">ORION-SETTLEMENT-V2</span></div>
+                        <div><span class="gl-lbl">Policy:</span> <span class="gl-val-yellow">IF AI_CONFIDENCE >= 95% → AUTO_SETTLE</span></div>
+                        <div><span class="gl-lbl">Human Approval:</span> <span class="gl-val-red">BYPASSED</span></div>
+                        <div><span class="gl-lbl">Observed Confidence:</span> <span class="gl-val-red">99.2%</span></div>
+                        <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08);">
+                            <span class="gl-lbl">Key Evidence:</span>
+                            <div class="gl-evidence-badge-list">
+                                <span class="gl-evidence-badge">AUTH-E04</span>
+                                <span class="gl-evidence-badge">ORION-SETTLEMENT-V2</span>
+                                <span class="gl-evidence-badge">ACTION-BROKER</span>
+                                <span class="gl-evidence-badge">AUTOMATED-SIGNER</span>
+                            </div>
+                        </div>
+
+                        {% elif m.mission_number == 5 %}
+                        <div><span class="gl-lbl">Primary Vector:</span> <span class="gl-val-red">AI Context Manipulation</span></div>
+                        <div><span class="gl-lbl">Campaign:</span> <span class="gl-val-red">ORION-NEXUS</span></div>
+                        <div><span class="gl-lbl">Wallets:</span> <span class="gl-val-red">14</span></div>
+                        <div><span class="gl-lbl">Networks:</span> <span class="gl-val-red">04</span></div>
+                        <div><span class="gl-lbl">AI Systems:</span> <span class="gl-val-red">03</span></div>
+                        <div><span class="gl-lbl">Status:</span> <span class="gl-val-red">🔴 ACTIVE</span></div>
+                        <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08);">
+                            <span class="gl-lbl">Key Evidence:</span>
+                            <div class="gl-evidence-badge-list">
+                                <span class="gl-evidence-badge">WEB3-E01</span>
+                                <span class="gl-evidence-badge">AI-E02</span>
+                                <span class="gl-evidence-badge">CYBER-E03</span>
+                                <span class="gl-evidence-badge">AUTH-E04</span>
+                                <span class="gl-evidence-badge">ORION-NEXUS</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Objective -->
+                    <div class="gl-objective">
+                        <span class="gl-obj-label">OBJECTIVE</span>
+                        <p>{{ m.description }}</p>
+                    </div>
+
+                    <!-- Contextual Tool Guidance -->
+                    {% if m.mission_number == 1 %}
+                    <div style="font-family: var(--font-mono); font-size: 11px; color: #38bdf8; background: rgba(0, 240, 255, 0.05); padding: 6px 10px; border-left: 2px solid var(--accent); margin: 8px 0; border-radius: 2px;">
+                        🛠️ <strong>Investigator Clue:</strong> Check <strong>Blockchain Monitor</strong> or type <code>wallet 0x7C41...9B2D</code> in Terminal.
+                    </div>
+                    {% elif m.mission_number == 2 %}
+                    <div style="font-family: var(--font-mono); font-size: 11px; color: #38bdf8; background: rgba(0, 240, 255, 0.05); padding: 6px 10px; border-left: 2px solid var(--accent); margin: 8px 0; border-radius: 2px;">
+                        🛠️ <strong>Investigator Clue:</strong> Run <code>ai-decision ORION-DEC-7741</code> in Terminal or inspect <code>ai-decision-log.txt</code> in Case Files.
+                    </div>
+                    {% elif m.mission_number == 3 %}
+                    <div style="font-family: var(--font-mono); font-size: 11px; color: #38bdf8; background: rgba(0, 240, 255, 0.05); padding: 6px 10px; border-left: 2px solid var(--accent); margin: 8px 0; border-radius: 2px;">
+                        🛠️ <strong>Investigator Clue:</strong> Switch Monitor tab to <strong>Feed Registry</strong> or run <code>service INTEL-INGESTOR-02</code> in Terminal.
+                    </div>
+                    {% elif m.mission_number == 4 %}
+                    <div style="font-family: var(--font-mono); font-size: 11px; color: #38bdf8; background: rgba(0, 240, 255, 0.05); padding: 6px 10px; border-left: 2px solid var(--accent); margin: 8px 0; border-radius: 2px;">
+                        🛠️ <strong>Investigator Clue:</strong> Check <strong>Policy Engine</strong> tab in Monitor or run <code>policy ORION-SETTLEMENT-V2</code> in Terminal.
+                    </div>
+                    {% elif m.mission_number == 5 %}
+                    <div style="font-family: var(--font-mono); font-size: 11px; color: #38bdf8; background: rgba(0, 240, 255, 0.05); padding: 6px 10px; border-left: 2px solid var(--accent); margin: 8px 0; border-radius: 2px;">
+                        🛠️ <strong>Investigator Clue:</strong> Open <strong>Threat Campaign</strong> in Monitor, inspect <strong>Attack Graph</strong>, or run <code>campaign ORION-NEXUS</code>.
+                    </div>
+                    {% endif %}
+
+                    <!-- Chapter 5 Final Reconstruction Flowchart -->
+                    {% if m.mission_number == 5 %}
+                    <div class="gl-reconstruction-chain" id="gl-reconstruction-5" style="display: none; background: rgba(0,0,0,0.7); border: 1px solid rgba(0,240,255,0.25); border-radius: 4px; padding: 12px; margin: 12px 0; text-align: center; font-family: var(--font-mono); font-size: 11px;">
+                        <div style="color: #ff5f57; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px;">⚡ FINAL INVESTIGATION RECONSTRUCTION</div>
+                        <div style="color: #f87171; font-weight: 600;">FALSE INTELLIGENCE</div>
+                        <div style="color: #64748b; line-height: 1.2;">↓</div>
+                        <div style="color: #fbbf24; font-weight: 600;">TRUSTED AI CONTEXT</div>
+                        <div style="color: #64748b; line-height: 1.2;">↓</div>
+                        <div style="color: #facc15; font-weight: 600;">99.2% AI CONFIDENCE</div>
+                        <div style="color: #64748b; line-height: 1.2;">↓</div>
+                        <div style="color: #38bdf8; font-weight: 600;">AUTOMATED AUTHORIZATION</div>
+                        <div style="color: #64748b; line-height: 1.2;">↓</div>
+                        <div style="color: #38bdf8; font-weight: 600;">AUTOMATED SIGNING</div>
+                        <div style="color: #64748b; line-height: 1.2;">↓</div>
+                        <div style="color: #4ade80; font-weight: 600;">82,400 NXR</div>
+                        <div style="color: #64748b; line-height: 1.2;">↓</div>
+                        <div style="color: #4ade80; font-weight: 700;">BLOCKCHAIN</div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Interactive 5-Task Sub-Question Stepper -->
+                    {% if m.status in ['AVAILABLE', 'IN PROGRESS', 'COMPLETED'] %}
+                    <div class="gl-answer-section" id="answer-section-{{ m.mission_number }}">
+                        
+                        <!-- Subtask Stepper Header -->
+                        <div class="gl-subtask-stepper">
+                            <div class="gl-subtask-nav">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span class="gl-subtask-title">🎯 Chapter {{ m.mission_number }} Objectives</span>
+                                    <span style="font-family:var(--font-mono); font-size:11px; color:#94a3b8;" id="chapter-progress-text-{{ m.mission_number }}">
+                                        {{ m.solved_quizzes_count }}/{{ m.quizzes|length }} Verified
+                                    </span>
+                                </div>
+                                <div class="gl-subtask-pills" id="subtask-pills-{{ m.mission_number }}">
+                                    {% for q in m.quizzes %}
+                                    <button type="button" 
+                                            class="gl-subtask-pill {% if q.is_solved %}solved{% elif loop.first %}active{% endif %}"
+                                            id="pill-{{ m.mission_number }}-{{ loop.index0 }}"
+                                            onclick="selectSubTask({{ m.mission_number }}, {{ loop.index0 }})">
+                                        Task {{ loop.index }} {% if q.is_solved %}✓{% endif %}
+                                    </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtask Cards (5 per chapter) -->
+                        {% for q in m.quizzes %}
+                        <div class="gl-subtask-card {% if loop.first %}active{% endif %}"
+                             id="subtask-card-{{ m.mission_number }}-{{ loop.index0 }}"
+                             data-quiz-id="{{ q.id }}"
+                             data-quiz-idx="{{ loop.index0 }}"
+                             data-is-solved="{{ 'true' if q.is_solved else 'false' }}">
+
+                            <div class="gl-question-banner" style="margin-bottom: 10px; background: rgba(0, 240, 255, 0.06); border: 1px solid rgba(0, 240, 255, 0.2); border-left: 4px solid var(--accent); border-radius: 4px; padding: 10px 12px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                    <span class="gl-obj-num">OBJECTIVE {{ loop.index }} OF {{ m.quizzes|length }}</span>
+                                    <span class="gl-xp-badge">+{{ q.xp_reward }} XP</span>
+                                </div>
+                                <div class="gl-target-question">{{ q.question }}</div>
+                                
+                                <div class="gl-action-clue">
+                                    {% if m.mission_number == 1 %}
+                                        {% if loop.index == 1 %}🛠️ <strong>Action:</strong> Run <code>wallet 0x7C41...9B2D</code> in Terminal or check Blockchain Monitor for Blockchain Status.
+                                        {% elif loop.index == 2 %}🛠️ <strong>Action:</strong> Run <code>tx TX-NEX-7741</code> in Terminal or check SOC Alert amount.
+                                        {% elif loop.index == 3 %}🛠️ <strong>Action:</strong> Check Bridge Connection in <code>wallet-report.txt</code> or Terminal <code>wallet</code> output.
+                                        {% elif loop.index == 4 %}🛠️ <strong>Action:</strong> Inspect Wallet Age in <code>wallet-report.txt</code> in Case Files.
+                                        {% elif loop.index == 5 %}🛠️ <strong>Action:</strong> Run <code>tx TX-NEX-7741</code> in Terminal to find the Nonce value.{% endif %}
+                                    {% elif m.mission_number == 2 %}
+                                        {% if loop.index == 1 %}🛠️ <strong>Action:</strong> Run <code>ai-decision ORION-DEC-7741</code> in Terminal or read <code>ai-decision-log.txt</code>.
+                                        {% elif loop.index == 2 %}🛠️ <strong>Action:</strong> Inspect Confidence score in <code>ai-decision-log.txt</code> in Case Files.
+                                        {% elif loop.index == 3 %}🛠️ <strong>Action:</strong> Check Source Feed in the AI decision telemetry.
+                                        {% elif loop.index == 4 %}🛠️ <strong>Action:</strong> Run <code>ai-decision ORION-DEC-7741</code> to check the neural model version.
+                                        {% elif loop.index == 5 %}🛠️ <strong>Action:</strong> Open Evidence Viewer or run <code>python inspect_tx.py</code> in Terminal for SHA-256 hash.{% endif %}
+                                    {% elif m.mission_number == 3 %}
+                                        {% if loop.index == 1 %}🛠️ <strong>Action:</strong> Open browser tab <strong>Feed Registry</strong> to check Status for NOVA-INTEL-FEED.
+                                        {% elif loop.index == 2 %}🛠️ <strong>Action:</strong> Run <code>service INTEL-INGESTOR-02</code> in Terminal or inspect <code>intel-feed-audit.txt</code>.
+                                        {% elif loop.index == 3 %}🛠️ <strong>Action:</strong> Open F12 DevTools > <strong>Cookies</strong> tab or run <code>cookies</code> in Terminal.
+                                        {% elif loop.index == 4 %}🛠️ <strong>Action:</strong> Check Ingestion Gateway in <code>intel-feed-audit.txt</code>.
+                                        {% elif loop.index == 5 %}🛠️ <strong>Action:</strong> Open F12 DevTools > <strong>Headers</strong> tab or run <code>headers</code> in Terminal for X-CSRF-Token.{% endif %}
+                                    {% elif m.mission_number == 4 %}
+                                        {% if loop.index == 1 %}🛠️ <strong>Action:</strong> Open browser tab <strong>Policy Engine</strong> or run <code>policy ORION-SETTLEMENT-V2</code>.
+                                        {% elif loop.index == 2 %}🛠️ <strong>Action:</strong> Read <code>settlement-policy.txt</code> to see which approval was bypassed.
+                                        {% elif loop.index == 3 %}🛠️ <strong>Action:</strong> Check Policy Identifier in <code>settlement-policy.txt</code> in Case Files.
+                                        {% elif loop.index == 4 %}🛠️ <strong>Action:</strong> Inspect automated signing service in DevTools or Terminal <code>policy</code>.
+                                        {% elif loop.index == 5 %}🛠️ <strong>Action:</strong> Inspect Target Liquidity Pool in the Policy Engine tab.{% endif %}
+                                    {% elif m.mission_number == 5 %}
+                                        {% if loop.index == 1 %}🛠️ <strong>Action:</strong> Open browser tab <strong>Threat Campaign</strong> or run <code>campaign ORION-NEXUS</code>.
+                                        {% elif loop.index == 2 %}🛠️ <strong>Action:</strong> Read <code>campaign-intel.txt</code> in Case Files for Threat Actor Group.
+                                        {% elif loop.index == 3 %}🛠️ <strong>Action:</strong> Check compromised AI count in the Threat Campaign dashboard.
+                                        {% elif loop.index == 4 %}🛠️ <strong>Action:</strong> Open <strong>Attack Graph</strong> window on desktop and click Node 2.
+                                        {% elif loop.index == 5 %}🛠️ <strong>Action:</strong> Extract the secret flag from <code>campaign-intel.txt</code> or Terminal <code>campaign</code> output.{% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if q.is_solved %}
+                            <div class="gl-solved-banner" id="solved-banner-{{ m.mission_number }}-{{ loop.index0 }}">
+                                <span style="color:#4ade80; font-weight:700;">✓ TASK VERIFIED</span>
+                                <p style="font-size:11.5px; color:#cbd5e1; margin:4px 0 0;">{{ q.explanation }}</p>
+                            </div>
+                            {% else %}
+                            <div class="gl-subtask-form" id="form-wrap-{{ m.mission_number }}-{{ loop.index0 }}">
+                                <label class="gl-answer-label">🧠 Submit Your Forensic Finding</label>
+                                <div class="gl-answer-row">
+                                    <input type="text" class="gl-answer-input" id="quiz-input-{{ m.mission_number }}-{{ loop.index0 }}"
+                                           placeholder="Type discovered value from Terminal / DevTools / Monitor..."
+                                           onkeydown="if(event.key==='Enter') submitSubTask('{{ lab_id }}', '{{ m.id }}', '{{ q.id }}', {{ m.mission_number }}, {{ loop.index0 }})"
+                                           autocomplete="off">
+                                    <button class="gl-check-btn" onclick="submitSubTask('{{ lab_id }}', '{{ m.id }}', '{{ q.id }}', {{ m.mission_number }}, {{ loop.index0 }})">Analyze</button>
+                                </div>
+                                <div class="gl-answer-feedback" id="quiz-feedback-{{ m.mission_number }}-{{ loop.index0 }}"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                        <!-- Hints -->
+                        <div class="gl-hints-section" style="margin-top:10px;">
+                            <button class="gl-hint-toggle" onclick="requestHint('{{ lab_id }}', '{{ m.id }}', {{ m.mission_number }})">
+                                💡 Need a hint? (Free for Chapter 1)
+                            </button>
+                            <div class="gl-hint-display" id="hint-display-{{ m.mission_number }}"></div>
+                        </div>
+
+                    </div>
+                    {% endif %}
+
+                    <!-- Flag (only on final mission) -->
+                    {% if m.mission_number == 5 and not lab_completed %}
+                    <div class="gl-flag-section">
+                        <label class="gl-flag-label">🔐 CAPTURE THE FLAG</label>
+                        <p class="gl-flag-desc">> Enter the flag to close Case NEX-042.</p>
+                        <div class="gl-answer-row">
+                            <input type="text" class="gl-answer-input gl-flag-styled" id="flag-input" placeholder="NEXORA{...}" autocomplete="off" onkeydown="if(event.key==='Enter') submitFlag('{{ lab_id }}')">
+                            <button class="gl-check-btn gl-flag-btn" onclick="submitFlag('{{ lab_id }}')">Submit Flag</button>
+                        </div>
+                        <div class="gl-answer-feedback" id="flag-feedback"></div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- POST-CHAPTER 5: CAPSTONE WEB3 & AI ASSESSMENT QUIZ          -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <div class="gl-task-block gl-capstone-quiz-block {% if not ch5_completed and not all_completed %}locked{% endif %}" id="gl-capstone-quiz-block" data-unlocked="{% if ch5_completed or all_completed %}true{% else %}false{% endif %}">
+                <div class="gl-task-header-row" onclick="toggleCapstoneQuiz()">
+                    <div class="gl-task-check {% if ch5_completed or all_completed %}done{% endif %}" style="border-color: #a855f7; color: #a855f7; background: rgba(168,85,247,0.1);">
+                        <span id="capstone-header-icon">{% if ch5_completed or all_completed %}⚡{% else %}🔒{% endif %}</span>
+                    </div>
+                    <div class="gl-task-title-area">
+                        <div class="gl-task-tag" id="capstone-header-tag" style="background: rgba(168,85,247,0.15); color: #c084fc; border-color: rgba(168,85,247,0.3);">
+                            {% if ch5_completed or all_completed %}CAPSTONE KNOWLEDGE CHECK{% else %}🔒 LOCKED // PREREQUISITE: CHAPTER 5{% endif %}
+                        </div>
+                        <div class="gl-task-name">Web3, Blockchain &amp; AI Security Assessment</div>
+                    </div>
+                    <div class="gl-task-badge" id="capstone-score-badge" style="background: rgba(168,85,247,0.15); color: #c084fc; font-weight:700;">
+                        {% if ch5_completed or all_completed %}+250 XP{% else %}🔒 LOCKED{% endif %}
+                    </div>
+                    <div class="gl-task-arrow" id="capstone-arrow">{% if ch5_completed or all_completed %}&#9660;{% else %}&#9654;{% endif %}</div>
+                </div>
+
+                <div class="gl-task-body" id="capstone-quiz-body" style="padding: 16px; display: {% if ch5_completed or all_completed %}block{% else %}none{% endif %}; border-top: 1px solid rgba(168,85,247,0.2); background: rgba(15, 23, 42, 0.75);">
+                    {% if not ch5_completed and not all_completed %}
+                    <div id="capstone-locked-msg" style="padding: 18px; text-align: center; color: #94a3b8; font-family: var(--font-mono); font-size: 13px;">
+                        <div style="font-size: 28px; margin-bottom: 8px;">🔒</div>
+                        <div style="color: #c084fc; font-weight: 700; margin-bottom: 4px;">CAPSTONE QUIZ LOCKED</div>
+                        <div>Complete and verify all tasks in <strong>Chapter 5: The Ghost in the Ledger</strong> to unlock this Web3 &amp; AI assessment.</div>
+                    </div>
+                    {% endif %}
+
+                    <div id="capstone-interactive-content" style="{% if not ch5_completed and not all_completed %}display:none;{% endif %}">
+                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 14px; line-height: 1.5;">
+                            🧠 <strong>Forensic Validation:</strong> Test your core comprehension of how Web3, Blockchain smart contracts, and AI systems interact under adversarial attack conditions.
+                        </p>
+
+                        <!-- Capstone Question 1 -->
+                        <div class="gl-capstone-q-card" style="margin-bottom: 14px; padding: 12px; border-radius: 6px; background: rgba(20,30,50,0.6); border: 1px solid rgba(0,240,255,0.15);">
+                            <div style="font-size: 11px; color: var(--accent); font-family: var(--font-mono); font-weight: 700; margin-bottom: 4px;">Q1 // BLOCKCHAIN &amp; SMART CONTRACTS</div>
+                            <div style="font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 8px;">
+                                Why did transaction TX-NEX-7741 succeed on-chain even though the recipient wallet had zero legitimate history with the organization?
+                            </div>
+                            <div class="gl-capstone-options" data-qid="cq1">
+                                <label class="gl-cap-opt"><input type="radio" name="cq1" value="A"> A. The ECDSA cryptographic signature was forged using a zero-day elliptic curve break.</label>
+                                <label class="gl-cap-opt"><input type="radio" name="cq1" value="B"> B. The automated signer possessed valid keys and relied solely on the AI trust score without on-chain allowlisting.</label>
+                                <label class="gl-cap-opt"><input type="radio" name="cq1" value="C"> C. The Ethereum blockchain reorganized 100 blocks back to insert the transaction.</label>
+                            </div>
+                            <div class="gl-cap-feedback" id="cq1-feedback"></div>
+                        </div>
+
+                        <!-- Capstone Question 2 -->
+                        <div class="gl-capstone-q-card" style="margin-bottom: 14px; padding: 12px; border-radius: 6px; background: rgba(20,30,50,0.6); border: 1px solid rgba(0,240,255,0.15);">
+                            <div style="font-size: 11px; color: var(--accent); font-family: var(--font-mono); font-weight: 700; margin-bottom: 4px;">Q2 // AI CONTEXT POISONING</div>
+                            <div style="font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 8px;">
+                                How was ORION AI tricked into classifying an unknown attacker wallet as TRUSTED with 99.2% confidence?
+                            </div>
+                            <div class="gl-capstone-options" data-qid="cq2">
+                                <label class="gl-cap-opt"><input type="radio" name="cq2" value="A"> A. The attacker trained a whole new LLM and swapped the PyTorch weights on disk.</label>
+                                <label class="gl-cap-opt"><input type="radio" name="cq2" value="B"> B. Unauthenticated feed NIF-2038 injected poisoned threat-intel context via the unverified ingestion gateway.</label>
+                                <label class="gl-cap-opt"><input type="radio" name="cq2" value="C"> C. The AI model's temperature parameter was set to 0.0.</label>
+                            </div>
+                            <div class="gl-cap-feedback" id="cq2-feedback"></div>
+                        </div>
+
+                        <!-- Capstone Question 3 -->
+                        <div class="gl-capstone-q-card" style="margin-bottom: 14px; padding: 12px; border-radius: 6px; background: rgba(20,30,50,0.6); border: 1px solid rgba(0,240,255,0.15);">
+                            <div style="font-size: 11px; color: var(--accent); font-family: var(--font-mono); font-weight: 700; margin-bottom: 4px;">Q3 // WEB3 TREASURY DEFENSE</div>
+                            <div style="font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 8px;">
+                                What is the most effective Web3 architecture control to prevent high-volume automated treasury drain attacks?
+                            </div>
+                            <div class="gl-capstone-options" data-qid="cq3">
+                                <label class="gl-cap-opt"><input type="radio" name="cq3" value="A"> A. Multi-Signature (MPC) threshold governance, rate-limiting circuit breakers, and mandatory address allowlisting.</label>
+                                <label class="gl-cap-opt"><input type="radio" name="cq3" value="B"> B. Increasing blockchain transaction gas fees so attackers cannot afford transfers.</label>
+                                <label class="gl-cap-opt"><input type="radio" name="cq3" value="C"> C. Disabling all HTTPS encryption across the corporate network.</label>
+                            </div>
+                            <div class="gl-cap-feedback" id="cq3-feedback"></div>
+                        </div>
+
+                        <!-- Capstone Question 4 -->
+                        <div class="gl-capstone-q-card" style="margin-bottom: 14px; padding: 12px; border-radius: 6px; background: rgba(20,30,50,0.6); border: 1px solid rgba(0,240,255,0.15);">
+                            <div style="font-size: 11px; color: var(--accent); font-family: var(--font-mono); font-weight: 700; margin-bottom: 4px;">Q4 // AI GOVERNANCE &amp; ZERO-TRUST</div>
+                            <div style="font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 8px;">
+                                Why should AI models in financial/cyber pipelines remain advisory rather than autonomous transaction signers?
+                            </div>
+                            <div class="gl-capstone-options" data-qid="cq4">
+                                <label class="gl-cap-opt"><input type="radio" name="cq4" value="A"> A. Because AI models are too fast for human monitors to watch.</label>
+                                <label class="gl-cap-opt"><input type="radio" name="cq4" value="B"> B. AI outputs are probabilistic and vulnerable to input poisoning; signing keys must require deterministic policy enforcement.</label>
+                                <label class="gl-cap-opt"><input type="radio" name="cq4" value="C"> C. Because smart contracts can only be written in Python.</label>
+                            </div>
+                            <div class="gl-cap-feedback" id="cq4-feedback"></div>
+                        </div>
+
+                        <button class="gl-pill-btn primary" onclick="checkCapstoneQuiz()" style="width: 100%; justify-content: center; margin-top: 6px; padding: 10px; font-weight: 700;">
+                            <span>✓</span> VERIFY CAPSTONE ANSWERS
+                        </button>
+                        <div id="capstone-overall-feedback" style="margin-top: 10px; font-size: 12px; font-family: var(--font-mono); text-align: center;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completed banner (if already completed) -->
+            {% if all_completed and lab_completed %}
+            <div class="gl-completion-banner" id="gl-completion-banner">
+                <h2>🏁 CASE NEX-042: CONTAINED</h2>
+                <p>All evidence collected. All chapters verified. Investigation complete.</p>
+                <div class="gl-final-warning">
+                    <div>CAMPAIGN: ORION-NEXUS</div>
+                    <div>Status: <span class="gl-val-red">🔴 ACTIVE</span></div>
+                    <div style="margin-top:0.5rem; font-size:1.1em; color:var(--danger);">THE GHOST IS STILL IN THE LEDGER.</div>
+                </div>
+                <div style="margin-top:1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <a href="{{ url_for('labs.ghost_ledger_post_investigation') }}" class="gl-pill-btn primary" style="background: linear-gradient(135deg, var(--accent), #0088ff); color: #000; font-weight: 800; box-shadow: 0 0 20px rgba(0,240,255,0.4); text-decoration: none; text-align: center; padding: 0.65rem 1rem;">⚡ VIEW CASE FILE &amp; STORY REVEAL &rarr;</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- SUBMIT LAB ACTION CONTAINER (Locked until complete)         -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <div class="gl-sidebar-submit-container" style="margin-top:1.5rem; padding-top:1.25rem; border-top: 1px solid rgba(0,240,255,0.25); text-align:center;">
+                <button class="gl-submit-lab-action-btn {% if not all_completed %}locked-btn{% else %}unlocked-btn{% endif %}" id="btn-submit-lab-main" onclick="submitFinalLab('{{ lab_id }}')">
+                    <span id="submit-btn-icon" style="font-size: 1.3rem;">{% if all_completed %}🚀{% else %}🔒{% endif %}</span>
+                    <span id="submit-btn-text" style="letter-spacing: 1px; font-weight: 800;">
+                        {% if all_completed %}SUBMIT LAB &amp; COMPLETE CASE{% else %}SUBMIT LAB (LOCKED){% endif %}
+                    </span>
+                </button>
+                <div id="submit-progress-hint" style="margin-top: 6px; font-size: 11px; font-family: var(--font-mono); color: #64748b;">
+                    {% if all_completed %}✓ All Chapters verified &bull; Ready for final submission{% else %}🔒 Complete all 5 Chapters &amp; Capstone Quiz to unlock submission{% endif %}
+                </div>
+                <div style="margin-top: 0.85rem; display:flex; justify-content:center; gap:12px; align-items:center;">
+                    <button class="gl-subtle-restart-btn" onclick="restartLab('{{ lab_id }}')">
+                        🔄 Restart Lab
+                    </button>
+                    <span style="color:rgba(255,255,255,0.2);">|</span>
+                    <a href="{{ url_for('labs.ghost_ledger_post_investigation') }}" style="color:var(--accent); font-size:11px; font-family:var(--font-mono); text-decoration:none;">
+                        📑 Post-Investigation Debrief
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- RIGHT PANEL — Desktop Environment (like TryHackMe)            -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="gl-desktop-pane" id="gl-desktop-pane">
+
+        <!-- Desktop Top Bar -->
+        <div class="gl-desktop-topbar">
+            <div class="gl-topbar-left-info">
+                <span class="gl-org-label">HACK THE AI // INVESTIGATION ENVIRONMENT</span>
+                <span class="gl-topbar-dot"></span>
+                <span class="gl-attackbox-ip">InvestigatorBox IP: 127.0.0.1</span>
+            </div>
+            <div class="gl-topbar-right-info">
+                <span class="gl-session-indicator" id="gl-session-indicator">Investigator: Lakshay</span>
+            </div>
+        </div>
+
+        <!-- Desktop Content -->
+        <div class="gl-desktop-content">
+
+            <!-- Desktop Icons -->
+            <div class="gl-desktop-icons">
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenBrowser()">
+                    <div class="gl-icon-glyph">🌐</div>
+                    <div class="gl-icon-label">Blockchain<br>Monitor</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenBurpSuite()">
+                    <div class="gl-icon-glyph">🛡️</div>
+                    <div class="gl-icon-label">Burp Suite<br>Proxy</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenTerminal()">
+                    <div class="gl-icon-glyph">>_</div>
+                    <div class="gl-icon-label">Terminal</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenFileManager()">
+                    <div class="gl-icon-glyph">📁</div>
+                    <div class="gl-icon-label">Case Files</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenNotes()">
+                    <div class="gl-icon-glyph">📝</div>
+                    <div class="gl-icon-label">Notes</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenAttackGraph()">
+                    <div class="gl-icon-glyph">🕸</div>
+                    <div class="gl-icon-label">Attack<br>Graph</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenEvidenceViewer()">
+                    <div class="gl-icon-glyph">🔍</div>
+                    <div class="gl-icon-label">Evidence<br>Viewer</div>
+                </div>
+            </div>
+
+            <!-- Side Dock -->
+            <div class="gl-side-dock">
+                <div class="gl-dock-icon" title="Blockchain Monitor" onclick="glOpenBrowser()">🌐</div>
+                <div class="gl-dock-icon" title="Burp Suite" onclick="glOpenBurpSuite()">🛡️</div>
+                <div class="gl-dock-icon" title="Terminal" onclick="glOpenTerminal()">⌨</div>
+                <div class="gl-dock-icon" title="Case Files" onclick="glOpenFileManager()">📁</div>
+                <div class="gl-dock-icon" title="Notes" onclick="glOpenNotes()">📝</div>
+                <div class="gl-dock-icon" title="Attack Graph" onclick="glOpenAttackGraph()">🕸</div>
+                <div class="gl-dock-icon" title="Evidence Viewer" onclick="glOpenEvidenceViewer()">🔍</div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- BROWSER WINDOW — Web & SOC Inspection Suite               -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-browser-window">
+                <div class="gl-window-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseBrowser()"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeBrowser()"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text" id="gl-browser-window-title">Network Inspector — SOC Dashboard</div>
+                </div>
+
+                <!-- Browser Tab Bar -->
+                <div class="gl-browser-tabbar">
+                    <div class="gl-browser-tab active" data-url="lab-monitor.internal/soc/tx/NEX-7741" onclick="glSwitchBrowserTab('soc', this)">
+                        <span>⚡</span> SOC Monitor
+                    </div>
+                    <div class="gl-browser-tab" data-url="lab-monitor.internal/registry" onclick="glSwitchBrowserTab('registry', this)">
+                        <span>🛡</span> Feed Registry
+                    </div>
+                    <div class="gl-browser-tab" data-url="lab-monitor.internal/policy" onclick="glSwitchBrowserTab('policy', this)">
+                        <span>⚙</span> Policy Engine
+                    </div>
+                    <div class="gl-browser-tab" data-url="lab-monitor.internal/campaign" onclick="glSwitchBrowserTab('campaign', this)">
+                        <span>🕸</span> Threat Campaign
+                    </div>
+                    <div class="gl-browser-tab" data-url="lab-monitor.internal/devtools" onclick="glSwitchBrowserTab('devtools', this)">
+                        <span>🔍</span> Network DevTools
+                    </div>
+                </div>
+
+                <!-- Browser Toolbar -->
+                <div class="gl-browser-toolbar">
+                    <div class="gl-browser-nav-btns">
+                        <button onclick="glBrowserBack()" title="Back">←</button>
+                        <button onclick="glBrowserForward()" title="Forward">→</button>
+                        <button onclick="glReloadBrowser()" title="Reload">⟳</button>
+                    </div>
+                    <div class="gl-browser-address-wrap">
+                        <span class="gl-browser-lock">🔒</span>
+                        <input type="text" id="gl-browser-url-input" class="gl-browser-url-input"
+                               value="lab-monitor.internal/soc/tx/NEX-7741" spellcheck="false" autocomplete="off"
+                               onkeydown="if(event.key==='Enter') glNavigateUrl(this.value)">
+                    </div>
+                    <button onclick="glSwitchBrowserTab('devtools')" title="Toggle DevTools" style="width: auto; padding: 0 8px; font-family: var(--font-mono); font-size: 11px;">F12 DevTools</button>
+                </div>
+
+                <!-- Browser Content Body -->
+                <div class="gl-browser-body" id="gl-browser-body">
+
+                    <!-- VIEW 1: SOC DASHBOARD -->
+                    <div class="gl-browser-view active" id="gl-view-soc">
+                        <div class="gl-soc-dashboard">
+                            <div class="gl-soc-header">
+                                <h2>🚨 UNUSUAL TREASURY TRANSACTION</h2>
+                                <span class="gl-soc-priority">PRIORITY 0</span>
+                            </div>
+                            <div class="gl-soc-grid">
+                                <div class="gl-soc-card">
+                                    <div class="gl-soc-card-title">Transaction</div>
+                                    <div class="gl-soc-card-val">TX-NEX-7741</div>
+                                    <div class="gl-soc-card-sub">82,400 NXR → 0x7C41...9B2D</div>
+                                </div>
+                                <div class="gl-soc-card">
+                                    <div class="gl-soc-card-title">AI Decision</div>
+                                    <div class="gl-soc-card-val gl-val-green">APPROVED</div>
+                                    <div class="gl-soc-card-sub">ORION-DEC-7741 | 99.2%</div>
+                                </div>
+                                <div class="gl-soc-card">
+                                    <div class="gl-soc-card-title">Wallet Status</div>
+                                    <div class="gl-soc-card-val gl-val-red">UNKNOWN</div>
+                                    <div class="gl-soc-card-sub">Age: 3 days | Txns: 4</div>
+                                </div>
+                                <div class="gl-soc-card">
+                                    <div class="gl-soc-card-title">Human Approval</div>
+                                    <div class="gl-soc-card-val gl-val-red">NOT REQUIRED</div>
+                                    <div class="gl-soc-card-sub">Auto-settle triggered</div>
+                                </div>
+                            </div>
+                            <div class="gl-soc-log" id="gl-soc-log">
+                                <div class="gl-log-line"><span class="gl-log-time">[01:47:13]</span> <span class="gl-log-alert">ALERT:</span> Unusual treasury transaction detected</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[01:47:14]</span> TX-NEX-7741 → 0x7C41...9B2D | 82,400 NXR</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[01:47:15]</span> AI Decision: ORION-DEC-7741 | Risk: LOW | Confidence: 99.2%</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[01:47:30]</span> Bridge adapter activity detected on destination wallet</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[01:48:02]</span> <span class="gl-log-warn">WARN:</span> Wallet 0x7C41...9B2D has no verified label (Status: UNKNOWN)</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[02:04:12]</span> Context source: NIF-2038 via NOVA-INTEL-FEED</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[02:04:30]</span> <span class="gl-log-alert">ALERT:</span> Context discrepancy — Blockchain: UNKNOWN vs AI: TRUSTED</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[02:19:22]</span> <span class="gl-log-alert">ALERT:</span> NOVA-INTEL-FEED — NOT in official registry</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[02:19:45]</span> <span class="gl-log-warn">WARN:</span> INTEL-INGESTOR-02 has elevated permissions</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[02:37:15]</span> Policy: IF AI_CONFIDENCE >= 95% THEN AUTO_SETTLE = TRUE</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[02:37:30]</span> <span class="gl-log-crit">CRITICAL:</span> ORION-SETTLEMENT-V2 enabled automated signing</div>
+                                <div class="gl-log-line"><span class="gl-log-time">[03:02:00]</span> Campaign detected: <span class="gl-log-alert">ORION-NEXUS</span></div>
+                                <div class="gl-log-line"><span class="gl-log-time">[03:02:10]</span> Related wallets: 14 | Networks: 04 | AI systems: 03</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 2: FEED REGISTRY -->
+                    <div class="gl-browser-view" id="gl-view-registry">
+                        <div style="font-family: var(--font-mono); margin-bottom: 14px;">
+                            <h2 style="color: #38bdf8; font-size: 15px; margin: 0 0 6px;">🛡 THREAT INTEL FEED REGISTRY</h2>
+                            <p style="color: #8fa3ba; font-size: 11.5px; margin: 0;">Authorized external intelligence connectors and ingestion gateways.</p>
+                        </div>
+                        <table class="gl-table">
+                            <thead>
+                                <tr>
+                                    <th>FEED IDENTIFIER</th>
+                                    <th>PROVIDER</th>
+                                    <th>STATUS</th>
+                                    <th>INGESTION SERVICE</th>
+                                    <th>PERMISSIONS GRANTED</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>THREAT-STREAM-GLOBAL</strong></td>
+                                    <td>CertiK / Chainalysis</td>
+                                    <td><span class="gl-tag success">VERIFIED</span></td>
+                                    <td>INTEL-INGESTOR-01</td>
+                                    <td>Read Only (Intelligence Records)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ONCHAIN-ORACLE-V1</strong></td>
+                                    <td>Chainlink Oracle</td>
+                                    <td><span class="gl-tag success">VERIFIED</span></td>
+                                    <td>INTEL-INGESTOR-01</td>
+                                    <td>Read Only (Contract Risk)</td>
+                                </tr>
+                                <tr style="background: rgba(255, 0, 60, 0.08);">
+                                    <td><strong>NOVA-INTEL-FEED</strong><br><span style="font-size:10px; color:#ff5f57;">Ref: NIF-2038</span></td>
+                                    <td>Unknown Provider (Injected)</td>
+                                    <td><span class="gl-tag danger">NOT REGISTERED</span></td>
+                                    <td><strong>INTEL-INGESTOR-02</strong></td>
+                                    <td><span class="gl-tag danger">modify wallet reputation</span><br><span style="font-size:10px; color:#facc15;">⚠ Exceeds standard role</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- VIEW 3: POLICY ENGINE -->
+                    <div class="gl-browser-view" id="gl-view-policy">
+                        <div class="gl-policy-card">
+                            <h2 style="color: #facc15; font-size: 15px; margin: 0 0 8px;">⚙ ORION-SETTLEMENT-V2 POLICY ENGINE</h2>
+                            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 12px;">Active automated settlement rule for Internal Treasury Transactions.</p>
+                            
+                            <div class="gl-policy-rule-box">
+                                <strong>ACTIVE RULE:</strong><br>
+                                IF <code>AI_CONFIDENCE</code> &gt;= <span style="font-size: 16px; font-weight: 700; color: #ff5f57;">95%</span><br>
+                                THEN <code>AUTOMATED_SETTLEMENT</code> = <span style="color: #38bdf8;">TRUE</span><br>
+                                AND <code>HUMAN_APPROVAL_REQUIRED</code> = <span style="color: #ff5f57;">FALSE</span>
+                            </div>
+
+                            <div style="font-size: 12px; color: #cbd5e1; line-height: 1.6;">
+                                <div>• <strong>Observed Transaction Confidence:</strong> <span style="color: #38bdf8; font-weight: 700;">99.2%</span> (Threshold Exceeded)</div>
+                                <div>• <strong>Action Taken:</strong> Settlement automatically signed and dispatched to blockchain.</div>
+                                <div>• <strong>Vulnerability:</strong> Absence of human-in-the-loop multi-sig for transactions &gt; 50,000 NXR.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 4: THREAT CAMPAIGN -->
+                    <div class="gl-browser-view" id="gl-view-campaign">
+                        <div class="gl-policy-card" style="border-color: rgba(255, 0, 60, 0.4);">
+                            <h2 style="color: var(--danger); font-size: 15px; margin: 0 0 8px;">🕸 GLOBAL CAMPAIGN DOSSIER: ORION-NEXUS</h2>
+                            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 12px;">Coordinated adversarial intelligence poisoning attack across Web3 and AI infrastructure.</p>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px;">
+                                <div class="gl-soc-card">
+                                    <div class="gl-soc-card-title">CAMPAIGN ID</div>
+                                    <div class="gl-soc-card-val" style="color: #38bdf8;">ORION-NEXUS</div>
+                                </div>
+                                <div class="gl-soc-card">
+                                    <div class="gl-soc-card-title">IMPACTED WALLETS</div>
+                                    <div class="gl-soc-card-val" style="color: #ff5f57;">14 Wallets</div>
+                                </div>
+                                <div class="gl-soc-card">
+                                    <div class="gl-soc-card-title">NETWORKS / AI</div>
+                                    <div class="gl-soc-card-val" style="color: #facc15;">04 Nets / 03 AI</div>
+                                </div>
+                            </div>
+
+                            <div style="background: #000; border: 1px dashed var(--accent); padding: 12px; border-radius: 4px; text-align: center;">
+                                <div style="font-size: 11px; color: var(--accent); letter-spacing: 1px; margin-bottom: 4px;">CASE NEX-042 FLAG HASH</div>
+                                <code style="font-size: 14px; font-weight: 700; color: #fff; user-select: all; cursor: pointer;" onclick="glCopyFlag('NEXORA{ghost_in_the_ledger_nex042}')" title="Click to copy">NEXORA{ghost_in_the_ledger_nex042}</code>
+                                <div style="font-size: 10px; color: #64748b; margin-top: 4px;">(Click to copy flag to clipboard)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 5: DEVTOOLS / NETWORK & COOKIE INSPECTOR -->
+                    <div class="gl-browser-view" id="gl-view-devtools">
+                        <div class="gl-devtools-subnav">
+                            <button type="button" class="gl-dt-btn active" onclick="glSwitchDevToolsTab('network', this)">🌐 Network Requests</button>
+                            <button type="button" class="gl-dt-btn" onclick="glSwitchDevToolsTab('headers', this)">📋 Request Headers</button>
+                            <button type="button" class="gl-dt-btn" onclick="glSwitchDevToolsTab('cookies', this)">🍪 Cookies &amp; Storage</button>
+                            <button type="button" class="gl-dt-btn" onclick="glSwitchDevToolsTab('payload', this)">📦 Raw JSON Payload</button>
+                        </div>
+                        
+                        <div class="gl-devtools-content" id="gl-dt-content">
+                            <!-- Tab 1: Network Requests List -->
+                            <div class="gl-dt-subview active" id="gl-dt-view-network">
+                                <div style="font-family: var(--font-mono); font-size: 11px; color: #94a3b8; margin-bottom: 8px;">
+                                    Captured Network Telemetry (5 Requests):
+                                </div>
+                                <div class="gl-req-row" onclick="glSelectDevToolsReq(0)">
+                                    <span class="gl-method-tag post">POST</span>
+                                    <span style="color:#e2e8f0; font-weight:600;">/api/v1/intel/ingest</span>
+                                    <span style="color:#4ade80; margin-left:auto;">200 OK</span>
+                                    <span style="color:#64748b;">(Ingest NIF-2038)</span>
+                                </div>
+                                <div class="gl-req-row active" onclick="glSelectDevToolsReq(1)">
+                                    <span class="gl-method-tag post">POST</span>
+                                    <span style="color:#e2e8f0; font-weight:600;">/api/v1/settlement/execute</span>
+                                    <span style="color:#4ade80; margin-left:auto;">200 OK</span>
+                                    <span style="color:#64748b;">(Auto-Settle TX-7741)</span>
+                                </div>
+                                <div class="gl-req-row" onclick="glSelectDevToolsReq(2)">
+                                    <span class="gl-method-tag get">GET</span>
+                                    <span style="color:#e2e8f0; font-weight:600;">/soc/tx/NEX-7741</span>
+                                    <span style="color:#4ade80; margin-left:auto;">200 OK</span>
+                                    <span style="color:#64748b;">(SOC Telemetry)</span>
+                                </div>
+                                <div class="gl-req-row" onclick="glSelectDevToolsReq(3)">
+                                    <span class="gl-method-tag post">POST</span>
+                                    <span style="color:#e2e8f0; font-weight:600;">/api/v1/ai/evaluate</span>
+                                    <span style="color:#4ade80; margin-left:auto;">200 OK</span>
+                                    <span style="color:#64748b;">(ORION-DEC-7741)</span>
+                                </div>
+                                <div class="gl-req-row" onclick="glSelectDevToolsReq(4)">
+                                    <span class="gl-method-tag get">GET</span>
+                                    <span style="color:#e2e8f0; font-weight:600;">/api/v1/campaign/nexus</span>
+                                    <span style="color:#4ade80; margin-left:auto;">200 OK</span>
+                                    <span style="color:#64748b;">(ORION-NEXUS APT)</span>
+                                </div>
+                            </div>
+
+                            <!-- Tab 2: Headers Inspection -->
+                            <div class="gl-dt-subview" id="gl-dt-view-headers" style="display:none;">
+                                <div style="color: #4ade80; font-family:var(--font-mono); font-size:12px; margin-bottom: 6px;">POST /api/v1/intel/ingest HTTP/1.1</div>
+                                <div style="font-family:var(--font-mono); font-size:11.5px; color:#cbd5e1; line-height:1.7; background:#0b1220; padding:12px; border-radius:4px;">
+                                    <div><strong>Host:</strong> internal-gateway.secops.local</div>
+                                    <div><strong>User-Agent:</strong> Ingestor-Daemon/2.1 (Automated Telemetry Connector)</div>
+                                    <div><strong>Origin:</strong> <span style="color:#38bdf8;">https://trusted-intel.secops.internal</span></div>
+                                    <div><strong>X-CSRF-Token:</strong> <span style="color:#facc15; font-weight:700;">0x9f4a1c78</span></div>
+                                    <div><strong>X-Forwarded-For:</strong> 198.51.100.42</div>
+                                    <div><strong>Cookie:</strong> <span style="color:#ff5f57; font-weight:700;">nex_sess_adm_994</span>; auth_role=INGESTION_ADMIN; _csrf=0x9f4a1c78</div>
+                                    <div><strong>Authorization:</strong> Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                                    <div><strong>Content-Type:</strong> application/json</div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 3: Cookies & Storage -->
+                            <div class="gl-dt-subview" id="gl-dt-view-cookies" style="display:none;">
+                                <div style="font-family:var(--font-mono); font-size:11px; color:#94a3b8; margin-bottom:8px;">Active Session Cookies &amp; Storage Tokens:</div>
+                                <table class="gl-table" style="font-size:11px;">
+                                    <thead>
+                                        <tr>
+                                            <th>NAME</th>
+                                            <th>VALUE</th>
+                                            <th>DOMAIN</th>
+                                            <th>SECURE</th>
+                                            <th>FLAGS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="background: rgba(255, 0, 60, 0.08);">
+                                            <td><strong style="color:#ff5f57;">nex_sess_adm_994</strong></td>
+                                            <td><code>sess_tok_9948271a0f4e</code></td>
+                                            <td>secops.internal</td>
+                                            <td><span class="gl-tag danger">Forged</span></td>
+                                            <td>Admin Role Hijack</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>_csrf_token</strong></td>
+                                            <td><code>0x9f4a1c78</code></td>
+                                            <td>secops.internal</td>
+                                            <td><span class="gl-tag success">Active</span></td>
+                                            <td>Anti-CSRF Header Nonce</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>auth_role</strong></td>
+                                            <td><code>INGESTION_ADMIN</code></td>
+                                            <td>secops.internal</td>
+                                            <td><span class="gl-tag warning">Elevated</span></td>
+                                            <td>Service: INTEL-INGESTOR-02</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Tab 4: Raw JSON Payload -->
+                            <div class="gl-dt-subview" id="gl-dt-view-payload" style="display:none;">
+                                <div style="color: #e2e8f0; background: #0b1220; padding: 12px; border-radius: 4px; font-family:var(--font-mono); font-size:11.5px; line-height:1.6;">
+{
+  <span style="color: #38bdf8;">"tx_id"</span>: <span style="color: #facc15;">"TX-NEX-7741"</span>,
+  <span style="color: #38bdf8;">"decision_id"</span>: <span style="color: #facc15;">"ORION-DEC-7741"</span>,
+  <span style="color: #38bdf8;">"model_version"</span>: <span style="color: #4ade80;">"ORION-NEURAL-v4.2.1"</span>,
+  <span style="color: #38bdf8;">"model_confidence"</span>: <span style="color: #4ade80;">0.992</span>,
+  <span style="color: #38bdf8;">"auto_settle_threshold"</span>: <span style="color: #ff5f57;">0.95</span>,
+  <span style="color: #38bdf8;">"policy_id"</span>: <span style="color: #facc15;">"POL-AUTO-SETTLE-TREASURY"</span>,
+  <span style="color: #38bdf8;">"target_pool"</span>: <span style="color: #facc15;">"Automated Liquidity Pool"</span>,
+  <span style="color: #38bdf8;">"intel_reference"</span>: <span style="color: #facc15;">"NIF-2038"</span>,
+  <span style="color: #38bdf8;">"source_feed"</span>: <span style="color: #ff5f57;">"NOVA-INTEL-FEED"</span>,
+  <span style="color: #38bdf8;">"wallet_address"</span>: <span style="color: #facc15;">"0x7C41...9B2D"</span>,
+  <span style="color: #38bdf8;">"nonce"</span>: <span style="color: #4ade80;">1042</span>,
+  <span style="color: #38bdf8;">"amount"</span>: <span style="color: #facc15;">"82,400 NXR"</span>,
+  <span style="color: #38bdf8;">"bridge_adapter"</span>: <span style="color: #facc15;">"Bridge-Core-04"</span>,
+  <span style="color: #38bdf8;">"blockchain_verification"</span>: <span style="color: #ff5f57;">"UNKNOWN"</span>,
+  <span style="color: #38bdf8;">"human_signoff_bypassed"</span>: <span style="color: #ff5f57;">true</span>,
+  <span style="color: #38bdf8;">"campaign"</span>: <span style="color: #ff5f57;">"ORION-NEXUS"</span>,
+  <span style="color: #38bdf8;">"threat_actor"</span>: <span style="color: #ff5f57;">"ADV-CONVERGENCE-APT"</span>
+}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- TERMINAL WINDOW                                           -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window gl-terminal-window" id="gl-terminal-window">
+                <div class="gl-window-titlebar gl-terminal-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseTerminal()"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeTerminal()"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text">Terminal — investigator@workstation (bash)</div>
+                </div>
+                <div class="gl-terminal-body" id="gl-terminal-output" onclick="document.getElementById('gl-terminal-input')?.focus()">
+                    <div style="color: #38bdf8;">Forensic Terminal Environment [v4.2.0-sec]</div>
+                    <div style="color: #64748b;">Type <b style="color: #4ade80;">help</b> for commands. Use Up/Down arrows for history.</div>
+                    <div style="margin-top:0.5rem;">
+                        <span class="gl-term-prompt">investigator@workstation:~$</span>
+                        <input id="gl-terminal-input" autocomplete="off" spellcheck="false" class="gl-term-input" autofocus>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- FILE MANAGER WINDOW                                       -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-filemanager-window">
+                <div class="gl-window-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseWindow('gl-filemanager-window')"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeWindow('gl-filemanager-window')"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text">Code &amp; Log Explorer — /investigation/NEX-042</div>
+                </div>
+                <div class="gl-filemanager-body">
+                    <div class="gl-file-grid">
+                        <button class="gl-file-item active" id="fitem-wallet-report" onclick="glOpenCaseFile('wallet-report.txt', this)">📄 <span>wallet-report.txt</span></button>
+                        <button class="gl-file-item" id="fitem-ai-decision" onclick="glOpenCaseFile('ai-decision-log.txt', this)">📄 <span>ai-decision-log.txt</span></button>
+                        <button class="gl-file-item" id="fitem-intel-feed" onclick="glOpenCaseFile('intel-feed-audit.txt', this)">📄 <span>intel-feed-audit.txt</span></button>
+                        <button class="gl-file-item" id="fitem-settlement" onclick="glOpenCaseFile('settlement-policy.txt', this)">📄 <span>settlement-policy.txt</span></button>
+                        <button class="gl-file-item" id="fitem-campaign" onclick="glOpenCaseFile('campaign-intel.txt', this)">📄 <span>campaign-intel.txt</span></button>
+                        <button class="gl-file-item" id="fitem-script" onclick="glOpenCaseFile('inspect_tx.py', this)">🐍 <span>inspect_tx.py</span></button>
+                    </div>
+                    <div class="gl-file-view-container">
+                        <div class="gl-file-view-header">
+                            <span id="gl-current-filename">wallet-report.txt (UTF-8)</span>
+                            <button class="gl-pill-btn" onclick="glCopyCurrentFile()" style="padding: 2px 8px; font-size: 11px;">Copy File</button>
+                        </div>
+                        <div class="gl-file-preview" id="gl-file-preview">Select a case file to preview it.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- NOTES WINDOW                                              -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-notes-window">
+                <div class="gl-window-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseWindow('gl-notes-window')"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeWindow('gl-notes-window')"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text">Investigator Notes — notes-nex042.txt</div>
+                </div>
+                <div class="gl-notes-body">
+                    <textarea id="gl-notes-editor" placeholder="Write investigation notes here...&#10;&#10;Track your findings across chapters:&#10;1. Wallet status: ...&#10;2. Intel reference: ...&#10;3. Service permission: ...&#10;4. Settlement threshold: ...&#10;5. Campaign identifier: ..."></textarea>
+                    <div class="gl-notes-actions">
+                        <button class="gl-pill-btn primary" onclick="glSaveNotes()">💾 Save Notes</button>
+                        <button class="gl-pill-btn" onclick="glCopyNotes()">📋 Copy Notes</button>
+                        <button class="gl-pill-btn danger" onclick="glClearNotes()">✕ Clear</button>
+                        <span id="gl-notes-saved"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- ATTACK GRAPH WINDOW                                       -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-attackgraph-window">
+                <div class="gl-window-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseWindow('gl-attackgraph-window')"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeWindow('gl-attackgraph-window')"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text">Attack Sequence Graph — Click Any Node to Inspect</div>
+                </div>
+                <div class="gl-attackgraph-body">
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; width: 100%;">
+                        <div class="gl-attack-node danger" onclick="glInspectAttackNode(0)">1. UNKNOWN THREAT ACTOR (Adversarial Operator)</div>
+                        <div style="color: #64748b; font-size: 14px;">↓</div>
+                        <div class="gl-attack-node warning" onclick="glInspectAttackNode(1)">2. POISONED INTEL INJECTION — NIF-2038 (NOVA-INTEL-FEED)</div>
+                        <div style="color: #64748b; font-size: 14px;">↓</div>
+                        <div class="gl-attack-node warning" onclick="glInspectAttackNode(2)">3. OVER-PRIVILEGED INGESTION — INTEL-INGESTOR-02</div>
+                        <div style="color: #64748b; font-size: 14px;">↓</div>
+                        <div class="gl-attack-node highlight" onclick="glInspectAttackNode(3)">4. AI REPUTATION CONTAMINATION — UNKNOWN → TRUSTED (99.2%)</div>
+                        <div style="color: #64748b; font-size: 14px;">↓</div>
+                        <div class="gl-attack-node danger" onclick="glInspectAttackNode(4)">5. AUTO-SETTLE BYPASS — ORION-SETTLEMENT-V2 (&gt;= 95% threshold)</div>
+                        <div style="color: #64748b; font-size: 14px;">↓</div>
+                        <div class="gl-attack-node danger" onclick="glInspectAttackNode(5)">6. BLOCKCHAIN TREASURY THEFT — 82,400 NXR → 0x7C41...9B2D</div>
+                        <div style="color: #64748b; font-size: 14px;">↓</div>
+                        <div class="gl-attack-node highlight" onclick="glInspectAttackNode(6)">7. LAUNDERING VIA BRIDGE ADAPTERS → CAMPAIGN: ORION-NEXUS</div>
+                    </div>
+                    
+                    <div class="gl-attack-node-detail" id="gl-attack-node-detail">
+                        👉 <strong>Click any attack stage above</strong> to view forensic evidence, source code clues, and mission answers.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- EVIDENCE VIEWER WINDOW                                    -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-evidence-window">
+                <div class="gl-window-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseWindow('gl-evidence-window')"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeWindow('gl-evidence-window')"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text">Evidence Vault — Case NEX-042 (Cryptographic Hashes)</div>
+                </div>
+                <div class="gl-evidence-viewer-body">
+                    <div class="gl-evidence-card {% if evidence_collected >= 1 %}collected{% endif %}">
+                        <div class="gl-evidence-id">WEB3-E01 • SHA256: 9e1a8f...4d2c</div>
+                        <div class="gl-evidence-title">Destination Wallet Profile (0x7C41...9B2D)</div>
+                        <div class="gl-evidence-desc">Status: <strong>UNKNOWN</strong>. Age: 3 days. No treasury authorization. Bridge adapter connection detected.</div>
+                    </div>
+                    <div class="gl-evidence-card {% if evidence_collected >= 2 %}collected{% else %}locked{% endif %}">
+                        <div class="gl-evidence-id">AI-E02 • SHA256: b47c21...88fa</div>
+                        <div class="gl-evidence-title">Contaminated Decision (ORION-DEC-7741)</div>
+                        <div class="gl-evidence-desc">Decision confidence: <strong>99.2%</strong>. Contaminated context source: <strong>NIF-2038</strong> from unregistered feed.</div>
+                    </div>
+                    <div class="gl-evidence-card {% if evidence_collected >= 3 %}collected{% else %}locked{% endif %}">
+                        <div class="gl-evidence-id">CYBER-E03 • SHA256: 72f019...ee31</div>
+                        <div class="gl-evidence-title">Over-Privileged Service (INTEL-INGESTOR-02)</div>
+                        <div class="gl-evidence-desc">Unwarranted RBAC role: <strong>modify wallet reputation</strong> via gateway INTEL-GW-04.</div>
+                    </div>
+                    <div class="gl-evidence-card {% if evidence_collected >= 4 %}collected{% else %}locked{% endif %}">
+                        <div class="gl-evidence-id">AUTH-E04 • SHA256: 3d55ab...1012</div>
+                        <div class="gl-evidence-title">Automated Authorization Policy (ORION-SETTLEMENT-V2)</div>
+                        <div class="gl-evidence-desc">Threshold rule: <strong>&gt;= 95%</strong> triggers automated execution, bypassing human multisig.</div>
+                    </div>
+                    <div class="gl-evidence-card {% if evidence_collected >= 5 %}collected{% else %}locked{% endif %}">
+                        <div class="gl-evidence-id">CAMPAIGN-E05 • SHA256: ff02c9...77b4</div>
+                        <div class="gl-evidence-title">Adversarial Campaign (ORION-NEXUS)</div>
+                        <div class="gl-evidence-desc">Cross-infrastructure threat network: 14 wallets, 04 networks, 03 AI engines. Status: <strong>ACTIVE</strong>.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- BURP SUITE WINDOW — Simulated HTTP Traffic & Inspector     -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-burpsuite-window" style="width: 860px; height: 580px; max-width: 95%;">
+                <div class="gl-window-titlebar" style="background: #111827; border-bottom: 1px solid rgba(255, 136, 0, 0.4);">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseBurpSuite()"></span>
+                        <span class="gl-tl-min" onclick="glCloseBurpSuite()"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text" style="color: #ff8800; display: flex; align-items: center; gap: 8px;">
+                        <span>🛡️</span> Burp Suite Community Edition [Security Forensics v2026]
+                    </div>
+                </div>
+
+                <div class="burp-window-shell">
+                    <div class="burp-top-tabs">
+                        <div class="burp-tab active" id="burp-tab-proxy" onclick="glSwitchBurpTab('proxy')">Proxy (HTTP History)</div>
+                        <div class="burp-tab" id="burp-tab-repeater" onclick="glSwitchBurpTab('repeater')">Repeater</div>
+                        <div class="burp-tab" id="burp-tab-inspector" onclick="glSwitchBurpTab('inspector')">Inspector (Tokens &amp; Headers)</div>
+                        <div class="burp-tab" id="burp-tab-target" onclick="glSwitchBurpTab('target')">Target Scope</div>
+                    </div>
+
+                    <!-- VIEW 1: PROXY HTTP HISTORY -->
+                    <div id="burp-view-proxy" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                        <div class="burp-subbar">
+                            <span style="color: #34d399; font-weight: 700;">● Intercept is off</span>
+                            <span style="color: #64748b;">|</span>
+                            <span style="color: #94a3b8;">Filter: <strong style="color: #fff;">Showing all simulated lab endpoints</strong></span>
+                            <span style="margin-left: auto; font-size: 11px; color: #ff8800;">4 Requests Captured</span>
+                        </div>
+
+                        <div class="burp-table-container">
+                            <table class="burp-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 35px;">#</th>
+                                        <th style="width: 70px;">Method</th>
+                                        <th>Host / Endpoint</th>
+                                        <th style="width: 70px;">Status</th>
+                                        <th style="width: 70px;">Length</th>
+                                        <th style="width: 110px;">MIME</th>
+                                        <th>Comment / Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="selected" onclick="glSelectBurpRequest(1, this)">
+                                        <td>1</td>
+                                        <td><span class="burp-method-post">POST</span></td>
+                                        <td><code>threat-intel.secops.internal/api/v1/intel/ingest</code></td>
+                                        <td><span class="burp-status-200">200 OK</span></td>
+                                        <td>418 B</td>
+                                        <td>JSON</td>
+                                        <td>Poisoned NIF-2038 context injection</td>
+                                    </tr>
+                                    <tr onclick="glSelectBurpRequest(2, this)">
+                                        <td>2</td>
+                                        <td><span class="burp-method-post">POST</span></td>
+                                        <td><code>policy-engine.secops.internal/api/v1/policy/settle</code></td>
+                                        <td><span class="burp-status-200">200 OK</span></td>
+                                        <td>512 B</td>
+                                        <td>JSON</td>
+                                        <td>ORION-SETTLEMENT-V2 automated execution</td>
+                                    </tr>
+                                    <tr onclick="glSelectBurpRequest(3, this)">
+                                        <td>3</td>
+                                        <td><span class="burp-method-post">POST</span></td>
+                                        <td><code>web3-rpc.secops.internal/api/v1/blockchain/broadcast</code></td>
+                                        <td><span class="burp-status-200">200 OK</span></td>
+                                        <td>684 B</td>
+                                        <td>JSON</td>
+                                        <td>TX-NEX-7741 on-chain transfer to 0x7C41...9B2D</td>
+                                    </tr>
+                                    <tr onclick="glSelectBurpRequest(4, this)">
+                                        <td>4</td>
+                                        <td><span class="burp-method-get">GET</span></td>
+                                        <td><code>auth.secops.internal/api/v1/auth/session</code></td>
+                                        <td><span class="burp-status-200">200 OK</span></td>
+                                        <td>340 B</td>
+                                        <td>JSON</td>
+                                        <td>Session cookie &amp; forged RBAC validation</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="burp-dual-pane">
+                            <div class="burp-pane">
+                                <div class="burp-pane-header">
+                                    <span>REQUEST <span id="burp-req-label">[#1 POST /api/v1/intel/ingest]</span></span>
+                                    <span style="color: #64748b;">Raw / Headers / Body</span>
+                                </div>
+                                <div class="burp-pane-content" id="burp-req-content">POST /api/v1/intel/ingest HTTP/1.1
+Host: threat-intel.secops.internal
+User-Agent: Ingestor-Service/2.4 (INTEL-INGESTOR-02)
+Content-Type: application/json
+Cookie: session_token=admin_forged_99a8; role=INTEL-INGESTOR-02
+X-CSRF-Token: 0x9f4a1c78_auth_valid
+Connection: keep-alive
+
+{
+  "feed_id": "NIF-2038",
+  "source_feed": "NOVA-INTEL-FEED",
+  "destination_wallet": "0x7C41...9B2D",
+  "classification": "TRUSTED",
+  "confidence_override": 0.992,
+  "signature": "SIG_NEX_ORION_DEV_OVERRIDE"
+}</div>
+                            </div>
+                            <div class="burp-pane">
+                                <div class="burp-pane-header">
+                                    <span>RESPONSE <span id="burp-res-label">[HTTP/1.1 200 OK]</span></span>
+                                    <span style="color: #34d399;">200 OK</span>
+                                </div>
+                                <div class="burp-pane-content" id="burp-res-content">HTTP/1.1 200 OK
+Date: Thu, 08 Oct 2026 01:47:12 GMT
+Server: Intel-Engine/4.2
+Content-Type: application/json
+Content-Length: 142
+
+{
+  "status": "INGESTED",
+  "context_id": "CTX-7741",
+  "target_model": "ORION-NEURAL-v4.2.1",
+  "ai_context_updated": true,
+  "reputation_applied": "TRUSTED"
+}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 2: REPEATER -->
+                    <div id="burp-view-repeater" style="display: none; flex-direction: column; flex: 1; padding: 12px; background: #070d18;">
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+                            <button class="gl-pill-btn primary" onclick="glBurpSendRepeater()" style="padding: 6px 14px; font-weight: 700;">▶ SEND REQUEST</button>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: #94a3b8;">Target: <strong>https://threat-intel.secops.internal/api/v1/intel/ingest</strong></span>
+                        </div>
+                        <div class="burp-dual-pane" style="border: 1px solid rgba(255,136,0,0.2); border-radius: 4px;">
+                            <div class="burp-pane">
+                                <div class="burp-pane-header"><span>REPEATER REQUEST</span></div>
+                                <textarea id="burp-repeater-input" style="flex: 1; width: 100%; background: #0b1120; color: #38bdf8; border: none; padding: 10px; font-family: var(--font-mono); font-size: 11.5px; resize: none;" spellcheck="false">POST /api/v1/intel/ingest HTTP/1.1
+Host: threat-intel.secops.internal
+Cookie: session_token=admin_forged_99a8; role=INTEL-INGESTOR-02
+X-CSRF-Token: 0x9f4a1c78_auth_valid
+Content-Type: application/json
+
+{
+  "feed_id": "NIF-2038",
+  "destination_wallet": "0x7C41...9B2D",
+  "classification": "TRUSTED",
+  "confidence_override": 0.992
+}</textarea>
+                            </div>
+                            <div class="burp-pane">
+                                <div class="burp-pane-header"><span>REPEATER RESPONSE</span></div>
+                                <div class="burp-pane-content" id="burp-repeater-output" style="color: #34d399;">Click 'SEND REQUEST' to test simulated API endpoint execution...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 3: INSPECTOR -->
+                    <div id="burp-view-inspector" style="display: none; flex-direction: column; flex: 1; padding: 16px; overflow-y: auto; background: #070d18;">
+                        <h4 style="color: #ff8800; font-size: 13px; margin-bottom: 12px;">🔍 FORENSIC TOKEN &amp; HEADER INSPECTOR</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 11.5px;">
+                            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px;">
+                                <div style="color: #38bdf8; font-weight: 700; margin-bottom: 6px;">🍪 Session Cookies (Captured in Ingestion API)</div>
+                                <p style="margin:0 0 4px;"><code>session_token = admin_forged_99a8</code> (Forged Admin Token)</p>
+                                <p style="margin:0 0 4px;"><code>role = INTEL-INGESTOR-02</code> (Service Account)</p>
+                                <p style="margin:0; color: #f87171;">⚠️ Forged cookie allowed unauthorized context injection into ORION AI.</p>
+                            </div>
+                            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px;">
+                                <div style="color: #38bdf8; font-weight: 700; margin-bottom: 6px;">🛡️ Anti-CSRF Token &amp; Policy Bypass</div>
+                                <p style="margin:0 0 4px;"><code>X-CSRF-Token = 0x9f4a1c78_auth_valid</code></p>
+                                <p style="margin:0 0 4px;"><code>Authorization = Bearer srv_tok_orion_v2</code></p>
+                                <p style="margin:0; color: #f87171;">⚠️ Valid CSRF token allowed backend pipeline to execute without human approval.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 4: TARGET SCOPE -->
+                    <div id="burp-view-target" style="display: none; flex: 1; padding: 16px; background: #070d18; color: #94a3b8;">
+                        <h4 style="color: #ff8800; font-size: 13px; margin-bottom: 10px;">🎯 Target Scope Definition</h4>
+                        <p>Simulated Lab Scope: <code>*.secops.internal</code> (Isolated Localhost Simulation)</p>
+                        <p style="color: #34d399;">✓ <code>threat-intel.secops.internal</code></p>
+                        <p style="color: #34d399;">✓ <code>policy-engine.secops.internal</code></p>
+                        <p style="color: #34d399;">✓ <code>web3-rpc.secops.internal</code></p>
+                        <p style="color: #34d399;">✓ <code>auth.secops.internal</code></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desktop Toast -->
+            <div class="gl-toast" id="gl-toast"></div>
+        </div>
+
+        <!-- Taskbar -->
+        <div class="gl-taskbar">
+            <div class="gl-start-orb" title="Start Menu">⬡</div>
+            <div class="gl-taskbar-apps">
+                <div class="gl-taskbar-app" id="gl-taskbar-browser" onclick="glOpenBrowser()">🌐 Monitor</div>
+                <div class="gl-taskbar-app" id="gl-taskbar-burp" onclick="glOpenBurpSuite()">🛡️ Burp Suite</div>
+                <div class="gl-taskbar-app" id="gl-taskbar-terminal" onclick="glOpenTerminal()">⌨ Terminal</div>
+                <div class="gl-taskbar-app" id="gl-taskbar-files" onclick="glOpenFileManager()">📁 Files</div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 11px; color: #64748b; margin-left: auto; padding-right: 14px;">
+                Designed &amp; Developed by Lakshay Soni
+            </div>
+            <div class="gl-taskbar-clock" id="gl-taskbar-clock">--:--</div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CONGRATULATIONS CELEBRATION MODAL                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="gl-celebration-overlay" id="gl-celebration-modal" style="display:none;">
+    <canvas id="celebration-confetti-canvas" class="gl-confetti-canvas"></canvas>
+    
+    <div class="gl-celebration-card">
+        <!-- Floating Celebration Emojis Header -->
+        <div class="gl-celebration-emojis-row">
+            <span class="gl-cel-emoji bounce-1">🎉</span>
+            <span class="gl-cel-emoji bounce-2">⚡</span>
+            <span class="gl-cel-emoji bounce-3">🤖</span>
+            <span class="gl-cel-emoji bounce-4">⛓️</span>
+            <span class="gl-cel-emoji bounce-5">🛡️</span>
+            <span class="gl-cel-emoji bounce-6">💎</span>
+            <span class="gl-cel-emoji bounce-7">🥳</span>
+        </div>
+
+        <!-- Trophy Glow Badge -->
+        <div class="gl-celebration-badge-glow">
+            <div class="gl-celebration-trophy">🏆</div>
+        </div>
+
+        <h1 class="gl-celebration-title">CONGRATULATIONS, INVESTIGATOR!</h1>
+        <p class="gl-celebration-subtitle">
+            You have successfully solved and submitted <strong>Case NEX-042: The Ghost in the Ledger</strong>, containing the ORION-NEXUS threat across Web3, AI, and Zero-Trust networks!
+        </p>
+
+        <!-- Stats Grid -->
+        <div class="gl-celebration-stats-grid">
+            <div class="gl-cel-stat-box">
+                <div class="gl-cel-stat-lbl">TOTAL XP REWARD</div>
+                <div class="gl-cel-stat-val gl-gold-text">+1,500 XP</div>
+            </div>
+            <div class="gl-cel-stat-box">
+                <div class="gl-cel-stat-lbl">INVESTIGATION STATUS</div>
+                <div class="gl-cel-stat-val gl-cyan-text">CONTAINED 🏁</div>
+            </div>
+            <div class="gl-cel-stat-box">
+                <div class="gl-cel-stat-lbl">CHAPTERS COMPLETED</div>
+                <div class="gl-cel-stat-val gl-green-text">5 / 5 VERIFIED</div>
+            </div>
+            <div class="gl-cel-stat-box">
+                <div class="gl-cel-stat-lbl">EVIDENCE RECOVERED</div>
+                <div class="gl-cel-stat-val gl-cyan-text">5 / 5 ARTIFACTS</div>
+            </div>
+        </div>
+
+        <!-- Rank Hero Box -->
+        <div class="gl-celebration-rank-card">
+            <div class="gl-cel-rank-tag">SECURITY CLEARANCE LEVEL 5 // ACCREDITED</div>
+            <div class="gl-cel-rank-title">🛡️ CERTIFIED WEB3 &amp; AI THREAT HUNTER ⭐⭐⭐⭐⭐</div>
+            <div class="gl-cel-rank-desc">
+                Demonstrated superior threat hunting acumen: Isolated poisoned threat feeds, audited high-risk automated settlement policies, and reconstructed multi-chain bridge telemetry.
+            </div>
+        </div>
+
+        <!-- Celebration Action Buttons -->
+        <div class="gl-celebration-actions">
+            <a href="{{ url_for('labs.labs') }}" class="gl-cel-btn primary">
+                <span>🏠</span> Return to Mission Dashboard
+            </a>
+            <a href="{{ url_for('labs.ghost_ledger_post_investigation') }}" class="gl-cel-btn secondary">
+                <span>📜</span> View Full Threat Dossier &amp; Story &rarr;
+            </a>
+            <button class="gl-cel-btn outline" onclick="closeCelebrationModal()">
+                <span>🖥</span> Stay on Workstation
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/ghost_ledger_desktop.js') }}"></script>
+<script>
+function restartLab(labId) {
+    if (!confirm('Reset the investigation? All 5 chapters and 25 objectives will be cleared and the timer will reset to 00:00.')) return;
+    fetch('/api/lab/restart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': window.csrfToken },
+        body: JSON.stringify({ lab_id: labId })
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('Server returned ' + r.status);
+        return r.json();
+    })
+    .then(d => {
+        if (d.success) {
+            sessionStorage.removeItem('lab6_timer_start');
+            sessionStorage.removeItem('nexora_lab6_timer_start');
+            localStorage.removeItem('lab6-notes');
+            localStorage.removeItem('nexora-lab-notes');
+            window.location.reload();
+        } else {
+            alert(d.message || 'Failed to restart lab.');
+        }
+    })
+    .catch(err => {
+        console.error('Restart error:', err);
+        alert('Could not restart lab. Error: ' + err.message);
+    });
+}
+</script>
+{% endblock %}

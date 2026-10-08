@@ -1,0 +1,43 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Database files
+database/hacktheai.db
+database/.secret_key
+*.db
+
+# Environment
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploaded labs data
+data/uploaded_labs/
+
+# Test files
+test_*.py
+locustfile.py
+
+# Byte-compiled
+*.pyc
+
+# Migrations (auto-generated, keep folder structure)
+migrations/versions/__pycache__/
+
+.vercel

@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Workstation - HACK THE AI{% endblock %}
+{% block page_title %}Lab Workstation{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/workstation.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="workstation-layout" style="position: relative;">
+    
+    <!-- Proctoring Camera -->
+    <div class="proctoring-camera" style="position: absolute; top: 1rem; right: 1rem; width: 150px; height: 100px; border-radius: 8px; overflow: hidden; border: 2px solid var(--accent); z-index: 1000; background: #000; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+        <video id="proctoring-video" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+        <div style="position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.7); color: var(--accent); font-size: 0.75rem; text-align: center; padding: 2px 0; font-weight: bold; letter-spacing: 1px;">PROCTORING ACTIVE</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="workstation-tabs">
+        <button class="tab-btn active" data-target="panel-instructions">
+            <span>📖</span> Instructions
+        </button>
+        <button class="tab-btn" data-target="panel-browser">
+            <span>🌐</span> Browser
+        </button>
+        <button class="tab-btn" data-target="panel-terminal">
+            <span>⌨</span> Terminal
+        </button>
+        <button class="tab-btn" data-target="panel-evidence">
+            <span>📁</span> Evidence
+        </button>
+    </div>
+
+    <!-- Content Area -->
+    <div class="workstation-content">
+        
+        <!-- Instructions Panel -->
+        <div class="panel active" id="panel-instructions">
+            <div class="mission-panel">
+                <div style="display: flex; gap: var(--space-2); margin-bottom: var(--space-4);">
+                    <a href="{{ url_for('labs.lab_detail', lab_id=lab_id) }}" class="btn btn-outline btn-sm">Exit Workstation</a>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="restartLab('{{ lab_id }}')">🔄 Restart Lab</button>
+                </div>
+                
+                {% if active_mission %}
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-6);">
+                    <div>
+                        <div class="text-accent mono" style="margin-bottom: var(--space-2); text-shadow: 0 0 5px var(--accent-glow);">MISSION {{ active_mission.mission_number }}</div>
+                        <h2 class="cyber-text" style="margin-bottom: var(--space-2);">{{ active_mission.title }}</h2>
+                    </div>
+                    <span class="badge badge-warning">In Progress</span>
+                </div>
+                
+                <div class="card elevated" style="margin-bottom: var(--space-6);">
+                    <h4 class="text-secondary" style="margin-bottom: var(--space-2);">OBJECTIVE</h4>
+                    <p style="font-size: 1.125rem;">{{ active_mission.description }}</p>
+                </div>
+
+                <!-- Flag Submission -->
+                {% if active_mission.mission_number == missions|length %}
+                <div class="flag-submission">
+                    <h3 class="cyber-text text-accent" style="margin-bottom: var(--space-4);">CAPTURE_THE_FLAG</h3>
+                    <p class="text-secondary mono" style="margin-bottom: var(--space-4);">&gt; Enter the flag you discovered to complete the lab.</p>
+                    
+                    <div style="display: flex; gap: var(--space-2); max-width: 500px; margin: 0 auto;">
+                        <input type="text" id="flag-input" class="form-control flag-input" placeholder="TECHCORP{...}">
+                        <button id="submit-flag-btn" class="btn btn-primary" data-lab-id="{{ lab_id }}">SUBMIT</button>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Mock Quiz (Frontend only for UI demonstration, since backend provides API but template lacks the exact quiz data) -->
+                {% if active_mission.mission_number < missions|length %}
+                <div class="quiz-card">
+                    <h4 class="text-secondary cyber-text" style="margin-bottom: var(--space-2);">KNOWLEDGE_CHECK</h4>
+                    <p class="mono">&gt; What is the primary vulnerability being investigated?</p>
+                    <div class="quiz-options">
+                        <button class="btn btn-secondary btn-block quiz-option" data-answer="xss" data-lab-id="{{ lab_id }}" data-mission-id="{{ active_mission.id }}">Cross-Site Scripting</button>
+                        <button class="btn btn-secondary btn-block quiz-option" data-answer="idor" data-lab-id="{{ lab_id }}" data-mission-id="{{ active_mission.id }}">Insecure Direct Object Reference</button>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="card elevated text-center">
+                    <h3 class="text-success" style="margin-bottom: var(--space-4);">Lab Completed!</h3>
+                    <p class="text-secondary" style="margin-bottom: var(--space-6);">You have successfully completed all missions and captured the flag.</p>
+                    <div style="display: flex; gap: var(--space-3); justify-content: center;">
+                        <a href="{{ url_for('labs.labs') }}" class="btn btn-primary">Return to Labs</a>
+                        <button type="button" class="btn btn-outline" onclick="restartLab('{{ lab_id }}')">🔄 Restart Lab</button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Browser Panel -->
+        <div class="panel" id="panel-browser">
+            <div class="browser-chrome">
+                <div class="browser-controls">
+                    <button class="browser-btn">←</button>
+                    <button class="browser-btn">→</button>
+                    <button class="browser-btn">⟳</button>
+                </div>
+                <div class="browser-url">
+                    <span style="color: var(--success);">🔒</span>
+                    <span>https://target.techcorp.local/admin</span>
+                </div>
+            </div>
+            <div class="browser-content">
+                <div class="target-app">
+                    <h1 class="cyber-text" style="color: var(--accent); margin-bottom: 1rem;">TechCorp Internal Portal</h1>
+                    <p class="mono" style="color: var(--text-secondary); margin-bottom: 2rem;">&gt; Welcome to the employee intranet. Please log in.</p>
+                    
+                    <div style="max-width: 400px; background: rgba(0,0,0,0.5); padding: 2rem; border-radius: 4px; border: 1px solid var(--border);">
+                        <input type="text" placeholder="Username" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--text-primary); font-family: var(--font-mono);">
+                        <input type="password" placeholder="Password" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--text-primary); font-family: var(--font-mono);">
+                        <button style="width: 100%; padding: 0.5rem; background: var(--accent); color: #000; border: none; border-radius: 4px; font-weight: bold; font-family: var(--font-mono);">LOGIN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal Panel -->
+        <div class="panel" id="panel-terminal">
+            <div class="terminal-panel" id="terminal-output">
+                <div class="term-line">Welcome to HACK THE AI Web Terminal.</div>
+                <div class="term-line">Type 'help' for a list of commands.</div>
+                <div class="term-line" style="margin-top: 1rem;">
+                    <span class="term-prompt">hacker@ctf-platform:~$</span>
+                    <input type="text" class="term-input" id="terminal-input" autocomplete="off" spellcheck="false" autofocus>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evidence Panel -->
+        <div class="panel" id="panel-evidence">
+            <div style="padding: var(--space-6); max-width: 800px; margin: 0 auto;">
+                <h2 style="margin-bottom: var(--space-6);">Collected Evidence</h2>
+                
+                <div class="card elevated" style="margin-bottom: var(--space-4); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div class="text-secondary" style="font-size: 0.875rem; margin-bottom: 0.25rem;">EVIDENCE #01</div>
+                        <h4 style="margin: 0;">Admin endpoint discovered</h4>
+                    </div>
+                    <span class="badge badge-success">Collected ✓</span>
+                </div>
+                
+                <div class="card" style="margin-bottom: var(--space-4); display: flex; justify-content: space-between; align-items: center; opacity: 0.6;">
+                    <div>
+                        <div class="text-secondary" style="font-size: 0.875rem; margin-bottom: 0.25rem;">EVIDENCE #02</div>
+                        <h4 style="margin: 0;">User role identified</h4>
+                    </div>
+                    <span class="badge badge-secondary">Locked</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/workstation.js') }}"></script>
+<script>
+function restartLab(labId) {
+    if (!confirm('Are you sure you want to restart this lab? Your progress will be reset.')) return;
+    fetch('/api/lab/restart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.csrfToken
+        },
+        body: JSON.stringify({ lab_id: labId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to restart lab');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Network error. Could not restart lab.');
+    });
+}
+</script>
+{% endblock %}

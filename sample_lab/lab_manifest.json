@@ -1,0 +1,61 @@
+{
+  "title": "Operation: Shadow Network",
+  "category": "Web Security",
+  "difficulty": "Pro",
+  "concept": "Command Injection",
+  "description": "Infiltrate a rogue server used by the shadow network.",
+  "estimated_time": 45,
+  "storyline": "Intel suggests a rogue faction has set up a vulnerable ping service. We need you to gain access, retrieve their secret intel, and find out who is pulling the strings.",
+  "missions": [
+    {
+      "mission_number": 1,
+      "title": "Reconnaissance",
+      "objective": "Identify the vulnerability in the web application.",
+      "storyline_text": "The target is hosting a simple web tool. See what it does.",
+      "instructions": [
+        "Open the target application.",
+        "Observe the input field that takes an IP address.",
+        "Test it with a normal IP like 8.8.8.8 to see the behavior."
+      ],
+      "points": 50,
+      "hints": [
+        {"hint_text": "It looks like it is running a system ping command.", "xp_cost": 5},
+        {"hint_text": "What happens if you add a semicolon (;) after the IP?", "xp_cost": 10}
+      ],
+      "questions": [
+        {
+          "question_text": "What type of vulnerability is present when user input is directly passed to a system shell?",
+          "answer": "Command Injection",
+          "xp_reward": 20
+        }
+      ]
+    },
+    {
+      "mission_number": 2,
+      "title": "Exploitation",
+      "objective": "Exploit the command injection to read sensitive files.",
+      "storyline_text": "Now that you know it's vulnerable, we need the hidden flag on the server.",
+      "instructions": [
+        "Inject a command to list the directory contents (e.g., ; ls).",
+        "Find the hidden flag file.",
+        "Read the contents of the flag file (e.g., ; cat flag.txt)."
+      ],
+      "points": 100,
+      "hints": [
+        {"hint_text": "Try 8.8.8.8; ls -la", "xp_cost": 10}
+      ],
+      "questions": []
+    }
+  ],
+  "flags": [
+    {
+      "flag_value": "FLAG{sh4d0w_n3tw0rk_c0mpr0m1s3d}",
+      "points": 150,
+      "flag_description": "The secret flag stored on the server."
+    }
+  ],
+  "docker_config": {
+    "ports": [80],
+    "has_dockerfile": true
+  }
+}

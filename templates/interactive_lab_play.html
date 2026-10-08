@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ lab.title }} - HACK THE AI Lab</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/core/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/core/reset.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/core/typography.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/lab_engine.css') }}?v=4">
+    <style>
+        /* The task/flag panel is a permanently-visible sidebar, not a
+           hidden drawer: it's the ONLY place that submits flags/answers
+           back to the platform (progress, XP, and the leaderboard all
+           depend on that submission), so it must never be something a
+           learner can miss or have to go hunting for. */
+        .panel-backdrop { display: none !important; }
+
+        /* Completion modal */
+        .completion-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .completion-modal-overlay.open { display: flex; }
+        .completion-modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 36px 40px;
+            width: 380px;
+            max-width: 90vw;
+            text-align: center;
+            box-shadow: var(--shadow-xl);
+        }
+        .completion-modal-icon {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: var(--success);
+            color: #fff;
+            font-size: 28px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .completion-modal-card h2 { color: var(--text-primary); font-size: 20px; margin-bottom: 8px; }
+        .completion-modal-card p { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+        .completion-modal-points {
+            background: rgba(var(--success-rgb), 0.1);
+            border: 1px solid rgba(var(--success-rgb), 0.3);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin-bottom: 24px;
+            color: var(--success);
+        }
+        .completion-modal-points .points-value { font-size: 22px; font-weight: 700; }
+        .completion-modal-points .points-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; display: block; margin-top: 2px; }
+        .completion-modal-actions { display: flex; gap: 10px; justify-content: center; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="lab-play-body dark-theme">
+
+    <div class="lab-panels">
+        <!-- LEFT PANEL -->
+        <div class="lab-panel-left" id="panel-left">
+            <div class="lab-left-header">
+                <div class="breadcrumb">Learn / {{ lab.title }}</div>
+                <h1 class="lab-huge-title">{{ lab.title }}</h1>
+                <p class="lab-desc">{{ lab.description }}</p>
+                
+                <div class="lab-meta-tags">
+                    <span class="meta-tag diff-{{ 'pro' if lab.difficulty|lower == 'intermediate' else lab.difficulty|lower }}"><span class="dot"></span>{{ 'Pro' if lab.difficulty == 'Intermediate' else lab.difficulty }}</span>
+                    <span class="meta-tag">⏱ {{ lab.estimated_time }} min</span>
+                    <span class="meta-tag">🏷 {{ lab.category }}</span>
+                </div>
+                
+                <div class="lab-action-buttons">
+                    <button class="btn btn-success" id="btn-lab-completed" disabled>✓ Lab Completed</button>
+                    <button class="btn btn-gray" id="btn-open-browser" onclick="document.getElementById('virtual-browser').style.display='flex'">🖥️ Open Browser</button>
+                    <button class="btn btn-gray" id="btn-terminal">>_ Terminal</button>
+                    <button class="btn btn-outline-danger" id="stop-session-btn" onclick="stopSession()">🔄 Restart Lab</button>
+                </div>
+            </div>
+
+            <div class="lab-live-box">
+                <div class="live-box-header">
+                    <span class="live-label">LIVE LAB TIME</span>
+                    <span class="live-status" id="live-status-badge"><span class="dot active"></span> ACTIVE</span>
+                </div>
+                <div class="live-timer" id="timer-display">00:00:00</div>
+                
+                <div class="investigation-progress">
+                    <div class="progress-labels">
+                        <span>Investigation Progress</span>
+                        <span id="investigation-fraction">0/0</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="investigation-fill"></div>
+                    </div>
+                </div>
+
+                <div class="lab-machine-info">
+                    <span class="machine-ip"><span class="dot green"></span> Lab machine: <span id="machine-ip-text" style="font-family: monospace;">Starting...</span></span>
+                    <span class="logged-in">Logged in as learner</span>
+                </div>
+            </div>
+
+            <!-- Lab flag submission (this is what actually awards XP / completes the
+                 lab on the platform - the target app's own in-app checks are just
+                 flavor and never touch platform progress on their own). -->
+            <div class="lab-live-box" id="lab-flag-box" style="display:none;">
+                <div class="live-box-header">
+                    <span class="live-label">🚩 SUBMIT FLAG</span>
+                </div>
+                <p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">
+                    Found the flag inside the target application? Submit it here to earn XP and mark this lab complete.
+                </p>
+                <div class="task-flag-area" style="margin-top:0;">
+                    <input type="text" id="lab-flag-input" class="flag-input" placeholder="FLAG{...}">
+                    <button class="btn btn-primary" id="btn-lab-flag" onclick="submitLabFlag()">Submit Flag</button>
+                </div>
+                <div id="lab-flag-feedback" style="display:none;" class="q-feedback"></div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="lab-loading" id="lab-loading">
+                <div class="lab-loading-spinner"></div>
+                <p>Initializing Lab Session...</p>
+                <p class="text-muted" id="loading-status">Setting up target environment...</p>
+            </div>
+
+            <!-- Lab Content (hidden until loaded) -->
+            <div class="lab-content" id="lab-content" style="display: none;">
+                <div class="mission-accordions" id="mission-accordions">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- RESIZE HANDLE -->
+        <div class="lab-panel-divider" id="panel-divider">
+            <div class="divider-handle"></div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="lab-panel-right attackbox-env" id="panel-right">
+            <!-- AttackBox OS Header -->
+            <div class="attackbox-os-bar">
+                <div class="os-left">
+                    <span class="os-link" onclick="toggleTaskPanel()" style="font-weight:600;">📋 Tasks &amp; Flag</span>
+                </div>
+                <div class="os-center">
+                    <span id="os-time">Thu Sep 3, 09:08</span>
+                </div>
+                <div class="os-right">
+                    <a class="os-link" href="{{ url_for('labs.interactive_labs') }}">← Back to Labs</a>
+                    <span class="os-link danger" onclick="stopSession()">↻ Reset Lab</span>
+                    <span class="attackbox-ip">AttackBox IP: 127.0.0.1</span>
+                </div>
+            </div>
+
+            <div class="target-loading" id="target-loading">
+                <div class="target-loading-inner">
+                    <div class="lab-loading-spinner"></div>
+                    <h3>Target Environment</h3>
+                    <p id="target-status">Launching vulnerable application...</p>
+                </div>
+            </div>
+
+            <!-- Virtual Browser Wrapper -->
+            <div class="virtual-browser" id="virtual-browser" style="display: none;">
+                <div class="browser-tab-bar">
+                    <div class="browser-tab active">
+                        <span class="tab-icon">🦊</span>
+                        <span class="tab-title">Target Application</span>
+                    </div>
+                </div>
+                <div class="browser-address-bar">
+                    <div class="browser-controls">
+                        <span class="b-btn">←</span>
+                        <span class="b-btn">→</span>
+                        <span class="b-btn">↻</span>
+                    </div>
+                    <div class="browser-url-input">
+                        <span id="target-url-display">http://target/</span>
+                    </div>
+                </div>
+                <div class="browser-viewport">
+                    <iframe id="target-iframe" class="target-iframe" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+                </div>
+            </div>
+
+            <div class="target-unavailable" id="target-unavailable" style="display: none;">
+                <div class="target-unavailable-inner">
+                    <span class="target-unavailable-icon">🔌</span>
+                    <h3>Target Not Available</h3>
+                    <p>The Docker container for this lab's target is not running.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-backdrop" id="panel-backdrop" onclick="toggleTaskPanel()"></div>
+
+    <!-- Lab completion modal -->
+    <div class="completion-modal-overlay" id="completion-modal">
+        <div class="completion-modal-card">
+            <div class="completion-modal-icon">✓</div>
+            <h2>Lab Completed!</h2>
+            <p>You've successfully completed <strong>{{ lab.title }}</strong>.</p>
+            <div class="completion-modal-points">
+                <span id="completion-points" class="points-value">0</span>
+                <span class="points-label">XP earned</span>
+            </div>
+            <div class="completion-modal-actions">
+                <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-success">Go to Dashboard</a>
+                <button class="btn btn-gray" onclick="document.getElementById('completion-modal').classList.remove('open')">Keep Exploring</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSRF token -->
+    <script>window.csrfToken = "{{ csrf_token() }}";</script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/proctoring.js') }}"></script>
+    <script>
+        const LAB_CONFIG = {
+            labId: "{{ lab_id }}",
+            labTitle: "{{ lab.title }}",
+            csrfToken: window.csrfToken,
+        };
+    </script>
+    <script src="{{ url_for('static', filename='js/lab_engine.js') }}"></script>
+</body>
+</html>

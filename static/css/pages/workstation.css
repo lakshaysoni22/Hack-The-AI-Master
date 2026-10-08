@@ -1,0 +1,207 @@
+.workstation-layout {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-height));
+  background-color: var(--ws-bg);
+  position: relative;
+}
+
+/* CRT scanline effect on workstation */
+.workstation-layout::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+  background-size: 100% 2px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.workstation-tabs {
+  display: flex;
+  background-color: var(--ws-bg-elevated);
+  border-bottom: 1px solid var(--border);
+  padding: 0 var(--space-2);
+  z-index: 10;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: all var(--transition-fast);
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  background-color: rgba(0, 240, 255, 0.05);
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  text-shadow: 0 0 5px var(--accent-glow);
+  background-color: rgba(0, 240, 255, 0.1);
+}
+
+.workstation-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  z-index: 5;
+}
+
+.panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+  overflow-y: auto;
+  background-color: transparent;
+}
+
+.panel.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Browser Panel */
+.browser-chrome {
+  background-color: var(--ws-bg-elevated);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--ws-border);
+}
+
+.browser-controls {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.browser-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ws-text-secondary);
+  font-family: var(--font-mono);
+}
+.browser-btn:hover {
+  background-color: rgba(0, 240, 255, 0.1);
+  color: var(--accent);
+}
+
+.browser-url {
+  flex: 1;
+  background-color: var(--ws-bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--ws-text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.browser-content {
+  height: calc(100% - 45px);
+  background-color: #05080f; /* Dark target */
+  color: #e0f7fa;
+}
+/* Basic target app styling inside browser */
+.target-app {
+  padding: 2rem;
+  font-family: system-ui, sans-serif;
+  height: 100%;
+  background: radial-gradient(circle at center, #1a1a2e 0%, #05080f 100%);
+}
+
+/* Terminal Panel */
+.terminal-panel {
+  background-color: #000;
+  padding: 1rem;
+  font-family: var(--font-mono);
+  color: var(--secondary); /* Hacker green */
+  height: 100%;
+  text-shadow: 0 0 5px var(--secondary-glow);
+}
+.term-line {
+  margin-bottom: 0.25rem;
+  display: flex;
+}
+.term-prompt {
+  color: var(--accent);
+  margin-right: 0.5rem;
+  text-shadow: 0 0 5px var(--accent-glow);
+}
+.term-input {
+  background: transparent;
+  border: none;
+  color: var(--secondary);
+  font-family: var(--font-mono);
+  flex: 1;
+  outline: none;
+  text-shadow: 0 0 5px var(--secondary-glow);
+}
+
+/* Mission Panel */
+.mission-panel {
+  padding: var(--space-6);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.quiz-card {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--accent);
+  background-color: rgba(0, 240, 255, 0.05);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 15px var(--accent-glow) inset;
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.flag-submission {
+  margin-top: var(--space-6);
+  padding: var(--space-6);
+  background-color: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  box-shadow: 0 0 20px var(--accent-glow) inset;
+}
+.flag-input {
+  font-family: var(--font-mono);
+  text-align: center;
+  font-size: 1.25rem;
+  letter-spacing: 2px;
+  background-color: rgba(0,0,0,0.5);
+  color: var(--accent);
+  border-color: var(--accent);
+}

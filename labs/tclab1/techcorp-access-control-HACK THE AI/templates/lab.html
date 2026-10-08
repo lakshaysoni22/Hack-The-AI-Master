@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Missing Access Control — TechCorp Security Lab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='lab.css') }}">
+</head>
+<body>
+<div class="lab-shell">
+
+  <!-- ============================================================
+       LEFT: TASK / QUESTIONS PANEL (TryHackMe-style)
+  ============================================================ -->
+  <div class="task-panel">
+    <div class="breadcrumb">Learn &rsaquo; The Missing Access Control</div>
+    <h1 class="room-title">The Missing Access Control</h1>
+    <p class="room-subtitle">
+      TechCorp's Employee Management Portal may be leaking access to resources it shouldn't.
+      Investigate whether authentication and authorization are really being enforced correctly.
+    </p>
+
+    <div class="room-meta">
+      <span>🟢 Beginner</span>
+      <span>⏱ ~20 min</span>
+      <span>🏷 Broken Access Control</span>
+    </div>
+
+    <div class="control-row">
+      <button class="pill-btn primary" id="start-lab-btn" onclick="startLab()">▶ Start Lab</button>
+      <button class="pill-btn" onclick="openBrowser('/login')">🖥 Open Browser</button>
+      <button class="pill-btn" onclick="openTerminal()">&gt;_ Terminal</button>
+      <button class="pill-btn danger" onclick="resetLab()">↺ Reset Lab</button>
+    </div>
+
+    <div class="lab-timer-card">
+      <div><span class="timer-label">LIVE LAB TIME</span><strong id="lab-timer">00:00:00</strong></div>
+      <div class="timer-status" id="lab-status">● NOT STARTED</div>
+    </div>
+
+    <div class="progress-card">
+      <div class="progress-head"><span>Investigation Progress</span><strong id="progress-count">0 / 5</strong></div>
+      <div class="progress-track"><div id="progress-bar"></div></div>
+    </div>
+
+    <div class="machine-info">
+      <span><span class="status-dot"></span> Lab machine: <b>127.0.0.1:5000</b></span>
+      <span id="session-indicator">Not logged in</span>
+    </div>
+
+    <!-- ============ TASK 1: BRIEFING ============ -->
+    <div class="task" id="task-1">
+      <div class="task-header" onclick="toggleTask('task-1')">
+        <span class="task-label">Task 1</span>
+        <span class="task-name">Briefing</span>
+        <span class="task-check" id="task-check-1"></span>
+        <span class="task-chevron">▾</span>
+      </div>
+      <div class="task-body">
+        <p>It is 9:00 AM at <strong>TechCorp</strong>.</p>
+        <p><strong>Alex</strong>, a newly joined <strong>Junior Cybersecurity Analyst</strong>,
+        receives his first assignment from <strong>Sarah</strong>, the Security Team Lead.</p>
+        <p><span class="speaker">Sarah:</span> "Alex, we have a problem with our Employee
+        Management Portal. A few employees reported that they could see pages that should belong
+        to managers and administrators. I want you to investigate it."</p>
+        <p>TechCorp recently launched an internal <strong>Employee Management Portal</strong>. The
+        portal has three roles:</p>
+        <ul>
+          <li>👤 <strong>Employee</strong></li>
+          <li>👨‍💼 <strong>Manager</strong></li>
+          <li>👑 <strong>Administrator</strong></li>
+        </ul>
+        <p>Each role should have access only to the resources required for that role. Alex is
+        given a normal <strong>Employee training account</strong> for the investigation.</p>
+
+        <hr style="border-color: var(--thm-border); opacity:0.5;">
+
+        <p>Alex logs into the portal successfully. At first, everything looks normal. He can
+        access the Dashboard and My Profile. But Alex remembers Sarah's warning:</p>
+        <p><span class="speaker">Sarah:</span> "Logging in proves who you are. It does not
+        automatically prove what you are allowed to access."</p>
+        <p>Alex decides not to assume the portal is secure. His task is to investigate how the
+        application handles <strong>access control</strong>.</p>
+      </div>
+    </div>
+
+    <!-- ============ TASK 2: MISSION 1 ============ -->
+    <div class="task" id="task-2">
+      <div class="task-header" onclick="toggleTask('task-2')">
+        <span class="task-label">Task 2</span>
+        <span class="task-name">Mission 1 — Identify Your Identity</span>
+        <span class="task-check" id="task-check-2"></span>
+        <span class="task-chevron">▾</span>
+      </div>
+      <div class="task-body">
+        <p>Alex starts with the Employee account provided by Sarah.</p>
+        <div class="creds-box">username: alex<br>password: Alex@123</div>
+        <p><strong>Your task</strong></p>
+        <ol>
+          <li>Log in using the Employee training account.</li>
+          <li>Confirm that the login succeeds.</li>
+          <li>Identify which role the application has assigned to your account.</li>
+          <li>Record any interesting information shown after login.</li>
+        </ol>
+        <p style="font-size:13px; color:var(--thm-text-dim);">
+          Question to think about: what security process has successfully verified Alex's
+          identity? Don't look for the definition yet — use the application's behavior to work it
+          out.
+        </p>
+        <div class="btn-row" style="margin-top:6px;">
+          <button class="pill-btn primary" onclick="openBrowser('/login')">Go to Login</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ TASK 3: MISSION 2 ============ -->
+    <div class="task" id="task-3">
+      <div class="task-header" onclick="toggleTask('task-3')">
+        <span class="task-label">Task 3</span>
+        <span class="task-name">Mission 2 — Map the Portal</span>
+        <span class="task-check" id="task-check-3"></span>
+        <span class="task-chevron">▾</span>
+      </div>
+      <div class="task-body">
+        <p>Alex explores the application to understand what an Employee can normally access. He
+        discovers:</p>
+        <table>
+          <tr><th>Portal Area</th><th>Expected Employee Access</th></tr>
+          <tr><td>Dashboard</td><td>✅ Allowed</td></tr>
+          <tr><td>My Profile</td><td>✅ Allowed</td></tr>
+          <tr><td>Team Management</td><td>❌ Restricted</td></tr>
+          <tr><td>Admin Panel</td><td>❌ Restricted</td></tr>
+        </table>
+        <p>However, Sarah specifically asked Alex to investigate whether the restrictions are
+        actually enforced by the server.</p>
+        <p><strong>Your task</strong> — explore the available pages and observe:</p>
+        <ul>
+          <li>What happens when you access an allowed page?</li>
+          <li>What happens when you access a restricted page?</li>
+          <li>Does the browser reveal anything useful?</li>
+          <li>Are the requests or responses different between allowed and restricted resources?</li>
+        </ul>
+        <div class="btn-row">
+          <button class="pill-btn primary" onclick="openBrowser('/dashboard')">Go to Portal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ TASK 4: MISSION 3 ============ -->
+    <div class="task" id="task-4">
+      <div class="task-header" onclick="toggleTask('task-4')">
+        <span class="task-label">Task 4</span>
+        <span class="task-name">Mission 3 — Follow the Evidence</span>
+        <span class="task-check" id="task-check-4-a"></span>
+        <span class="task-chevron">▾</span>
+      </div>
+      <div class="task-body">
+        <p>Alex notices that the application is making requests to different portal resources.
+        Instead of simply accepting the <strong>Access Denied</strong> message, he decides to
+        inspect the application's behavior.</p>
+        <p><strong>Your task</strong> — use your browser's developer tools or Burp Suite to
+        investigate the requests. Look for clues such as:</p>
+        <ul>
+          <li>URLs/endpoints</li>
+          <li>Parameters</li>
+          <li>Cookies/session information</li>
+          <li>Role-related information</li>
+          <li>Server responses</li>
+        </ul>
+        <p><strong>Goal</strong> — determine where the application appears to make its
+        access-control decision.</p>
+        <p style="font-size:13px; color:var(--thm-text-dim);">💡 Don't guess the answer. Follow
+        the evidence from the application's requests and responses.</p>
+
+        <button class="hint-btn" onclick="showHint('hint-1')">Show Hint 1</button>
+        <div class="hint-text" id="hint-1">
+          Look at the requests made when you navigate between portal pages. What cookies does
+          your browser send along with every request?
+        </div>
+
+        <button class="hint-btn" onclick="showHint('hint-2')">Show Hint 2</button>
+        <div class="hint-text" id="hint-2">
+          Compare a request for a page you can access (like <code>/dashboard</code>) with one you
+          cannot access (like <code>/admin</code>). Are there any values in the cookies that
+          describe who you are or what you're allowed to do?
+        </div>
+
+        <button class="hint-btn" onclick="showHint('hint-3')">Show Hint 3</button>
+        <div class="hint-text" id="hint-3">
+          Ask yourself — is the server making this authorization decision itself by checking a
+          trusted, tamper-proof source (like a database lookup tied to your login session), or is
+          it trusting a piece of information that came from the client and could be edited before
+          the request even reaches the server?
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ TASK 5: MISSION 4 (FLAG) ============ -->
+    <div class="task" id="task-5">
+      <div class="task-header" onclick="toggleTask('task-5')">
+        <span class="task-label">Task 5</span>
+        <span class="task-name">Mission 4 — The Broken Door</span>
+        <span class="task-check" id="task-check-4"></span>
+        <span class="task-chevron">▾</span>
+      </div>
+      <div class="task-body">
+        <p>Alex discovers that the portal's authentication mechanism is working, but something
+        about authorization deserves closer investigation. The Employee account is legitimate.
+        The session is valid. Yet Alex finds an interesting difference between
+        <strong>being logged in</strong> and <strong>being allowed to access a resource</strong>.</p>
+        <p><strong>Your task</strong> — investigate whether the Employee account can reach a
+        restricted resource that should belong to a higher-privileged role. Use only the provided
+        lab environment.</p>
+        <p><strong>Success condition</strong> — find the protected resource and determine why the
+        application should have denied the Employee access.</p>
+
+        <div class="btn-row">
+          <button class="pill-btn primary" onclick="openBrowser('/admin')">Go to Admin Panel</button>
+        </div>
+
+        <div class="qbox">
+          <label>🏁 Flag: <code>TC{________________________}</code></label>
+          <div class="flag-input-row">
+            <input type="text" id="flag-input" placeholder="TC{...}">
+            <button class="check-btn" onclick="submitFlag()">Check</button>
+          </div>
+          <div class="answer-feedback" id="flag-feedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ TASK 6: MISSION 5 ============ -->
+    <div class="task" id="task-6">
+      <div class="task-header" onclick="toggleTask('task-6')">
+        <span class="task-label">Task 6</span>
+        <span class="task-name">Mission 5 — Explain the Incident</span>
+        <span class="task-check" id="task-check-6"></span>
+        <span class="task-chevron">▾</span>
+      </div>
+      <div class="task-body">
+        <p>Alex reports his findings to Sarah.</p>
+        <p><span class="speaker">Alex:</span> "The login system correctly identified me as an
+        Employee. The problem is that authentication and authorization are separate security
+        decisions."</p>
+        <p>Sarah asks Alex to prove that he understands what happened.</p>
+        <p><strong>Answer the following (for your own notes):</strong></p>
+        <ol>
+          <li>Who was Alex authenticated as?</li>
+          <li>What resource was Alex not supposed to access?</li>
+          <li>Was Alex authenticated successfully?</li>
+          <li>Was Alex authorized to access the restricted resource?</li>
+          <li>Which security control was responsible for deciding whether he could access it?</li>
+          <li>What security weakness allowed the unexpected access?</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ============ TASK 7: FINAL CHALLENGE ============ -->
+    <div class="task" id="task-7">
+      <div class="task-header" onclick="toggleTask('task-7')">
+        <span class="task-label">Task 7</span>
+        <span class="task-name">🏁 Final Challenge</span>
+        <span class="task-check" id="task-check-final"></span>
+        <span class="task-chevron">▾</span>
+      </div>
+      <div class="task-body">
+        <p>Complete the investigation with a short knowledge check.</p>
+        <div class="qbox">
+          <label>Authentication verifies: ____________________</label>
+          <input type="text" id="kc-auth" placeholder="e.g. a user's identity">
+
+          <label>Authorization verifies: ____________________</label>
+          <input type="text" id="kc-authz" placeholder="e.g. what a user is allowed to access or do">
+
+          <label>Incident Summary (2–3 sentences): How can a user be successfully authenticated
+          but still be unauthorized to access a resource?</label>
+          <textarea id="kc-summary" placeholder="Write your explanation here..."></textarea>
+
+          <button class="check-btn" onclick="submitKnowledgeCheck()">Submit Answer</button>
+          <div class="answer-feedback" id="kc-feedback"></div>
+        </div>
+
+        <div id="completion-banner" style="display:none; margin-top:18px;">
+          <div class="completion-result">
+            <div class="completion-icon">✓</div>
+            <div><h3>LAB COMPLETE</h3><p>Investigation finished in <strong id="completion-time">00:00:00</strong>.</p></div>
+          </div>
+          <h3 style="margin-bottom:6px;">🎓 What Alex Learned</h3>
+          <p style="font-size:13.5px;"><strong>🔐 Authentication — "Who are you?"</strong><br>
+          <span style="color:var(--thm-text-dim);">It establishes the identity of the user.</span></p>
+          <p style="font-size:13.5px;"><strong>🛡️ Authorization — "What are you allowed to access or do?"</strong><br>
+          <span style="color:var(--thm-text-dim);">It determines whether the authenticated user
+          has permission to access a resource.</span></p>
+          <div class="hint-text shown">
+            ⭐ Key Lesson: Successfully logging into a system does not mean you are authorized to
+            access everything inside it.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       RIGHT: SIMULATED VIRTUAL DESKTOP (Kali AttackBox-style)
+  ============================================================ -->
+  <div class="desktop-pane" id="desktop-pane">
+
+    <!-- ============ JOIN LAB GATE ============ -->
+    <div class="join-overlay" id="join-overlay">
+      <div class="join-card">
+        <div class="join-logo">🖥️</div>
+        <h2>Virtual Lab Ready</h2>
+        <p>Your virtual lab machine has been provisioned. Click below to start your timed lab session and open the
+        fully interactive desktop environment.</p>
+        <button class="join-btn" id="join-btn" onclick="joinLab()">▶ Start Lab</button>
+        <div class="join-status" id="join-status"></div>
+      </div>
+    </div>
+
+    <!-- Everything below stays hidden until the learner joins the lab -->
+    <div class="desktop-content" id="desktop-content">
+
+      <!-- Kali-style top bar -->
+      <div class="kali-topbar">
+        <div class="topbar-left">
+          <div class="topbar-menu" onclick="toggleAppsMenu(event)">
+            Applications
+            <div class="apps-dropdown" id="apps-dropdown">
+              <div class="apps-item" onclick="openBrowser(); closeAppsMenu();">🌐 Firefox</div>
+              <div class="apps-item" onclick="openTerminal(); closeAppsMenu();">&gt;_ Terminal</div>
+              <div class="apps-item" onclick="notify('Burp Suite Community — use your own installed copy to intercept real traffic.'); closeAppsMenu();">🧰 Burp Suite</div>
+            </div>
+          </div>
+          <div class="topbar-menu" onclick="notify('Places menu — this simulated desktop only exposes the folders shown as icons.')">Places</div>
+          <div class="topbar-menu" onclick="notify('System menu — not available in this simulated environment.')">System</div>
+        </div>
+        <div class="topbar-center">
+          <span class="topbar-icon" title="Terminal" onclick="openTerminal()">&gt;_</span>
+          <span class="topbar-clock" id="topbar-clock">--:--</span>
+          <span class="topbar-icon" title="Firefox" onclick="openBrowser()">🦊</span>
+        </div>
+        <div class="topbar-right">
+          <span class="attackbox-ip">AttackBox IP: 127.0.0.1</span>
+          <span class="topbar-dot"></span>
+        </div>
+      </div>
+
+      <div class="desktop-icons">
+        <div class="desktop-icon" tabindex="0" onclick="document.getElementById('home-folder').classList.add('open')">
+          <div class="icon-glyph">🏠</div>
+          <div class="icon-label">root's Home</div>
+        </div>
+        <div class="desktop-icon" tabindex="0" onclick="notify('🔒 Additional Tools are locked for this exercise.')">
+          <div class="icon-glyph">📁<span class="lock-badge">🔒</span></div>
+          <div class="icon-label">Additional Tools</div>
+        </div>
+        <div class="desktop-icon" tabindex="0" onclick="document.getElementById('netconf-folder').classList.add('open')">
+          <div class="icon-glyph">📁</div>
+          <div class="icon-label">NetworkConfigs</div>
+        </div>
+        <div class="desktop-icon" tabindex="0" onclick="document.getElementById('tools-folder').classList.add('open')">
+          <div class="icon-glyph">📁</div>
+          <div class="icon-label">Tools</div>
+        </div>
+        <div class="desktop-icon" tabindex="0" onclick="openTerminal()" ondblclick="openTerminal()">
+          <div class="icon-glyph">&gt;_</div>
+          <div class="icon-label">Terminal</div>
+        </div>
+        <div class="desktop-icon" tabindex="0" onclick="openBrowser()" ondblclick="openBrowser()">
+          <div class="icon-glyph">🦊</div>
+          <div class="icon-label">Firefox</div>
+        </div>
+      </div>
+
+      <!-- Right-side dock -->
+      <div class="side-dock">
+        <div class="dock-icon" title="Terminal" onclick="openTerminal()">&gt;_</div>
+        <div class="dock-icon" title="Firefox" onclick="openBrowser()">🦊</div>
+        <div class="dock-icon" title="Burp Suite" onclick="notify('Burp Suite Community — use your own installed copy to intercept real traffic.')">⚡</div>
+        <div class="dock-icon" title="OWASP ZAP" onclick="notify('OWASP ZAP — not bundled in this beginner lab. Browser DevTools is enough here.')">🕸️</div>
+        <div class="dock-icon" title="Metasploit" onclick="notify('Metasploit — not needed for this access-control exercise.')">🛡️</div>
+        <div class="dock-icon" title="Notes" onclick="openNotes()">📝</div>
+      </div>
+
+      <!-- Functional simulated file manager -->
+      <div class="hidden-folder-window" id="home-folder">
+        <div class="browser-titlebar">
+          <div class="traffic-lights">
+            <span class="tl-close" onclick="closeWindow('home-folder')"></span>
+            <span class="tl-min" onclick="minimizeWindow('home-folder')"></span>
+            <span class="tl-max"></span>
+          </div>
+          <div class="title-text">File Manager — /home/alex</div>
+        </div>
+        <div class="file-manager-body">
+          <div class="file-grid">
+            <button class="file-item" onclick="openFile('notes.txt')">📄<span>notes.txt</span></button>
+            <button class="file-item" onclick="openFile('access-review.txt')">📄<span>access-review.txt</span></button>
+            <button class="file-item" onclick="openFile('employee-notes.txt')">📄<span>employee-notes.txt</span></button>
+            <button class="file-item" onclick="openFolder('tools-folder')">📁<span>Tools</span></button>
+          </div>
+          <div class="file-preview" id="file-preview">Select a file to preview it.</div>
+        </div>
+      </div>
+
+      <div class="hidden-folder-window" id="notes-window">
+        <div class="browser-titlebar">
+          <div class="traffic-lights"><span class="tl-close" onclick="closeWindow('notes-window')"></span><span class="tl-min" onclick="minimizeWindow('notes-window')"></span><span class="tl-max"></span></div>
+          <div class="title-text">Notes — investigation.txt</div>
+        </div>
+        <div class="notes-body">
+          <textarea id="notes-editor" placeholder="Write investigation notes here..."></textarea>
+          <div class="notes-actions"><button class="check-btn" onclick="saveNotes()">Save Notes</button><span id="notes-saved"></span></div>
+        </div>
+      </div>
+
+      <!-- Browser window -->
+    <div class="browser-window" id="browser-window">
+      <div class="browser-titlebar">
+        <div class="traffic-lights">
+          <span class="tl-close" onclick="closeBrowser()"></span>
+          <span class="tl-min" onclick="minimizeBrowser()"></span>
+          <span class="tl-max"></span>
+        </div>
+        <div class="title-text">Mozilla Firefox — TechCorp Employee Management Portal</div>
+      </div>
+      <div class="browser-toolbar">
+        <button onclick="browserBack()">←</button>
+        <button onclick="browserForward()">→</button>
+        <button onclick="reloadBrowser()">⟳</button>
+        <div class="browser-address" id="browser-address">127.0.0.1:5000/login</div>
+      </div>
+      <div class="browser-content">
+        <iframe id="browser-frame" src="about:blank"></iframe>
+      </div>
+    </div>
+
+    <!-- Functional safe terminal simulator (whitelisted commands only) -->
+    <div class="terminal-window" id="terminal-window">
+      <div class="browser-titlebar">
+        <div class="traffic-lights">
+          <span class="tl-close" onclick="closeTerminal()"></span>
+          <span class="tl-min" onclick="minimizeTerminal()"></span>
+          <span class="tl-max"></span>
+        </div>
+        <div class="title-text">Terminal — alex@techcorp-analyst</div>
+      </div>
+      <div class="terminal-body" id="terminal-output">Welcome to the TechCorp Analyst Terminal. Type <b>help</b> for available commands.
+
+<span class="terminal-prompt">alex@techcorp-analyst:~$</span> <input id="terminal-input" autocomplete="off" spellcheck="false" onkeydown="handleTerminalKey(event)">
+      </div>
+    </div>
+
+    <!-- Decorative folders referenced from the desktop icons -->
+    <div class="hidden-folder-window" id="tools-folder">
+      <div class="browser-titlebar">
+        <div class="traffic-lights">
+          <span class="tl-close" onclick="document.getElementById('tools-folder').classList.remove('open')"></span>
+          <span class="tl-min"></span>
+          <span class="tl-max"></span>
+        </div>
+        <div class="title-text">Tools</div>
+      </div>
+      <div class="hidden-folder-body">
+        <b>Tools</b><br><br>
+        🔎 Request Inspector — use the Firefox browser and DevTools for real lab traffic.<br>
+        📝 Notes — click the Notes dock icon to record findings.<br>
+        🧰 Burp Suite — external tool integration is optional; this lab is fully usable without it.
+      </div>
+    </div>
+
+    <div class="hidden-folder-window" id="netconf-folder">
+      <div class="browser-titlebar">
+        <div class="traffic-lights">
+          <span class="tl-close" onclick="document.getElementById('netconf-folder').classList.remove('open')"></span>
+          <span class="tl-min"></span>
+          <span class="tl-max"></span>
+        </div>
+        <div class="title-text">Network Config</div>
+      </div>
+      <div class="hidden-folder-body">
+        Lab machine: <b>127.0.0.1</b><br>
+        Port: <b>5000</b><br>
+        This lab runs entirely on localhost — no external network access required.
+      </div>
+    </div>
+
+    <div class="taskbar">
+      <div class="start-orb" title="Start"></div>
+      <div class="taskbar-apps">
+        <div class="taskbar-app" id="taskbar-browser" onclick="openBrowser()">🌐 Firefox</div>
+        <div class="taskbar-app" id="taskbar-terminal" onclick="openTerminal()">&gt;_ Terminal</div>
+      </div>
+      <div class="taskbar-clock" id="taskbar-clock">--:--</div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    </div><!-- /.desktop-content -->
+  </div><!-- /.desktop-pane -->
+
+</div>
+
+<script src="{{ url_for('static', filename='lab.js') }}"></script>
+</body>
+</html>

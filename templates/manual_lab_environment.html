@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Environment | {{ lab.name }}{% endblock %}
+{% block page_title %}{{ lab.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .env-dashboard {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 2rem;
+    }
+    
+    .terminal-window {
+        background: #1e1e1e;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #333;
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .terminal-header {
+        background: #2d2d2d;
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #1e1e1e;
+    }
+    
+    .terminal-dots {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    .dot.red { background: #ff5f56; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #27c93f; }
+    
+    .terminal-body {
+        padding: 1rem;
+        color: #00ff00;
+        font-family: monospace;
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .info-panel {
+        background: var(--surface);
+        border-radius: 8px;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="env-dashboard">
+    <div class="terminal-window">
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+            </div>
+            <div style="color: #888; font-family: monospace; margin-left: 1rem; font-size: 0.9rem;">Target Environment</div>
+        </div>
+        <div class="terminal-body" id="env-status-display">
+            <div>
+                <p style="color: #fff; margin-bottom: 1rem;">Environment is currently offline.</p>
+                <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                    <button id="start-env-btn" class="btn btn-primary" onclick="startEnvironment()">Start Environment</button>
+                    <button id="restart-env-btn" class="btn btn-outline-danger" onclick="restartEnvironment()">🔄 Restart Lab</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="sidebar-panel">
+        <div class="info-panel" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin-bottom: 0;">Target Information</h3>
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="restartEnvironment()">🔄 Restart Lab</button>
+            </div>
+            <p style="margin-bottom: 0.5rem;"><strong>Status:</strong> <span id="target-status" class="text-warning">Stopped</span></p>
+            <p><strong>IP Address:</strong> <span id="target-ip" class="text-muted">Unknown</span></p>
+        </div>
+        
+        <div class="info-panel">
+            <h3 style="margin-bottom: 1rem;">Submit Flag</h3>
+            <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">Enter the flag you discovered to complete this objective.</p>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <input type="text" id="flag-input" class="form-control" placeholder="TECHCORP{...}" disabled>
+            </div>
+            <button id="submit-flag-btn" class="btn btn-primary" style="width: 100%;" onclick="submitFlag()" disabled>Submit Flag</button>
+            <div id="flag-feedback" style="margin-top: 1rem; text-align: center;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const labId = "{{ lab.id }}";
+    let envActive = false;
+    
+    function startEnvironment() {
+        const display = document.getElementById('env-status-display');
+        display.innerHTML = '<div class="spinner" style="width: 40px; height: 40px; border: 4px solid rgba(0, 255, 0, 0.2); border-left-color: #00ff00; border-radius: 50%; animation: spin 1s linear infinite;"></div><p style="margin-top: 1rem; color: #fff;">Provisioning target environment...</p>';
+        
+        // Add spinner animation style dynamically if not exists
+        if(!document.getElementById('spinner-style')) {
+            const style = document.createElement('style');
+            style.id = 'spinner-style';
+            style.innerHTML = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+            document.head.appendChild(style);
+        }
+
+        document.getElementById('target-status').innerText = 'Starting...';
+        document.getElementById('target-status').className = 'text-warning';
+        
+        fetch('/api/manual-lab/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ lab_id: labId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            setTimeout(() => {
+                if(data.success) {
+                    envActive = true;
+                    display.innerHTML = `<div style="color: #00ff00;">
+                        <p style="font-size: 2rem; margin-bottom: 0.5rem;">Target is LIVE</p>
+                        <p>IP Address: <strong>${data.ip}</strong></p>
+                        <p style="margin-top: 1.5rem;"><button class="btn btn-outline-danger btn-sm" onclick="restartEnvironment()">🔄 Restart Lab</button></p>
+                        <p style="margin-top: 1.5rem; font-size: 0.9rem; color: #888;">(Use your local attacking tools against this IP)</p>
+                    </div>`;
+                    
+                    document.getElementById('target-status').innerText = 'Running';
+                    document.getElementById('target-status').className = 'text-success';
+                    document.getElementById('target-ip').innerText = data.ip;
+                    document.getElementById('target-ip').className = 'text-accent';
+                    
+                    document.getElementById('flag-input').disabled = false;
+                    document.getElementById('submit-flag-btn').disabled = false;
+                } else {
+                    display.innerHTML = `<p style="color: #ff5f56;">Error: ${data.message}</p>`;
+                    document.getElementById('target-status').innerText = 'Error';
+                    document.getElementById('target-status').className = 'text-danger';
+                }
+            }, 1500); // Fake delay for UX
+        })
+        .catch(err => {
+            display.innerHTML = `<p style="color: #ff5f56;">Connection error.</p>`;
+        });
+    }
+
+    function submitFlag() {
+        if(!envActive) return;
+        
+        const flag = document.getElementById('flag-input').value;
+        const feedback = document.getElementById('flag-feedback');
+        
+        fetch('/api/manual-lab/flag', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ lab_id: labId, flag: flag })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                feedback.innerHTML = `<span class="text-success">${data.message}</span>`;
+                document.getElementById('submit-flag-btn').disabled = true;
+                setTimeout(() => {
+                    window.location.href = '/manual-labs';
+                }, 2000);
+            } else {
+                feedback.innerHTML = `<span class="text-danger">${data.message}</span>`;
+                // Shake effect for error
+                const input = document.getElementById('flag-input');
+                input.style.transform = 'translateX(5px)';
+                setTimeout(() => input.style.transform = 'translateX(-5px)', 100);
+                setTimeout(() => input.style.transform = 'translateX(5px)', 200);
+                setTimeout(() => input.style.transform = 'translateX(0)', 300);
+            }
+        })
+        .catch(err => {
+            feedback.innerHTML = `<span class="text-danger">Network error.</span>`;
+        });
+    function restartEnvironment() {
+        if (!confirm('Are you sure you want to restart this lab? Your progress and target will be reset.')) return;
+        const display = document.getElementById('env-status-display');
+        display.innerHTML = '<div class="spinner" style="width: 40px; height: 40px; border: 4px solid rgba(0, 255, 0, 0.2); border-left-color: #00ff00; border-radius: 50%; animation: spin 1s linear infinite;"></div><p style="margin-top: 1rem; color: #fff;">Restarting target environment...</p>';
+
+        fetch('/api/manual-lab/restart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.csrfToken || csrfToken
+            },
+            body: JSON.stringify({ lab_id: labId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Failed to restart lab');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Network error while restarting lab.');
+        });
+    }
+</script>
+{% endblock %}

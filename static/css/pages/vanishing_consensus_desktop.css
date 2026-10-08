@@ -1,0 +1,358 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   PRO LAB 02 — THE VANISHING CONSENSUS — DESKTOP & MOBILE CSS
+   Case NEX-071 — Responsive Split Layout + Mobile View Switcher
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@import url('ghost_ledger_desktop.css');
+
+/* Lab 2 Specific Theme Accents: Cyan & Electric Violet & Emerald */
+:root {
+  --vc-accent: #38bdf8;
+  --vc-secondary: #a855f7;
+  --vc-warning: #f59e0b;
+  --vc-danger: #ef4444;
+  --vc-success: #10b981;
+  --vc-dark-bg: #060913;
+  --vc-panel-bg: #0c1222;
+  --vc-card-bg: rgba(15, 23, 42, 0.75);
+}
+
+/* GPU Hardware Acceleration & Smooth Scrolling */
+.vc-tab-page, .vc-telemetry-card, .vc-diff-table, .vc-node-grid, .vc-attack-step {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.gl-task-panel, .gl-browser-content, #gl-term-body, #vc-file-content {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Mobile Mode Switcher (Hidden on Desktop >= 1025px) */
+.vc-mobile-mode-switcher {
+  display: none;
+  width: 100%;
+  background: #080d1a;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 8px 12px;
+  gap: 8px;
+  z-index: 999;
+  position: sticky;
+  top: 0;
+}
+
+.vc-mobile-tab-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #94a3b8;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.vc-mobile-tab-btn.active {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+/* Consensus Topology Visualizer */
+.vc-node-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.vc-node-box {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px 4px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: all 0.2s;
+}
+
+.vc-node-box.leader {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
+}
+
+.vc-node-box.fork-a {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  color: #fde68a;
+}
+
+.vc-node-box.halt-b {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  color: #bae6fd;
+}
+
+.vc-node-box.recovered {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+}
+
+/* Block Inspector Cards */
+.vc-telemetry-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+}
+
+.vc-diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  margin: 10px 0;
+}
+
+.vc-diff-table th {
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vc-diff-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+
+.vc-diff-table tr.divergence {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+}
+
+/* Attack Graph Nodes */
+.vc-attack-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border-left: 3px solid #38bdf8;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 10px;
+}
+
+.vc-attack-step.critical {
+  border-left-color: #ef4444;
+}
+
+.vc-attack-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Custom Question Card Styling for Subtasks */
+.gl-subtask-card {
+  display: none;
+}
+.gl-subtask-card.active {
+  display: block;
+}
+
+/* File Manager Item */
+.gl-fm-file {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 8px 10px;
+  color: #cbd5e1;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  border-radius: 4px;
+  transition: all 0.15s;
+  margin-bottom: 4px;
+}
+.gl-fm-file:hover {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.2);
+}
+.gl-fm-file.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVE MEDIA QUERIES (Mobile & Tablet Optimization)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .vc-mobile-mode-switcher {
+    display: flex;
+  }
+
+  .gl-lab-shell {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - var(--header-height));
+    overflow: visible;
+  }
+
+  .gl-task-panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+    padding: 16px 14px 40px;
+  }
+
+  .gl-task-panel.vc-mobile-hidden {
+    display: none !important;
+  }
+
+  .gl-desktop-pane {
+    width: 100%;
+    height: calc(100vh - 120px);
+    min-height: 540px;
+    flex: none;
+  }
+
+  .gl-desktop-pane.vc-mobile-hidden {
+    display: none !important;
+  }
+
+  .gl-desktop-icons {
+    top: 10px;
+    left: 10px;
+    gap: 8px;
+  }
+
+  .gl-desktop-icon {
+    width: 68px;
+    padding: 6px 4px;
+  }
+
+  .gl-icon-glyph {
+    font-size: 20px;
+  }
+
+  .gl-icon-label {
+    font-size: 9px;
+  }
+
+  .gl-side-dock {
+    display: none;
+  }
+
+  /* Full screen window overlays on mobile */
+  #gl-browser-window,
+  #gl-terminal-window,
+  #gl-filemanager-window,
+  #gl-attackgraph-window,
+  #gl-evidence-window,
+  #gl-notes-window {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: calc(100% - 38px) !important;
+    border-radius: 0;
+    border: none;
+  }
+
+  .vc-node-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .gl-subtask-pills {
+    flex-wrap: wrap;
+  }
+
+  .gl-quiz-input-row {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .gl-quiz-input {
+    flex: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .vc-node-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .gl-taskbar-tabs {
+    overflow-x: auto;
+    max-width: calc(100vw - 110px);
+  }
+
+  .gl-taskbar-tab {
+    font-size: 10px;
+    padding: 3px 6px;
+    white-space: nowrap;
+  }
+
+  .gl-room-title {
+    font-size: 18px;
+  }
+
+  .gl-control-row {
+    gap: 6px;
+  }
+
+  .gl-pill-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .gl-dialogue-line {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .gl-quiz-input-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .gl-quiz-btn {
+    width: 100%;
+  }
+
+  .gl-hint-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

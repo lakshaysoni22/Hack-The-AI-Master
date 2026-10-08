@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Case NEX-071: Post-Investigation &amp; Overview — HACK THE AI{% endblock %}
+{% block page_title %}Case NEX-071: Post-Investigation{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/ghost_ledger_post.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/vanishing_consensus_desktop.css') }}">
+<style>
+.vc-confetti {
+    font-size: 2.2rem;
+    animation: bounce 1.2s infinite alternate;
+}
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gl-post-container">
+    <div class="gl-post-wrap">
+
+        <!-- Top Header & Section Navigation -->
+        <header class="gl-post-header">
+            <div>
+                <div class="gl-post-breadcrumb">
+                    <span>HACK THE AI</span> &gt; <span>LABS</span> &gt; <span>CASE NEX-071</span> &gt; <span>POST-INVESTIGATION</span>
+                </div>
+                <h1 class="gl-post-title">
+                    The Vanishing Consensus
+                    <span class="gl-case-badge">CASE FILE // INCIDENT CONTAINED</span>
+                </h1>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="gl-nav-tabs" aria-label="Investigation Phase Navigation">
+                <button class="gl-nav-btn active" data-section="cinematic" onclick="showSection('cinematic')">
+                    <span>🎉</span> Celebration
+                </button>
+                <button class="gl-nav-btn" data-section="overview" onclick="showSection('overview')">
+                    <span>🕸</span> Attack Chain
+                </button>
+                <button class="gl-nav-btn" data-section="score" onclick="showSection('score')">
+                    <span>🏆</span> Score &amp; Rank
+                </button>
+            </nav>
+        </header>
+
+        <!-- SECTION 1: CELEBRATION & DEBRIEF -->
+        <section class="gl-content-section gl-fade-in" id="section-cinematic">
+            <div class="gl-cinematic-stage" style="text-align: center; padding: 40px 20px;">
+                <div class="vc-confetti">🎉 🛰️ 🤖 ⛓️ 🌐</div>
+                <h2 style="font-size: 2.4rem; color: #38bdf8; font-family: var(--font-mono); margin: 16px 0 8px;">
+                    CONGRATULATIONS, INVESTIGATOR!
+                </h2>
+                <p style="font-size: 1.1rem; color: #cbd5e1; max-width: 720px; margin: 0 auto 20px; line-height: 1.6;">
+                    You successfully uncovered how manipulated IoT sensor telemetry poisoned the Web3 oracle feed, bypassed poisoned AI defenses in MODEL-ORION, caused a silent validator divergence, and halted cross-layer consensus collapse!
+                </p>
+
+                <!-- Core Takeaway Banner -->
+                <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 18px; max-width: 680px; margin: 0 auto 24px; text-align: left; font-family: var(--font-mono); font-size: 12.5px; color: #cbd5e1; line-height: 1.65;">
+                    <div style="color: #38bdf8; font-weight: 700; margin-bottom: 6px; letter-spacing: 1px;">💡 CORE FORENSIC TAKEAWAY:</div>
+                    "The blockchain was never directly broken.<br>
+                    The AI was never simply switched off.<br>
+                    The IoT devices never appeared completely dead.<br>
+                    The attacker compromised something far more valuable:<br>
+                    <strong style="color: #f87171; font-size: 1.05em;">THE TRUST BETWEEN THE LAYERS.</strong>"
+                </div>
+
+                <div class="gl-telemetry-grid" style="text-align: left; margin: 24px 0;">
+                    <div class="gl-telemetry-card">
+                        <div class="gl-telemetry-lbl">IoT Gateway Layer</div>
+                        <div class="gl-telemetry-val gl-val-ok">✓ GW-184 ISOLATED &amp; RESYNCED</div>
+                    </div>
+                    <div class="gl-telemetry-card">
+                        <div class="gl-telemetry-lbl">Web3 Oracle Layer</div>
+                        <div class="gl-telemetry-val gl-val-ok">✓ MULTI-SOURCE ENTROPY APPLIED</div>
+                    </div>
+                    <div class="gl-telemetry-card">
+                        <div class="gl-telemetry-lbl">AI Sentinel Layer</div>
+                        <div class="gl-telemetry-val gl-val-ok">✓ EMB-IOT-9041 WEIGHTS PURGED</div>
+                    </div>
+                    <div class="gl-telemetry-card">
+                        <div class="gl-telemetry-lbl">Consensus State</div>
+                        <div class="gl-telemetry-val gl-val-ok">✓ 21 / 21 UNIFIED ROOT RESTORED</div>
+                    </div>
+                </div>
+
+                <div class="gl-warning-breakout" style="border-left-color: #10b981; background: rgba(16, 185, 129, 0.05); text-align: left;">
+                    <div style="font-family: var(--font-mono); font-size: 0.85rem; color: #34d399; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 1px;">
+                        🏆 MASTER CASE FLAG VERIFIED
+                    </div>
+                    <div style="font-family: var(--font-mono); font-size: 1.1rem; color: #fff; font-weight: 700;">
+                        NEXORA{v4n1sh1ng_c0ns3nsus_n3x071}
+                    </div>
+                </div>
+
+                <div class="gl-action-row" style="justify-content: center; margin-top: 30px;">
+                    <button class="gl-btn-primary" onclick="showSection('overview')">
+                        ⚡ View Forensic Attack Reconstruction &rarr;
+                    </button>
+                    <a href="{{ url_for('labs.labs') }}" class="gl-btn-secondary">
+                        🌐 Return to Labs Dashboard
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: ATTACK CHAIN RECONSTRUCTION -->
+        <section class="gl-content-section" id="section-overview" style="display: none;">
+            <div class="gl-cinematic-stage" style="padding: 24px;">
+                <h3 style="font-family: var(--font-mono); color: #38bdf8; font-size: 1.3rem; margin-bottom: 16px;">
+                    🕸️ CASE NEX-071: CROSS-LAYER TRUST-CHAIN RECONSTRUCTION
+                </h3>
+
+                <div class="vc-attack-step critical">
+                    <div>
+                        <span class="vc-attack-badge" style="background:#ef4444; color:#fff;">STAGE 1: IoT</span>
+                        <strong style="color:#fff; margin-left:8px;">Compromised IoT Telemetry</strong>
+                        <p style="color:#94a3b8; font-size:12.5px; margin:4px 0 0;">Industrial gateway GATEWAY-GW-184 injected synthetic synchronized telemetry across 184 physically healthy sensors.</p>
+                    </div>
+                </div>
+
+                <div class="vc-attack-step critical">
+                    <div>
+                        <span class="vc-attack-badge" style="background:#ef4444; color:#fff;">STAGE 2: TELEMETRY</span>
+                        <strong style="color:#fff; margin-left:8px;">Telemetry Aggregation Manipulation</strong>
+                        <p style="color:#94a3b8; font-size:12.5px; margin:4px 0 0;">Lack of physical jitter/entropy allowed corrupted aggregate values to pass upstream pre-chain validation.</p>
+                    </div>
+                </div>
+
+                <div class="vc-attack-step critical">
+                    <div>
+                        <span class="vc-attack-badge" style="background:#ef4444; color:#fff;">STAGE 3: ORACLE</span>
+                        <strong style="color:#fff; margin-left:8px;">Oracle Feed Poisoning</strong>
+                        <p style="color:#94a3b8; font-size:12.5px; margin:4px 0 0;">NOVA-PRICE-ORACLE ingested the manipulated telemetry stream; 4 independent nodes agreed on the common corrupted source.</p>
+                    </div>
+                </div>
+
+                <div class="vc-attack-step">
+                    <div>
+                        <span class="vc-attack-badge" style="background:#38bdf8; color:#050811;">STAGE 4: AI</span>
+                        <strong style="color:#fff; margin-left:8px;">AI Model Poisoning / False Normality</strong>
+                        <p style="color:#94a3b8; font-size:12.5px; margin:4px 0 0;">Historical poisoned training data (EMB-IOT-9041) taught MODEL-ORION to classify the anomalous synchronization as normal (98.7% confidence).</p>
+                    </div>
+                </div>
+
+                <div class="vc-attack-step">
+                    <div>
+                        <span class="vc-attack-badge" style="background:#f59e0b; color:#050811;">STAGE 5: STATE</span>
+                        <strong style="color:#fff; margin-left:8px;">Different Derived States</strong>
+                        <p style="color:#94a3b8; font-size:12.5px; margin:4px 0 0;">Differing oracle timing and ingestion pathways caused nodes to compute divergent local state execution roots.</p>
+                    </div>
+                </div>
+
+                <div class="vc-attack-step">
+                    <div>
+                        <span class="vc-attack-badge" style="background:#f59e0b; color:#050811;">STAGE 6: CONSENSUS</span>
+                        <strong style="color:#fff; margin-left:8px;">Validator Divergence (3:2 Split)</strong>
+                        <p style="color:#94a3b8; font-size:12.5px; margin:4px 0 0;">3 validators accepted the poisoned derived state while 2 rejected it on deterministic EVM verification.</p>
+                    </div>
+                </div>
+
+                <div class="vc-attack-step" style="border-left-color:#10b981;">
+                    <div>
+                        <span class="vc-attack-badge" style="background:#10b981; color:#050811;">STAGE 7: CONTAINMENT</span>
+                        <strong style="color:#fff; margin-left:8px;">Unified Cross-Layer Containment (GOV-NEX-071)</strong>
+                        <p style="color:#94a3b8; font-size:12.5px; margin:4px 0 0;">Gateway isolated, poisoned AI weights flushed, chain rolled back to Block #982740, and unified root 0x98a2...e71c confirmed across all 21 nodes.</p>
+                    </div>
+                </div>
+
+                <div class="gl-action-row" style="margin-top: 20px;">
+                    <button class="gl-btn-primary" onclick="showSection('score')">
+                        🏆 View Score &amp; Final Rank &rarr;
+                    </button>
+                    <button class="gl-btn-secondary" onclick="showSection('cinematic')">
+                        &larr; Back to Debrief
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: SCORE & RANK -->
+        <section class="gl-content-section" id="section-score" style="display: none;">
+            <div class="gl-cinematic-stage" style="padding: 24px; text-align: center;">
+                <h3 style="font-family: var(--font-mono); color: #38bdf8; font-size: 1.4rem; margin-bottom: 8px;">
+                    🏆 INVESTIGATION PERFORMANCE REPORT
+                </h3>
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 24px;">Case NEX-071 &bull; Pro Level Certification (IoT × Web3 × AI × Blockchain)</p>
+
+                <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px;">
+                    <div class="gl-telemetry-card" style="min-width: 160px;">
+                        <div class="gl-telemetry-lbl">Total XP Earned</div>
+                        <div class="gl-telemetry-val" style="color: #38bdf8; font-size: 1.5rem;">+300 XP</div>
+                    </div>
+                    <div class="gl-telemetry-card" style="min-width: 160px;">
+                        <div class="gl-telemetry-lbl">Chapters Verified</div>
+                        <div class="gl-telemetry-val gl-val-ok" style="font-size: 1.5rem;">5 / 5</div>
+                    </div>
+                    <div class="gl-telemetry-card" style="min-width: 160px;">
+                        <div class="gl-telemetry-lbl">Objectives Solved</div>
+                        <div class="gl-telemetry-val gl-val-ok" style="font-size: 1.5rem;">30 / 30</div>
+                    </div>
+                    <div class="gl-telemetry-card" style="min-width: 160px;">
+                        <div class="gl-telemetry-lbl">Capstone Assessment</div>
+                        <div class="gl-telemetry-val gl-val-ok" style="font-size: 1.5rem;">PASSED (100%)</div>
+                    </div>
+                </div>
+
+                <div class="gl-action-row" style="justify-content: center; margin-top: 24px;">
+                    <a href="{{ url_for('labs.labs') }}" class="gl-btn-primary">
+                        🚀 Complete Case &amp; Return to Labs Dashboard
+                    </a>
+                    <a href="{{ url_for('labs.vanishing_consensus_workstation') }}" class="gl-btn-secondary">
+                        🖥 Return to Workstation Desktop
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showSection(sectionId) {
+    document.querySelectorAll('.gl-content-section').forEach(sec => sec.style.display = 'none');
+    document.querySelectorAll('.gl-nav-btn').forEach(btn => btn.classList.remove('active'));
+
+    const targetSec = document.getElementById(`section-${sectionId}`);
+    if (targetSec) targetSec.style.display = 'block';
+
+    const targetBtn = document.querySelector(`.gl-nav-btn[data-section="${sectionId}"]`);
+    if (targetBtn) targetBtn.classList.add('active');
+}
+</script>
+{% endblock %}

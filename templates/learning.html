@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Learning - HACK THE AI{% endblock %}
+{% block page_title %}Learning Paths{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div style="margin-bottom: var(--space-6);">
+        <h3>Curated Security Learning Paths</h3>
+        <p class="text-secondary text-sm" style="margin-top: var(--space-1);">Advance your forensic and defensive skills through structured, hands-on attack vector modules.</p>
+    </div>
+
+    {% for path in learning_paths %}
+    <div class="card elevated" style="margin-bottom: var(--space-6); {% if path.percentage == 0 %}opacity: 0.85;{% endif %}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-3);">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <div style="font-size: 2.2rem; background: var(--bg-primary); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border-color);">{{ path.icon }}</div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.25rem;">{{ path.title }}</h3>
+                    <div style="display: flex; gap: var(--space-2); margin-top: 4px; align-items: center;">
+                        <span class="badge badge-accent" style="font-size: 0.7rem; padding: 2px 8px;">{{ path.badge }}</span>
+                        <span class="text-xs text-muted">{{ path.completed_missions }} / {{ path.total_missions }} Missions Completed</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% if path.percentage == 100 %}
+                <span class="badge badge-success" style="font-size: 0.8rem; padding: 4px 10px;">✓ Mastery Achieved</span>
+                {% elif path.percentage > 0 %}
+                <span class="badge badge-warning" style="font-size: 0.8rem; padding: 4px 10px;">⚡ In Progress</span>
+                {% else %}
+                <span class="badge badge-secondary" style="font-size: 0.8rem; padding: 4px 10px;">○ Not Started</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <p class="text-secondary" style="margin-bottom: var(--space-4); line-height: 1.5;">{{ path.description }}</p>
+
+        <!-- Topic Tags -->
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--space-4);">
+            {% for topic in path.topics %}
+            <span style="font-size: 0.75rem; background: var(--bg-primary); border: 1px solid var(--border-color); padding: 3px 10px; border-radius: 4px; color: var(--text-secondary);">
+                {{ topic }}
+            </span>
+            {% endfor %}
+        </div>
+
+        <!-- Progress Bar -->
+        <div style="background-color: var(--bg-primary); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: var(--space-2);">
+            <div style="background: linear-gradient(90deg, #10b981, #06b6d4); width: {{ path.percentage }}%; height: 100%; transition: width 0.4s ease;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;" class="text-muted">
+            <span>{{ path.percentage }}% Completed</span>
+            <span>{{ path.status }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

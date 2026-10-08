@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Labs - HACK THE AI{% endblock %}
+{% block page_title %}Labs{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/labs.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="labs-header">
+        <h2 class="cyber-text">Practice_Cybersecurity</h2>
+        <p class="text-secondary mono">&gt; Interactive challenges spanning multiple disciplines.</p>
+    </div>
+
+    <div class="labs-filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="Beginner">Beginner</button>
+        <button class="filter-btn" data-filter="Pro">Pro</button>
+        <button class="filter-btn" data-filter="Advanced">Advanced</button>
+    </div>
+
+    <div class="labs-grid">
+        {% for lab in labs %}
+        <div class="card lab-card" data-difficulty="{{ 'Pro' if lab.difficulty == 'Intermediate' else lab.difficulty }}">
+            <div class="lab-card-header">
+                <span class="lab-topic">{{ lab.topic }}</span>
+                {% if lab.difficulty == 'Beginner' %}
+                    <span class="badge badge-success">Beginner</span>
+                {% elif lab.difficulty in ['Intermediate', 'Pro'] %}
+                    <span class="badge badge-warning">Pro</span>
+                {% else %}
+                    <span class="badge badge-danger">{{ lab.difficulty }}</span>
+                {% endif %}
+            </div>
+            
+            <h3>{{ lab.name }}</h3>
+            <p>{{ lab.description | default('A challenging interactive lab environment.') }}</p>
+            
+            <div class="lab-meta">
+                <span><span class="text-accent">⚡</span> {{ lab.xp | default(250) }} XP</span>
+                <span>5 Missions</span>
+            </div>
+            
+            <!-- Progress Bar Mock -->
+            <div class="progress-wrapper" style="margin-bottom: var(--space-4);">
+                <div class="progress-text">
+                    <span>Progress</span>
+                    <span>{% if lab.status == 'COMPLETED' %}100%{% elif lab.status == 'IN PROGRESS' %}40%{% else %}0%{% endif %}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {% if lab.status == 'COMPLETED' %}100%{% elif lab.status == 'IN PROGRESS' %}40%{% else %}0%{% endif %};"></div>
+                </div>
+            </div>
+
+            <div style="margin-top: auto; display: flex; gap: var(--space-2);">
+                <a href="{{ url_for('labs.lab_detail', lab_id=lab.id) }}" class="btn btn-secondary" style="flex: 1;">View Details</a>
+                <button type="button" class="btn btn-outline btn-sm restart-lab-btn" onclick="restartLab('{{ lab.id }}')" title="Restart Lab">🔄 Restart</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function restartLab(labId) {
+    if (!confirm('Are you sure you want to restart this lab? Your progress for this lab will be reset.')) return;
+    fetch('/api/lab/restart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.csrfToken
+        },
+        body: JSON.stringify({ lab_id: labId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to restart lab');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Network error. Could not restart lab.');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const labCards = document.querySelectorAll('.lab-card');
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active state
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Filter logic
+            const filterValue = btn.getAttribute('data-filter');
+            
+            labCards.forEach(card => {
+                const difficulty = card.getAttribute('data-difficulty');
+                
+                if (filterValue === 'all' || difficulty === filterValue || (filterValue === 'Pro' && (difficulty === 'Intermediate' || difficulty === 'Pro'))) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

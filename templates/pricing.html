@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing - HACK THE AI{% endblock %}
+{% block page_title %}Pricing & Plans{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div style="text-align: center; margin-bottom: var(--space-8);">
+        <h2 class="gradient-text">Choose Your Path</h2>
+        <p class="text-secondary">Unlock advanced containerized labs and premium CTF challenges.</p>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-6); max-width: 1000px; margin: 0 auto;">
+        <!-- Free Tier -->
+        <div class="card elevated" style="text-align: center;">
+            <h3 style="margin-bottom: var(--space-2);">Starter</h3>
+            <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: var(--space-4);">$0<span style="font-size: 1rem; color: var(--text-muted);">/mo</span></div>
+            <ul style="list-style: none; padding: 0; margin-bottom: var(--space-6); text-align: left; display: inline-block;">
+                <li style="margin-bottom: var(--space-2);">✓ Basic Web Exploitation Labs</li>
+                <li style="margin-bottom: var(--space-2);">✓ Simulated Environments</li>
+                <li style="margin-bottom: var(--space-2); color: var(--text-muted);">✗ Dedicated Containers</li>
+                <li style="margin-bottom: var(--space-2); color: var(--text-muted);">✗ Premium CTF Challenges</li>
+            </ul>
+            <button class="btn btn-outline btn-block">Current Plan</button>
+        </div>
+        
+        <!-- Pro Tier -->
+        <div class="card elevated" style="text-align: center; border: 2px solid var(--accent); position: relative;">
+            <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background-color: var(--accent); color: var(--bg-primary); padding: 2px 12px; border-radius: 12px; font-weight: bold; font-size: 0.8rem;">RECOMMENDED</div>
+            <h3 style="margin-bottom: var(--space-2);">Hacker Pro</h3>
+            <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: var(--space-4);">$19<span style="font-size: 1rem; color: var(--text-muted);">/mo</span></div>
+            <ul style="list-style: none; padding: 0; margin-bottom: var(--space-6); text-align: left; display: inline-block;">
+                <li style="margin-bottom: var(--space-2);">✓ All Starter Features</li>
+                <li style="margin-bottom: var(--space-2);">✓ Isolated Docker Environments</li>
+                <li style="margin-bottom: var(--space-2);">✓ Premium CTF Challenges</li>
+                <li style="margin-bottom: var(--space-2);">✓ AI Resume Analysis</li>
+            </ul>
+            <button class="btn btn-primary btn-block">Upgrade Now</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

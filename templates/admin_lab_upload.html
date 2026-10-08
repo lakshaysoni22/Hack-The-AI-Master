@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Lab - HACK THE AI{% endblock %}
+{% block page_title %}Upload Interactive Lab{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin_lab_upload.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- Upload Section -->
+    <div class="card elevated upload-section" style="margin-bottom: var(--space-6);">
+        <div class="upload-header">
+            <h3><span class="accent-icon">📦</span> Upload Lab ZIP</h3>
+            <p class="text-secondary">Upload a lab ZIP file to automatically create an interactive cyber security lab.</p>
+        </div>
+
+        <div class="drop-zone" id="drop-zone">
+            <div class="drop-zone-content" id="drop-zone-content">
+                <div class="drop-icon">📁</div>
+                <p class="drop-text">Drag & Drop your Lab ZIP here</p>
+                <p class="drop-subtext text-secondary">or click to browse</p>
+                <input type="file" id="zip-file-input" accept=".zip" style="display: none;">
+                <button class="btn btn-primary" id="browse-btn" style="margin-top: var(--space-4);">Choose ZIP File</button>
+            </div>
+            <div class="drop-zone-progress" id="drop-zone-progress" style="display: none;">
+                <div class="upload-spinner"></div>
+                <p class="upload-status" id="upload-status">Uploading & Analyzing...</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="upload-progress-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Validation Results -->
+        <div class="validation-results" id="validation-results" style="display: none;">
+            <h4 style="margin-bottom: var(--space-4);">Validation Results</h4>
+            <div class="validation-checklist" id="validation-checklist"></div>
+        </div>
+
+        <!-- Error Display -->
+        <div class="upload-error" id="upload-error" style="display: none;">
+            <span class="error-icon">✕</span>
+            <span class="error-message" id="error-message"></span>
+        </div>
+    </div>
+
+    <!-- Uploaded Labs List -->
+    <div class="card elevated">
+        <h3 style="margin-bottom: var(--space-4);">Uploaded Labs</h3>
+        {% if uploaded_labs %}
+        <div class="uploaded-labs-grid">
+            {% for lab in uploaded_labs %}
+            <div class="uploaded-lab-card">
+                <div class="lab-card-header">
+                    <h4>{{ lab.title }}</h4>
+                    <span class="badge {% if lab.status == 'published' %}badge-success{% elif lab.status == 'draft' %}badge-warning{% else %}badge-secondary{% endif %}">
+                        {{ lab.status|upper }}
+                    </span>
+                </div>
+                <div class="lab-card-meta">
+                    <span class="meta-item">🏷️ {{ lab.category }}</span>
+                    <span class="meta-item">📊 {{ lab.difficulty }}</span>
+                    <span class="meta-item">🎯 {{ lab.missions|length }} missions</span>
+                    <span class="meta-item">⏱️ {{ lab.estimated_time }} min</span>
+                </div>
+                <div class="lab-card-actions">
+                    <a href="{{ url_for('admin.lab_preview', lab_id=lab.id) }}" class="btn btn-secondary btn-sm">Preview</a>
+                    {% if lab.status == 'draft' %}
+                    <form action="{{ url_for('admin.lab_publish', lab_id=lab.id) }}" method="POST" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-primary btn-sm">Publish</button>
+                    </form>
+                    {% endif %}
+                    <form action="{{ url_for('admin.lab_delete', lab_id=lab.id) }}" method="POST" style="display:inline;"
+                          onsubmit="return confirm('Delete this lab permanently?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-secondary">No labs uploaded yet. Upload a ZIP file above to get started.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('zip-file-input');
+    const browseBtn = document.getElementById('browse-btn');
+    const dropContent = document.getElementById('drop-zone-content');
+    const dropProgress = document.getElementById('drop-zone-progress');
+    const uploadStatus = document.getElementById('upload-status');
+    const progressBar = document.getElementById('upload-progress-bar');
+    const validationResults = document.getElementById('validation-results');
+    const validationChecklist = document.getElementById('validation-checklist');
+    const uploadError = document.getElementById('upload-error');
+    const errorMessage = document.getElementById('error-message');
+
+    browseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+    });
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) {
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+            handleFile(fileInput.files[0]);
+        }
+    });
+
+    async function handleFile(file) {
+        if (!file.name.toLowerCase().endsWith('.zip')) {
+            showError('Only .zip files are allowed.');
+            return;
+        }
+
+        // Show progress
+        dropContent.style.display = 'none';
+        dropProgress.style.display = 'flex';
+        uploadError.style.display = 'none';
+        validationResults.style.display = 'none';
+
+        const formData = new FormData();
+        formData.append('lab_zip', file);
+
+        try {
+            uploadStatus.textContent = 'Uploading ZIP file...';
+            progressBar.style.width = '30%';
+
+            const response = await fetch('{{ url_for("admin.lab_upload") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.csrfToken,
+                },
+                body: formData,
+            });
+
+            progressBar.style.width = '70%';
+            uploadStatus.textContent = 'Analyzing lab structure...';
+
+            const data = await response.json();
+
+            progressBar.style.width = '100%';
+
+            if (data.success) {
+                uploadStatus.textContent = 'Lab uploaded successfully!';
+                dropProgress.classList.add('success');
+
+                // Show validation
+                if (data.validation) {
+                    showValidation(data.validation);
+                }
+
+                // Redirect to preview after short delay
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 1500);
+            } else {
+                showError(data.message || 'Upload failed.');
+                if (data.validation) {
+                    showValidation(data.validation);
+                }
+                resetDropZone();
+            }
+        } catch (err) {
+            showError('Network error. Please try again.');
+            resetDropZone();
+        }
+    }
+
+    function showError(msg) {
+        uploadError.style.display = 'flex';
+        errorMessage.textContent = msg;
+        dropContent.style.display = 'flex';
+        dropProgress.style.display = 'none';
+    }
+
+    function showValidation(validation) {
+        validationResults.style.display = 'block';
+        validationChecklist.innerHTML = '';
+
+        for (const [key, val] of Object.entries(validation.checks || {})) {
+            const item = document.createElement('div');
+            item.className = 'validation-item ' + (val.passed ? 'passed' : 'failed');
+            const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            item.innerHTML = `
+                <span class="validation-icon">${val.passed ? '✓' : '✕'}</span>
+                <span class="validation-label">${label}</span>
+                ${val.detail ? `<span class="validation-detail text-secondary">${val.detail}</span>` : ''}
+            `;
+            validationChecklist.appendChild(item);
+        }
+    }
+
+    function resetDropZone() {
+        setTimeout(() => {
+            dropContent.style.display = 'flex';
+            dropProgress.style.display = 'none';
+            dropProgress.classList.remove('success');
+            progressBar.style.width = '0%';
+        }, 2000);
+    }
+});
+</script>
+{% endblock %}

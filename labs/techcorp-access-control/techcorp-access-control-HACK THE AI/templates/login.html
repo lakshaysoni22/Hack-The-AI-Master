@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TechCorp Portal — Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">TECH<span>CORP</span> EMPLOYEE MANAGEMENT PORTAL</div>
+  </div>
+  <div class="container">
+    <div class="card" style="max-width:420px; margin: 40px auto;">
+      <h2>Sign in</h2>
+      <form method="POST" action="{{ url_for('login') }}">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" autocomplete="username" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+
+        {% if error %}
+          <div class="error-text">{{ error }}</div>
+        {% endif %}
+
+        <div class="btn-row">
+          <button type="submit">LOG IN</button>
+        </div>
+      </form>
+    </div>
+    <p class="footer-note">Use the Employee credentials from Task 1 in the panel on the left.</p>
+  </div>
+</body>
+</html>

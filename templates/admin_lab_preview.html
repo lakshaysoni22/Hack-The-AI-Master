@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Preview: {{ lab.title }} - HACK THE AI{% endblock %}
+{% block page_title %}Lab Preview{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin_lab_upload.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- Back button -->
+    <a href="{{ url_for('admin.lab_upload_page') }}" class="btn btn-outline btn-sm" style="margin-bottom: var(--space-4);">← Back to Upload</a>
+
+    <!-- Lab Header -->
+    <div class="card elevated preview-header" style="margin-bottom: var(--space-6);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-4);">
+            <div>
+                <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2);">
+                    <h2 style="margin: 0;">{{ lab.title }}</h2>
+                    <span class="badge {% if lab.status == 'published' %}badge-success{% elif lab.status == 'draft' %}badge-warning{% else %}badge-secondary{% endif %}">
+                        {{ lab.status|upper }}
+                    </span>
+                </div>
+                <div class="preview-meta">
+                    <span class="meta-item">🏷️ {{ lab.category }}</span>
+                    <span class="meta-item">📊 {{ lab.difficulty }}</span>
+                    {% if lab.concept %}<span class="meta-item">🔐 {{ lab.concept }}</span>{% endif %}
+                    <span class="meta-item">⏱️ {{ lab.estimated_time }} min</span>
+                    <span class="meta-item">🎯 {{ lab.total_points }} points</span>
+                    <span class="meta-item">📝 {{ missions|length }} missions</span>
+                </div>
+            </div>
+            <div class="preview-actions">
+                {% if lab.status == 'draft' %}
+                <form action="{{ url_for('admin.lab_publish', lab_id=lab.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary">🚀 Publish Lab</button>
+                </form>
+                {% else %}
+                <form action="{{ url_for('admin.lab_unpublish', lab_id=lab.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-warning btn-sm">Unpublish</button>
+                </form>
+                {% endif %}
+                <form action="{{ url_for('admin.lab_delete', lab_id=lab.id) }}" method="POST" style="display: inline;"
+                      onsubmit="return confirm('Permanently delete this lab?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
+
+        <!-- Storyline -->
+        <div class="card elevated" style="grid-column: span 2;">
+            <h3 style="margin-bottom: var(--space-4);">📖 Storyline</h3>
+            <div class="storyline-preview">
+                {% if lab.storyline %}
+                <p>{{ lab.storyline }}</p>
+                {% else %}
+                <p class="text-muted">No storyline detected in the uploaded ZIP.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Missions -->
+        <div class="card elevated">
+            <h3 style="margin-bottom: var(--space-4);">🎯 Missions ({{ missions|length }})</h3>
+            {% for mission in missions %}
+            <div class="preview-mission-card" style="margin-bottom: var(--space-4); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                    <h4 style="margin: 0;">Mission {{ mission.mission_number }}: {{ mission.title }}</h4>
+                    <span class="badge badge-secondary">{{ mission.points }} pts</span>
+                </div>
+                {% if mission.objective %}
+                <p class="text-secondary" style="margin-bottom: var(--space-2); font-size: 0.9rem;">{{ mission.objective[:200] }}</p>
+                {% endif %}
+                <div style="display: flex; gap: var(--space-3); font-size: 0.8rem; color: var(--text-muted);">
+                    <span>❓ {{ mission.questions|length }} questions</span>
+                    <span>💡 {{ mission.hints|length }} hints</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Right column: Flags + Docker -->
+        <div>
+            <!-- Flags -->
+            <div class="card elevated" style="margin-bottom: var(--space-6);">
+                <h3 style="margin-bottom: var(--space-4);">🚩 Flags ({{ flags|length }})</h3>
+                {% for flag in flags %}
+                <div style="padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: var(--space-2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <code class="text-accent" style="font-size: 0.85rem;">{{ flag.flag_value }}</code>
+                        <span class="badge badge-secondary">{{ flag.points }} pts</span>
+                    </div>
+                    {% if flag.flag_description %}
+                    <p class="text-muted" style="font-size: 0.8rem; margin-top: var(--space-1);">{{ flag.flag_description }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% if not flags %}
+                <p class="text-muted">No flags detected.</p>
+                {% endif %}
+            </div>
+
+            <!-- Docker Configuration -->
+            <div class="card elevated">
+                <h3 style="margin-bottom: var(--space-4);">🐳 Docker Configuration</h3>
+                {% if docker_config.get('has_dockerfile') or docker_config.get('has_compose') %}
+                <div class="validation-checklist">
+                    {% if docker_config.get('has_dockerfile') %}
+                    <div class="validation-item passed">
+                        <span class="validation-icon">✓</span>
+                        <span>Dockerfile: {{ docker_config.get('dockerfile_path', 'Found') }}</span>
+                    </div>
+                    {% endif %}
+                    {% if docker_config.get('has_compose') %}
+                    <div class="validation-item passed">
+                        <span class="validation-icon">✓</span>
+                        <span>Docker Compose: {{ docker_config.get('compose_path', 'Found') }}</span>
+                    </div>
+                    {% endif %}
+                    {% if docker_config.get('ports') %}
+                    <div class="validation-item passed">
+                        <span class="validation-icon">✓</span>
+                        <span>Ports: {{ docker_config.get('ports')|join(', ') }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="text-muted">No Docker configuration detected.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

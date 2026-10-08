@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile — TechCorp Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">TECH<span>CORP</span> EMPLOYEE MANAGEMENT PORTAL</div>
+    <div class="userinfo">Welcome, {{ user['display_name'] }} &middot; <a href="{{ url_for('logout') }}" style="color:var(--text-dim);">Logout</a></div>
+  </div>
+  <div class="container">
+    <nav class="portal-nav">
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a class="active" href="{{ url_for('profile') }}">My Profile</a>
+      <a href="{{ url_for('team') }}">Team Management</a>
+      <a href="{{ url_for('admin') }}">Admin Panel</a>
+    </nav>
+
+    <div class="card">
+      <h2>My Profile</h2>
+      <table>
+        <tr><th>Field</th><th>Value</th></tr>
+        <tr><td>Display Name</td><td>{{ user['display_name'] }}</td></tr>
+        <tr><td>Username</td><td>{{ user['username'] }}</td></tr>
+        <tr><td>Department</td><td>{{ user['department'] }}</td></tr>
+        <tr><td>Role</td><td><span class="badge badge-{{ user['role'] }}">{{ user['role'] }}</span></td></tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

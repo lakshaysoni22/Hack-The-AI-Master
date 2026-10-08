@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Login - HACK THE AI{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
+{% endblock %}
+
+{% block no_auth_content %}
+<div class="auth-page">
+    <div class="auth-sidebar">
+        <div class="auth-brand cyber-text">HACK THE AI</div>
+        <h2 class="cyber-text" style="font-size: 2rem; margin-bottom: var(--space-4);">Learn. Break. Secure.</h2>
+        <p class="text-secondary" style="font-size: 1.125rem;">
+            &gt; Join the next generation cybersecurity training platform and master your skills through real-world simulation.
+        </p>
+    </div>
+    <div class="auth-content">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2 class="cyber-text">System_Login</h2>
+                <p class="text-secondary mono">&gt; Enter your credentials to continue your journey.</p>
+            </div>
+            
+            {% if error %}
+            <div class="auth-error">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="{{ url_for('auth.login') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <!-- Demo Login Instruction Box -->
+                <div class="demo-login-box" style="margin-bottom: var(--space-4); padding: 12px 14px; background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(16, 185, 129, 0.35); border-radius: 6px; font-family: var(--font-mono, monospace); font-size: 0.85rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; color: var(--success, #10b981); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em;">
+                        <span>🔐 DEMO LOGIN</span>
+                        <span style="font-size: 0.7rem; color: #64748b;">PRE-CONFIGURED</span>
+                    </div>
+                    <div style="color: var(--text-secondary, #94a3b8); line-height: 1.5; font-size: 0.8rem;">
+                        <div>Username: <strong style="color: var(--text-primary, #f1f5f9); font-weight: 600;">admin</strong></div>
+                        <div>Password: <strong style="color: var(--text-primary, #f1f5f9); font-weight: 600;">admin123</strong></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required autofocus placeholder="student_01">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: var(--space-6);">Login</button>
+            </form>
+            
+            <div class="text-center" style="margin-top: var(--space-6);">
+                <p class="text-secondary">Don't have an account? <a href="{{ url_for('auth.register') }}" class="text-accent">Register here</a></p>
+                <p class="text-secondary" style="margin-top: var(--space-2);"><a href="{{ url_for('pages.index') }}" class="text-muted">Return to Home</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

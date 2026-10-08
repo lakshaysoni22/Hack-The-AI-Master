@@ -1,0 +1,727 @@
+/* =========================================================================
+   Lab Engine Styles — Two-Panel Cyber Security Lab Interface
+   ========================================================================= */
+
+/* ── Interactive Labs Catalog ─────────────────────────────────────── */
+
+.interactive-labs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--space-6);
+}
+
+.ilab-card {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.ilab-card-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--accent-glow), var(--secondary-glow));
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+.ilab-card:hover .ilab-card-glow {
+    opacity: 1;
+}
+
+.ilab-card-inner {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    transition: border-color 0.3s ease, transform 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.ilab-card:hover .ilab-card-inner {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.ilab-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+}
+
+.ilab-difficulty-badge {
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.diff-beginner { background: rgba(var(--success-rgb), 0.12); color: var(--success); }
+.diff-intermediate, .diff-pro { background: rgba(var(--warning-rgb), 0.12); color: var(--warning); }
+.diff-advanced { background: rgba(var(--danger-rgb), 0.12); color: var(--danger); }
+.diff-expert { background: rgba(var(--secondary-rgb), 0.12); color: var(--secondary); }
+
+.ilab-status-badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.ilab-status-badge.completed { color: var(--success); }
+.ilab-status-badge.in-progress { color: var(--warning); }
+.ilab-status-badge.locked { color: var(--text-muted); }
+
+.ilab-card-locked .ilab-card-inner { opacity: 0.55; }
+.ilab-card-locked:hover .ilab-card-glow { opacity: 0; }
+.ilab-card-actions .btn:disabled {
+    cursor: not-allowed;
+    background: var(--bg-elevated);
+    border-color: var(--border);
+    color: var(--text-muted);
+}
+
+.ilab-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+    color: var(--text-primary);
+}
+
+.ilab-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+}
+
+.ilab-meta-item {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: var(--surface-2);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.ilab-description {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-3);
+    line-height: 1.5;
+}
+
+.ilab-stats {
+    display: flex;
+    gap: var(--space-4);
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border);
+}
+
+.ilab-card-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.btn-block { flex: 1; text-align: center; }
+
+/* ── Lab Detail Page ──────────────────────────────────────────────── */
+
+.lab-detail-hero {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.lab-detail-hero-inner {
+    padding: var(--space-8);
+}
+
+.lab-detail-badges {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+}
+
+.lab-detail-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+    background: linear-gradient(135deg, var(--text-primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.lab-detail-description {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--space-6);
+    max-width: 700px;
+}
+
+.lab-detail-stats {
+    display: flex;
+    gap: var(--space-6);
+    margin-bottom: var(--space-6);
+}
+
+.lab-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-4);
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    min-width: 90px;
+}
+
+.lab-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.lab-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: var(--space-1);
+}
+
+.lab-detail-storyline {
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    margin-bottom: var(--space-6);
+    border-left: 3px solid var(--accent);
+}
+
+.lab-detail-storyline h3 { margin-bottom: var(--space-3); }
+.lab-detail-storyline p { color: var(--text-secondary); line-height: 1.6; }
+
+.lab-detail-missions-preview {
+    margin-bottom: var(--space-6);
+}
+
+.lab-detail-missions-preview h3 { margin-bottom: var(--space-4); }
+
+.mission-preview-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-2);
+}
+
+.mission-number {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.mission-title { flex: 1; color: var(--text-primary); }
+.mission-points { font-size: 0.8rem; color: var(--text-muted); }
+
+/* ── Two-Panel Lab Play Environment ───────────────────────────────────
+   The left task/flag panel is light, matching the rest of the platform -
+   it's real product UI (it's the only place that submits flags/answers,
+   which is what actually updates XP/progress/the leaderboard).
+
+   The right panel simulates an attack workstation (a target browser,
+   an OS chrome bar). Keeping that dark is a deliberate, common pattern
+   (like a terminal or code editor pane embedded in an otherwise light
+   app) rather than mixed leftover theming, so it uses its own
+   `--ws-*` tokens instead of the light-mode ones. */
+
+.lab-play-body {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.lab-panels {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+/* Left Panel — a permanently-visible sidebar (not an off-canvas drawer).
+   It duplicates some of the target app's own briefing text, but it's also
+   the only place that submits flags/answers back to the platform (that's
+   what actually updates XP/progress/the leaderboard), so it must always
+   be on-screen rather than hidden behind a toggle a learner could miss. */
+.lab-panel-left {
+    flex: 0 0 420px;
+    min-width: 340px;
+    max-width: 55vw;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 24px;
+    height: 100vh;
+}
+
+.panel-backdrop { display: none !important; }
+
+@keyframes flagBoxHighlightPulse {
+    0%, 100% { box-shadow: none; }
+    50% { box-shadow: 0 0 0 3px rgba(var(--warning-rgb), 0.35); }
+}
+.flag-box-highlight { animation: flagBoxHighlightPulse 0.5s ease-in-out 2; }
+
+#lab-flag-box { border-color: var(--warning); }
+
+.lab-left-header {
+    margin-bottom: 24px;
+}
+
+.breadcrumb {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+.lab-huge-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    line-height: 1.2;
+}
+
+.lab-desc {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.lab-meta-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.meta-tag {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.meta-tag .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+}
+
+.lab-action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Live Box */
+.lab-live-box {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.live-box-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.live-label { color: var(--text-muted); letter-spacing: 1px; font-weight: 600; }
+.live-status { color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.live-status .dot.active { width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
+
+.live-timer {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
+
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.progress-bar-bg {
+    background: var(--border);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--success);
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.lab-machine-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.machine-ip .dot.green { width: 6px; height: 6px; background: var(--success); border-radius: 50%; display: inline-block; margin-right: 4px;}
+
+/* Accordions */
+.task-accordion {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.task-header {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: var(--bg-elevated);
+    transition: background-color var(--transition-fast);
+}
+
+.task-header:hover { background: var(--border); }
+
+.task-title-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.task-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.task-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.task-status-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--text-muted);
+}
+
+.task-status-icon.checked {
+    background: var(--success);
+    color: #fff;
+}
+
+.task-body {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.task-obj {
+    background: rgba(var(--success-rgb), 0.08);
+    border-left: 3px solid var(--success);
+    padding: 8px 12px;
+    margin: 12px 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.task-inst {
+    padding-left: 20px;
+    margin-bottom: 16px;
+}
+
+.t-question { margin-bottom: 16px; }
+.t-q-input { display: flex; gap: 8px; margin-top: 8px; }
+.t-q-input input, .task-flag-area input {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.t-q-input input:focus, .task-flag-area input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.task-flag-area {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    background: rgba(var(--warning-rgb), 0.06);
+    padding: 12px;
+    border-radius: var(--radius-md);
+}
+.q-feedback { font-size: 12px; margin-top: 4px; }
+.q-feedback.correct { color: var(--success); }
+.q-feedback.incorrect { color: var(--danger); }
+
+
+/* Resize Handle */
+.lab-panel-divider {
+    width: 6px;
+    background: var(--bg-secondary);
+    cursor: col-resize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.divider-handle {
+    width: 2px;
+    height: 40px;
+    background: var(--border-hover);
+    border-radius: 1px;
+}
+
+/* Right Panel (AttackBox Environment) - intentionally dark, see note above */
+.lab-panel-right {
+    flex: 1;
+    background: var(--ws-bg);
+    display: flex;
+    flex-direction: column;
+}
+
+.attackbox-os-bar {
+    background: var(--ws-bg-panel);
+    height: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    font-size: 12px;
+    color: var(--ws-text-secondary);
+    border-bottom: 1px solid var(--ws-border);
+}
+.os-left span { margin-right: 12px; }
+.os-right { display: flex; align-items: center; gap: 12px; }
+
+.os-right .os-link {
+    color: var(--ws-text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 12px;
+    transition: color var(--transition-fast);
+}
+.os-right .os-link:hover { color: var(--ws-text); }
+.os-right .os-link.danger:hover { color: var(--ws-danger); }
+
+.virtual-browser {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 16px;
+    background: #fff;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--ws-border);
+}
+
+.browser-tab-bar {
+    background: var(--ws-bg-elevated);
+    height: 36px;
+    display: flex;
+    padding-top: 6px;
+    padding-left: 12px;
+}
+.browser-tab {
+    background: var(--ws-bg);
+    color: var(--ws-text);
+    font-size: 12px;
+    padding: 6px 16px;
+    border-radius: 8px 8px 0 0;
+    display: flex; align-items: center; gap: 8px;
+}
+
+.browser-address-bar {
+    background: var(--ws-bg);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.browser-controls {
+    display: flex;
+    gap: 8px;
+    color: var(--ws-text-secondary);
+}
+.b-btn { cursor: pointer; }
+.browser-url-input {
+    flex: 1;
+    background: var(--ws-bg-elevated);
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    color: var(--ws-text);
+    font-family: var(--font-sans);
+}
+
+.browser-viewport {
+    flex: 1;
+    position: relative;
+    background: #fff;
+}
+.target-iframe {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    border: none;
+}
+
+.lab-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+}
+
+.lab-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(var(--success-rgb), 0.2);
+    border-top-color: var(--success);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.target-loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ws-text-secondary);
+}
+.target-loading-inner { text-align: center; }
+.target-loading-inner h3 { color: var(--ws-text); }
+
+.target-unavailable {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ws-danger);
+}
+.target-unavailable-inner { text-align: center; }
+
+/* ── Full-takeover launcher (loading/handoff screen) ──────────────────── */
+.lab-launcher {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 0%, var(--accent-glow), transparent 60%), var(--bg-secondary);
+    padding: var(--space-6);
+}
+
+.lab-launcher-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-12) var(--space-8);
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+}
+
+.lab-launcher-title {
+    font-size: 1.35rem;
+    margin-bottom: var(--space-2);
+}
+
+.lab-launcher-status {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 0;
+}
+
+.lab-launcher-error {
+    margin-top: var(--space-4);
+    text-align: left;
+}
+
+.lab-launcher-error pre {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--danger);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-bottom: var(--space-4);
+}
+
+.lab-launcher-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+}

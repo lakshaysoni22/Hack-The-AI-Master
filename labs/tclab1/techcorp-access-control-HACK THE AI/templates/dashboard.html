@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard — TechCorp Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">TECH<span>CORP</span> EMPLOYEE MANAGEMENT PORTAL</div>
+    <div class="userinfo">Welcome, {{ user['display_name'] }} &middot; <a href="{{ url_for('logout') }}" style="color:var(--text-dim);">Logout</a></div>
+  </div>
+  <div class="container">
+    <nav class="portal-nav">
+      <a class="active" href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('profile') }}">My Profile</a>
+      <a href="{{ url_for('team') }}">Team Management</a>
+      <a href="{{ url_for('admin') }}">Admin Panel</a>
+    </nav>
+
+    <div class="card">
+      <h2>Welcome, {{ user['display_name'] }}</h2>
+      <p>Role: <span class="badge badge-{{ user['role'] }}">{{ user['role'] }}</span></p>
+      <p style="color:var(--text-dim); font-size:14px;">
+        This is your personal dashboard. Use the navigation above to explore the portal.
+        Some sections may be restricted based on your role.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Continue your investigation</h3>
+      <p style="font-size:14px; color:var(--text-dim);">
+        Head back to the task panel on the left to review your next objective.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

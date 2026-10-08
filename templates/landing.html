@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}HACK THE AI - Learn Cybersecurity by Breaking Things{% endblock %}
+
+{% block no_auth_content %}
+<div style="min-height: 100vh; display: flex; flex-direction: column;">
+    <!-- Landing Navbar -->
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-6) var(--space-8); border-bottom: 1px solid var(--border);">
+        <div class="auth-brand cyber-text" style="margin: 0; font-size: 1.5rem;">HACK THE AI</div>
+        <div style="display: flex; gap: var(--space-4);">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline">Login</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Sign Up</a>
+        </div>
+    </nav>
+
+    <!-- Particle Background -->
+    <canvas id="particleCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
+
+    <!-- Hero Section -->
+    <main style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: var(--space-8); background: radial-gradient(circle at center, rgba(var(--accent-rgb, 9, 219, 230), 0.1) 0%, transparent 70%); position: relative; z-index: 1;">
+        <h1 class="cyber-text" style="font-size: 4.5rem; max-width: 800px; margin-bottom: var(--space-6); text-shadow: 0 0 30px rgba(var(--accent-rgb), 0.3);">
+            Learn Cybersecurity by <span class="text-accent" style="text-shadow: 0 0 20px var(--accent-glow);">Breaking Things.</span>
+        </h1>
+        <p style="font-size: 1.25rem; max-width: 600px; margin-bottom: var(--space-8); color: var(--text-secondary);">
+            &gt; Practice real-world cybersecurity concepts through interactive labs, missions and CTF challenges inside a modern simulated environment.
+        </p>
+        <div style="display: flex; gap: var(--space-4);">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg" style="box-shadow: 0 0 20px var(--accent-glow);">INITIATE_TRAINING</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg" style="backdrop-filter: blur(10px);">EXPLORE LABS</a>
+        </div>
+        
+        <div style="margin-top: 5rem; display: flex; gap: 5rem; text-align: left; opacity: 0.9; background: rgba(0,0,0,0.6); padding: 2rem; border-radius: var(--radius-sm); border: 1px solid var(--accent); box-shadow: 0 0 20px var(--accent-glow) inset; backdrop-filter: var(--blur-md);">
+            <div>
+                <h4 class="text-accent mono" style="font-size: 2rem;">15+</h4>
+                <p class="text-secondary">Interactive Labs</p>
+            </div>
+            <div>
+                <h4 class="text-accent mono" style="font-size: 2rem;">10,000+</h4>
+                <p class="text-secondary">Flags Captured</p>
+            </div>
+            <div>
+                <h4 class="text-accent mono" style="font-size: 2rem;">100%</h4>
+                <p class="text-secondary">Hands-on Learning</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    let particlesArray = [];
+    const numberOfParticles = 100;
+    
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2 + 1;
+            this.speedX = (Math.random() * 1) - 0.5;
+            this.speedY = (Math.random() * 1) - 0.5;
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x > canvas.width) this.x = 0;
+            if (this.x < 0) this.x = canvas.width;
+            if (this.y > canvas.height) this.y = 0;
+            if (this.y < 0) this.y = canvas.height;
+        }
+        draw() {
+            ctx.fillStyle = 'rgba(9, 219, 230, 0.5)';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+    
+    function init() {
+        particlesArray = [];
+        for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+        }
+    }
+    
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+        }
+        requestAnimationFrame(animate);
+    }
+    
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        init();
+    });
+    
+    init();
+    animate();
+</script>
+{% endblock %}

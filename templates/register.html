@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Register - HACK THE AI{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
+{% endblock %}
+
+{% block no_auth_content %}
+<div class="auth-page">
+    <div class="auth-sidebar">
+        <div class="auth-brand cyber-text">HACK THE AI</div>
+        <h2 class="cyber-text" style="font-size: 2rem; margin-bottom: var(--space-4);">Start Your Journey</h2>
+        <p class="text-secondary" style="font-size: 1.125rem;">
+            &gt; Create an account to track your progress, earn XP, and unlock new cybersecurity challenges.
+        </p>
+    </div>
+    <div class="auth-content">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2 class="cyber-text">Create_Account</h2>
+                <p class="text-secondary mono">&gt; Join HACK THE AI today.</p>
+            </div>
+            
+            {% if error %}
+            <div class="auth-error">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="{{ url_for('auth.register') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required autofocus placeholder="student_01">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required placeholder="hacker@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: var(--space-6);">Sign Up</button>
+            </form>
+            
+            <div class="text-center" style="margin-top: var(--space-6);">
+                <p class="text-secondary">Already have an account? <a href="{{ url_for('auth.login') }}" class="text-accent">Login here</a></p>
+                <p class="text-secondary" style="margin-top: var(--space-2);"><a href="{{ url_for('pages.index') }}" class="text-muted">Return to Home</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

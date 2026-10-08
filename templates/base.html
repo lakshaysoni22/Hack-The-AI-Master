@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HACK THE AI{% endblock %}</title>
+    
+    <!-- CSS Architecture -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/core/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/core/reset.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/core/typography.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout/layout.css') }}">
+    {% block extra_css %}{% endblock %}
+    
+    <script>
+        window.csrfToken = "{{ csrf_token() }}";
+    </script>
+</head>
+<body>
+    
+    {% if session.get('user_id') %}
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header cyber-text">
+                HACK THE AI
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard.dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Dashboard</span>
+                </a>
+                <a href="{{ url_for('labs.labs') }}" class="nav-item {% if request.endpoint == 'labs' or request.endpoint == 'lab_detail' %}active{% endif %}">
+                    <span class="nav-icon">🧪</span>
+                    <span class="nav-label">Labs</span>
+                </a>
+
+                <a href="{{ url_for('labs.interactive_labs') }}" class="nav-item {% if request.endpoint and 'interactive_lab' in request.endpoint %}active{% endif %}">
+                    <span class="nav-icon">💻</span>
+                    <span class="nav-label">Interactive Labs</span>
+                </a>
+                {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin.lab_upload_page') }}" class="nav-item {% if request.endpoint and ('admin.lab_upload' in request.endpoint or 'admin.lab_preview' in request.endpoint) %}active{% endif %}">
+                    <span class="nav-icon">📤</span>
+                    <span class="nav-label">Upload Lab</span>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('pages.challenges') }}" class="nav-item {% if request.endpoint == 'pages.challenges' %}active{% endif %}">
+                    <span class="nav-icon">⚔</span>
+                    <span class="nav-label">Challenges</span>
+                </a>
+                <a href="{{ url_for('leaderboard.index') }}" class="nav-item {% if request.endpoint == 'leaderboard.index' %}active{% endif %}">
+                    <span class="nav-icon">🏆</span>
+                    <span class="nav-label">Leaderboard</span>
+                </a>
+                <a href="{{ url_for('pages.achievements') }}" class="nav-item {% if request.endpoint == 'pages.achievements' %}active{% endif %}">
+                    <span class="nav-icon">🏅</span>
+                    <span class="nav-label">Achievements</span>
+                </a>
+                <a href="{{ url_for('pages.learning') }}" class="nav-item {% if request.endpoint == 'pages.learning' %}active{% endif %}">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-label">Learning</span>
+                </a>
+                <a href="{{ url_for('pages.profile') }}" class="nav-item {% if request.endpoint == 'pages.profile' %}active{% endif %}">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-label">Profile</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('auth.logout') }}" class="nav-item">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-label">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menu-toggle">☰</button>
+                    <h1 class="topbar-title cyber-text">{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+                <div class="topbar-right">
+                    <div class="user-xp">
+                        <span class="text-accent">⚡</span> 1500 XP
+                    </div>
+                    <div class="user-profile">
+                        <div class="avatar">{{ session.get('username')[0]|upper if session.get('username') else 'U' }}</div>
+                        <span class="username">{{ session.get('username') }}</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dynamic Content -->
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% else %}
+        <!-- For non-authenticated pages like landing, login, register -->
+        {% block no_auth_content %}{% endblock %}
+    {% endif %}
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

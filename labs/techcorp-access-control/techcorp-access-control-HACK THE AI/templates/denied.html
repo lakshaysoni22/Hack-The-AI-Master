@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Access Denied — TechCorp Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">TECH<span>CORP</span> EMPLOYEE MANAGEMENT PORTAL</div>
+    <div class="userinfo">Welcome, {{ user['display_name'] }} &middot; <a href="{{ url_for('logout') }}" style="color:var(--text-dim);">Logout</a></div>
+  </div>
+  <div class="container">
+    <nav class="portal-nav">
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('profile') }}">My Profile</a>
+      <a href="{{ url_for('team') }}">Team Management</a>
+      <a href="{{ url_for('admin') }}">Admin Panel</a>
+    </nav>
+
+    <div class="card">
+      <h2>403 — Access Denied</h2>
+      <div class="denied-box">
+        <p>Your account does not have permission to access <strong>{{ attempted }}</strong>.</p>
+      </div>
+      <p style="font-size:13px; color:var(--text-dim); margin-top:14px;">
+        If you believe this is unexpected given how the request was made, keep investigating
+        with your tools — the mission isn't over yet.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

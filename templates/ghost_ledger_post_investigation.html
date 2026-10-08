@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+
+{% block title %}Case NEX-042: Post-Investigation &amp; Overview — HACK THE AI{% endblock %}
+{% block page_title %}Case NEX-042: Post-Investigation{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/ghost_ledger_post.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="gl-post-container">
+    <div class="gl-post-wrap">
+
+        <!-- Top Header & Section Navigation -->
+        <header class="gl-post-header">
+            <div>
+                <div class="gl-post-breadcrumb">
+                    <span>HACK THE AI</span> &gt; <span>LABS</span> &gt; <span>CASE NEX-042</span> &gt; <span>POST-INVESTIGATION</span>
+                </div>
+                <h1 class="gl-post-title">
+                    The Ghost in the Ledger
+                    <span class="gl-case-badge">CASE FILE // POST-INCIDENT AUDIT</span>
+                </h1>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="gl-nav-tabs" aria-label="Investigation Phase Navigation">
+                <button class="gl-nav-btn active" data-section="cinematic" onclick="showSection('cinematic')">
+                    <span>🎬</span> Debrief
+                </button>
+                <button class="gl-nav-btn" data-section="overview" onclick="showSection('overview')">
+                    <span>🕸</span> Mission Overview
+                </button>
+                <button class="gl-nav-btn" data-section="quiz" onclick="showSection('quiz')">
+                    <span>📝</span> Final Quiz
+                </button>
+                <button class="gl-nav-btn" data-section="score" onclick="showSection('score')">
+                    <span>🏆</span> Score &amp; Rank
+                </button>
+                <button class="gl-nav-btn" data-section="reveal" onclick="showSection('reveal')">
+                    <span>🔴</span> ORION-NEXUS
+                </button>
+            </nav>
+        </header>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 1: CINEMATIC POST-CHAPTER STORY TRANSITION             -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section class="gl-content-section gl-fade-in" id="section-cinematic">
+            <div class="gl-cinematic-stage">
+                <div class="gl-hud-header">
+                    <span>[03:17 AM UTC] SOC &bull; INCIDENT RESPONSE TERMINAL</span>
+                    <span style="color: var(--success); font-weight: 700;">LIVE TELEMETRY</span>
+                </div>
+
+                <div class="gl-telemetry-grid">
+                    <div class="gl-telemetry-card">
+                        <div class="gl-telemetry-lbl">System Status</div>
+                        <div class="gl-telemetry-val gl-val-ok">✓ TRANSACTION CONTAINED</div>
+                    </div>
+                    <div class="gl-telemetry-card">
+                        <div class="gl-telemetry-lbl">Wallet Cluster</div>
+                        <div class="gl-telemetry-val gl-val-ok">✓ MONITORED (0x7C41...9B2D)</div>
+                    </div>
+                    <div class="gl-telemetry-card">
+                        <div class="gl-telemetry-lbl">Automation Engine</div>
+                        <div class="gl-telemetry-val gl-val-warn">⚠ DISABLED (SETTLEMENT-V2)</div>
+                    </div>
+                    <div class="gl-telemetry-card">
+                        <div class="gl-telemetry-lbl">Intelligence Source</div>
+                        <div class="gl-telemetry-val gl-val-ok">✓ QUARANTINED (NOVA-INTEL)</div>
+                    </div>
+                </div>
+
+                <div class="gl-warning-breakout">
+                    <div style="font-family: var(--font-mono); font-size: 0.85rem; color: #ff5f57; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 1px;">
+                        🚨 SYSTEM WARNING // ANOMALY PERSISTS
+                    </div>
+                    <div class="gl-typewriter-text">
+                        <div class="gl-cinema-line" style="transition: all 0.4s ease;">&gt; ORION-NEXUS: <span class="gl-val-crit">ACTIVE 🔴</span></div>
+                        <div class="gl-cinema-line gl-highlight-quote" style="transition: all 0.4s ease; margin-top: 0.75rem;">"YOU STOPPED THE TRANSACTION."</div>
+                        <div class="gl-cinema-line gl-highlight-quote" style="transition: all 0.4s ease; color: #fff;">"YOU DIDN'T STOP THE ATTACKER."</div>
+                        <div class="gl-cinema-line" style="transition: all 0.4s ease; color: var(--accent); font-weight: 700; font-size: 1.1rem; margin-top: 0.5rem;">"THE INVESTIGATION IS NOT OVER."</div>
+                    </div>
+                </div>
+
+                <div class="gl-action-row">
+                    <button class="gl-btn-primary" onclick="showSection('overview')">
+                        ⚡ Enter Case File &amp; Mission Overview &rarr;
+                    </button>
+                    <a href="{{ url_for('labs.ghost_ledger_workstation') }}" class="gl-btn-secondary">
+                        🖥 Return to Workstation Desktop
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 2: MISSION OVERVIEW & INTERACTIVE ATTACK RECONSTRUCTION-->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section class="gl-content-section" id="section-overview" style="display: none;">
+            <div style="margin-bottom: 1.5rem;">
+                <h2 class="gl-section-title">
+                    <span>🔍</span> MISSION OVERVIEW
+                </h2>
+                <p class="gl-section-sub">"Can you reconstruct what really happened in Case NEX-042?"</p>
+            </div>
+
+            <!-- Dialogue Box between Investigation Team -->
+            <div class="gl-dialogue-box">
+                <div class="gl-dialogue-stream">
+                    <div class="gl-dialogue-line">
+                        <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                        <div class="gl-dialogue-text">"Okay... the blockchain wasn't hacked."</div>
+                    </div>
+                    <div class="gl-dialogue-line">
+                        <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                        <div class="gl-dialogue-text">"The wallet wasn't trusted."</div>
+                    </div>
+                    <div class="gl-dialogue-line">
+                        <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                        <div class="gl-dialogue-text">"The AI wasn't technically broken either."</div>
+                    </div>
+                    <div class="gl-dialogue-line">
+                        <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                        <div class="gl-dialogue-text">"Then how did 82,400 NXR leave the treasury?"</div>
+                    </div>
+
+                    <div class="gl-reconstructed-banner">
+                        <span>⚡</span> &gt; TRUST CHAIN RECONSTRUCTED
+                    </div>
+
+                    <div class="gl-dialogue-line">
+                        <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                        <div class="gl-dialogue-text" style="font-weight: 700; color: #fff;">"They didn't break the system."</div>
+                    </div>
+                    <div class="gl-dialogue-line">
+                        <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                        <div class="gl-dialogue-text" style="font-weight: 700; color: var(--accent);">"They convinced the system to break itself."</div>
+                    </div>
+                </div>
+
+                <!-- Witty / Humorous Investigation Banter Collapsible Box -->
+                <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.08);">
+                    <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.6rem; letter-spacing: 1px;">
+                        💬 SOC COMMS LOG // SIDEBAND CONVERSATION
+                    </div>
+                    <div class="gl-dialogue-stream" style="font-size: 0.85rem; gap: 0.6rem;">
+                        <div class="gl-dialogue-line">
+                            <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                            <div class="gl-dialogue-text">"Who approved this transaction?"</div>
+                        </div>
+                        <div class="gl-dialogue-line">
+                            <span class="gl-avatar-chip gl-chip-orion">ORION AI</span>
+                            <div class="gl-dialogue-text" style="font-family: var(--font-mono); color: #38bdf8;">"Risk level: LOW. Evaluation confidence: 99.2%."</div>
+                        </div>
+                        <div class="gl-dialogue-line">
+                            <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                            <div class="gl-dialogue-text">"Of course it's low. Because apparently the AI has trust issues... but only with the wrong people."</div>
+                        </div>
+                        <div class="gl-dialogue-line">
+                            <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                            <div class="gl-dialogue-text">"That's not funny."</div>
+                        </div>
+                        <div class="gl-dialogue-line">
+                            <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                            <div class="gl-dialogue-text">"It wasn't supposed to be."</div>
+                        </div>
+                        <div class="gl-dialogue-line">
+                            <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                            <div class="gl-dialogue-text">"Blockchain never forgets."</div>
+                        </div>
+                        <div class="gl-dialogue-line">
+                            <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                            <div class="gl-dialogue-text">"Great. Now we have permanent evidence of our bad decisions too."</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Central Lesson Callout Card -->
+            <div class="gl-central-lesson-card">
+                <div class="gl-lesson-title">
+                    <span>💡</span> THE CENTRAL LESSON OF CASE NEX-042
+                </div>
+                <div class="gl-lesson-chain">
+                    <span class="gl-chain-pill danger">FALSE DATA</span>
+                    <span>&rarr;</span>
+                    <span class="gl-chain-pill warn">TRUSTED AI CONTEXT</span>
+                    <span>&rarr;</span>
+                    <span class="gl-chain-pill warn">HIGH AI CONFIDENCE (99.2%)</span>
+                    <span>&rarr;</span>
+                    <span class="gl-chain-pill danger">AUTOMATED AUTHORIZATION</span>
+                    <span>&rarr;</span>
+                    <span class="gl-chain-pill">WEB3 TRANSACTION</span>
+                    <span>&rarr;</span>
+                    <span class="gl-chain-pill">BLOCKCHAIN DRAIN</span>
+                </div>
+                <div class="gl-lesson-punchline">
+                    "AI CONFIDENCE WAS TREATED AS AUTHORIZATION."
+                </div>
+            </div>
+
+            <!-- Interactive Investigation Attack Graph (16 Nodes) -->
+            <div class="gl-attack-graph-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <h3 style="font-family: var(--font-mono); font-size: 0.95rem; color: #fff; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="color: var(--accent);">🕸</span> INTERACTIVE ATTACK RECONSTRUCTION GRAPH (16 NODES)
+                    </h3>
+                    <span style="font-family: var(--font-mono); font-size: 0.72rem; color: #94a3b8;">
+                        Click any link in the chain to inspect forensic evidence
+                    </span>
+                </div>
+
+                <div class="gl-graph-container">
+                    <!-- Left: Scrollable 16-Node Attack Flow -->
+                    <div class="gl-nodes-flow" id="gl-nodes-list">
+                        <!-- Populated by JavaScript -->
+                    </div>
+
+                    <!-- Right: Node Inspector Panel -->
+                    <div class="gl-node-inspector" id="gl-node-inspector">
+                        <div>
+                            <div class="gl-inspector-header">
+                                <div class="gl-inspector-title" id="inspector-title">Select an attack node</div>
+                                <div class="gl-inspector-meta" id="inspector-meta">Interactive Investigation Inspector</div>
+                            </div>
+                            <div class="gl-inspector-desc" id="inspector-desc">
+                                Click on any node in the left investigation timeline to inspect its technical details, layer boundaries, and forensic takeaways.
+                            </div>
+                        </div>
+                        <div class="gl-inspector-details">
+                            <div><strong>FORENSIC EVIDENCE:</strong> <span id="inspector-evidence" style="color: #facc15;">--</span></div>
+                            <div style="margin-top: 0.35rem;"><strong>REMEDIATION CONTROL:</strong> <span id="inspector-mitigation" style="color: #4ade80;">--</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proceed to Quiz CTA -->
+            <div class="gl-action-row" style="justify-content: space-between; align-items: center;">
+                <button class="gl-btn-secondary" onclick="showSection('cinematic')">
+                    &larr; Replay Debrief
+                </button>
+                <button class="gl-btn-primary" onclick="showSection('quiz')">
+                    🎯 Begin Final Investigation Quiz (10 Questions) &rarr;
+                </button>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 3: FINAL INVESTIGATION QUIZ (10 QUESTIONS)             -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section class="gl-content-section" id="section-quiz" style="display: none;">
+            <div class="gl-quiz-card">
+                <div class="gl-quiz-header">
+                    <div>
+                        <h2 class="gl-section-title" style="margin: 0 0 0.25rem;">
+                            <span>🎯</span> FINAL INVESTIGATION QUIZ
+                        </h2>
+                        <p class="gl-section-sub" style="margin: 0;">
+                            "One last test before you become a certified Cyber Threat Investigator."
+                        </p>
+                    </div>
+                    <div style="font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-secondary); background: rgba(0,240,255,0.06); padding: 0.35rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid rgba(0,240,255,0.2);">
+                        ⏱ Timer: <span id="quiz-live-timer" style="color: var(--accent); font-weight: 700;">00:00</span>
+                    </div>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="gl-quiz-progress-wrap">
+                    <span class="gl-quiz-step-count" id="quiz-step-count">QUESTION 01 / 10</span>
+                    <div class="gl-quiz-progress-bar">
+                        <div class="gl-quiz-progress-fill" id="quiz-progress-fill" style="width: 10%;"></div>
+                    </div>
+                </div>
+
+                <!-- Question Box -->
+                <div class="gl-question-box">
+                    <div class="gl-question-tag" id="quiz-q-tag">SOC INVESTIGATION SCENARIO</div>
+                    <p style="font-size: 0.95rem; color: #cbd5e1; margin-bottom: 0.6rem; font-family: var(--font-mono);" id="quiz-q-scenario">
+                        The blockchain reports a wallet as UNKNOWN. ORION reports the wallet as TRUSTED with 99.2% confidence.
+                    </p>
+                    <div class="gl-question-text" id="quiz-q-text">
+                        What should the investigator suspect first?
+                    </div>
+                </div>
+
+                <!-- 4 Options Grid -->
+                <div class="gl-options-grid" id="quiz-options-grid">
+                    <!-- Populated dynamically by JavaScript -->
+                </div>
+
+                <!-- Feedback Box (Shows upon submit) -->
+                <div class="gl-feedback-box" id="quiz-feedback-box">
+                    <div class="gl-feedback-heading" id="feedback-heading">✓ CORRECT // FINDING VERIFIED</div>
+                    <div class="gl-character-reaction" id="feedback-reaction">
+                        Shanu: "Finally! Someone is checking the data before trusting the AI."
+                    </div>
+                    <div class="gl-feedback-explanation" id="feedback-explanation">
+                        When on-chain ground truth conflicts with an AI's synthetic classification, the vulnerability lies in the untrusted data feeds.
+                    </div>
+                </div>
+
+                <!-- Quiz Action Controls -->
+                <div class="gl-action-row" style="justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+                    <button class="gl-btn-secondary" onclick="showSection('overview')">
+                        &larr; Review Attack Graph
+                    </button>
+                    <div>
+                        <button class="gl-btn-primary" id="quiz-submit-btn" onclick="submitCurrentAnswer()" disabled>
+                            Submit Finding &rarr;
+                        </button>
+                        <button class="gl-btn-primary" id="quiz-next-btn" onclick="nextQuestion()" style="display: none;">
+                            Continue to Next Finding &rarr;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 4: INVESTIGATOR SCORE & RANK SCREEN                    -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section class="gl-content-section" id="section-score" style="display: none;">
+            <div class="gl-score-card">
+                <span class="gl-score-pill-badge">CASE NEX-042 // DEBRIEF ASSESSMENT</span>
+                <h2 class="gl-score-title">INVESTIGATION COMPLETE</h2>
+                <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 1.5rem;">
+                    Your forensic findings have been processed through the SOC Evaluation Grid.
+                </p>
+
+                <!-- Metrics Grid -->
+                <div class="gl-score-grid">
+                    <div class="gl-score-stat-box">
+                        <div class="gl-stat-lbl">Final Score</div>
+                        <div class="gl-stat-num accent" id="score-num">-- / 10</div>
+                    </div>
+                    <div class="gl-score-stat-box">
+                        <div class="gl-stat-lbl">Accuracy</div>
+                        <div class="gl-stat-num success" id="accuracy-num">--%</div>
+                    </div>
+                    <div class="gl-score-stat-box">
+                        <div class="gl-stat-lbl">Time Elapsed</div>
+                        <div class="gl-stat-num" id="time-num">--:--</div>
+                    </div>
+                    <div class="gl-score-stat-box">
+                        <div class="gl-stat-lbl">Evidence Recovered</div>
+                        <div class="gl-stat-num success" id="evidence-num">5 / 5</div>
+                    </div>
+                </div>
+
+                <!-- Rank Hero Banner -->
+                <div class="gl-rank-hero">
+                    <div style="font-family: var(--font-mono); font-size: 0.72rem; color: #94a3b8; letter-spacing: 1.5px; margin-bottom: 0.35rem;">
+                        ASSIGNED INVESTIGATOR RANK
+                    </div>
+                    <div class="gl-rank-title" id="rank-title">🛡️ ELITE CYBER THREAT INVESTIGATOR</div>
+                    <div class="gl-rank-desc" id="rank-desc">
+                        Exceptional analytical precision. You fully reconstructed the multi-layer attack across AI, Web3, and API domains.
+                    </div>
+                </div>
+
+                <!-- Recommendations Matrix -->
+                <div class="gl-recs-grid">
+                    <div class="gl-rec-card">
+                        <h4><span>🤖</span> AI Security Takeaways</h4>
+                        <ul>
+                            <li>Cryptographic data provenance for all external context feeds.</li>
+                            <li>Independent runtime verification against raw ledger truth.</li>
+                            <li>AI models must remain advisory, never unconstrained signers.</li>
+                        </ul>
+                    </div>
+                    <div class="gl-rec-card">
+                        <h4><span>🔗</span> Web3 &amp; Treasury Controls</h4>
+                        <ul>
+                            <li>Multi-Signature (MPC) requirements for transactions &gt; 50k NXR.</li>
+                            <li>Mandatory counterparty address allowlisting.</li>
+                            <li>Real-time bridge egress telemetry and circuit breakers.</li>
+                        </ul>
+                    </div>
+                    <div class="gl-rec-card">
+                        <h4><span>🛡️</span> Zero-Trust Architecture</h4>
+                        <ul>
+                            <li>Strict Principle of Least Privilege across microservices.</li>
+                            <li>Zero write access for ingestion gateways (INTEL-INGESTOR).</li>
+                            <li>Continuous behavioral anomaly detection.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="gl-action-row" style="justify-content: center; margin-top: 2rem; gap: 12px; flex-wrap: wrap;">
+                    <button class="gl-btn-primary" onclick="submitFinalLabFromPost()" style="background: linear-gradient(135deg, #00f0ff 0%, #00ff88 100%); color: #000; font-weight: 800; box-shadow: 0 0 25px rgba(0,240,255,0.4);">
+                        🚀 SUBMIT LAB &amp; COMPLETE CASE
+                    </button>
+                    <button class="gl-btn-primary" onclick="showSection('reveal')">
+                        ⚡ Reveal Campaign Intelligence &amp; Cliffhanger &rarr;
+                    </button>
+                    <button class="gl-btn-secondary" onclick="restartQuiz()">
+                        🔄 Retake SOC Assessment
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 5: FINAL STORY REVEAL & CLIFFHANGER (ORION-NEXUS)      -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section class="gl-content-section" id="section-reveal" style="display: none;">
+            <div class="gl-reveal-card">
+                <div class="gl-timestamp-header">
+                    <span>[03:21 AM UTC] SOC &bull; CENTRAL COMMAND</span>
+                    <span style="color: #ff5f57; font-weight: 700;">SECURITY CLEARANCE: TOP SECRET</span>
+                </div>
+
+                <div style="font-size: 0.95rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.6;">
+                    The SOC finally becomes quiet. Server fans hum quietly in the background. Lakshay closes the primary investigation board.
+                </div>
+
+                <!-- Dialogue Scene -->
+                <div class="gl-story-dialogue-group">
+                    <div class="gl-dialogue-line">
+                        <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                        <div class="gl-dialogue-text">"So... we're done?"</div>
+                    </div>
+                    <div class="gl-dialogue-line">
+                        <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                        <div class="gl-dialogue-text">"With this transaction."</div>
+                    </div>
+                    <div class="gl-dialogue-line">
+                        <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                        <div class="gl-dialogue-text">"Not with ORION-NEXUS."</div>
+                    </div>
+                    <div class="gl-dialogue-line">
+                        <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                        <div class="gl-dialogue-text" style="color: #ff5f57;">"...Wait. Look at the telemetry cluster."</div>
+                    </div>
+                </div>
+
+                <!-- Threat Notification Box -->
+                <div class="gl-threat-alert-box">
+                    --------------------------------------------------<br>
+                    🚨 <strong>UNKNOWN NODE DETECTED</strong><br>
+                    SOURCE: UNKNOWN<br>
+                    TARGET NETWORKS: 04<br>
+                    TARGET AI SYSTEMS: 03<br>
+                    SIGNATURE: ADV-CONVERGENCE-APT<br>
+                    --------------------------------------------------
+                </div>
+
+                <div class="gl-dialogue-line" style="margin: 1.25rem 0;">
+                    <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                    <div class="gl-dialogue-text" style="font-size: 1.1rem; color: #ff5f57; font-weight: 700;">"...Guys?"</div>
+                </div>
+
+                <!-- Blackout / Glitch Message -->
+                <div class="gl-blackout-banner">
+                    <div class="gl-watching-text">&gt; ORION-NEXUS IS STILL WATCHING.</div>
+                </div>
+
+                <!-- Locked Next Investigation Card -->
+                <div class="gl-next-campaign-card">
+                    <div class="gl-locked-badge">
+                        <span>🔒</span> NEXT INVESTIGATION: LOCKED
+                    </div>
+                    <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0.4rem 0;">
+                        CAMPAIGN: ORION-NEXUS
+                    </h3>
+                    <p style="font-size: 0.95rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 1.25rem;">
+                        "Something is moving behind the trust layer. The ghost was never an isolated bug — it was a reconnaissance probe across 04 Web3 networks and 03 AI engines."
+                    </p>
+                    <div style="font-family: var(--font-mono); font-size: 0.8rem; color: #94a3b8; margin-bottom: 1.5rem;">
+                        <div>STATUS: <span style="color: #ff5f57; font-weight: 700;">🔴 ACTIVE</span></div>
+                        <div>ACCESS RESTRICTION: <span style="color: #facc15;">CLASSIFIED // CASE NEX-043 PENDING</span></div>
+                    </div>
+
+                    <div class="gl-action-row" style="margin-top: 1rem;">
+                        <a href="{{ url_for('labs.labs') }}" class="gl-btn-primary">
+                            🏠 Return to Lab Headquarters
+                        </a>
+                        <button class="gl-btn-secondary" onclick="copyCampaignDossier()">
+                            📋 Copy Threat Dossier
+                        </button>
+                        <a href="{{ url_for('labs.ghost_ledger_workstation') }}" class="gl-btn-secondary">
+                            🖥 Workstation Terminal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CONGRATULATIONS CELEBRATION MODAL                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="gl-celebration-overlay" id="gl-post-celebration-modal" style="display:none;">
+    <canvas id="post-celebration-confetti-canvas" class="gl-confetti-canvas"></canvas>
+    
+    <div class="gl-celebration-card">
+        <!-- Floating Celebration Emojis Header -->
+        <div class="gl-celebration-emojis-row">
+            <span class="gl-cel-emoji bounce-1">🎉</span>
+            <span class="gl-cel-emoji bounce-2">⚡</span>
+            <span class="gl-cel-emoji bounce-3">🤖</span>
+            <span class="gl-cel-emoji bounce-4">⛓️</span>
+            <span class="gl-cel-emoji bounce-5">🛡️</span>
+            <span class="gl-cel-emoji bounce-6">💎</span>
+            <span class="gl-cel-emoji bounce-7">🥳</span>
+        </div>
+
+        <!-- Trophy Glow Badge -->
+        <div class="gl-celebration-badge-glow">
+            <div class="gl-celebration-trophy">🏆</div>
+        </div>
+
+        <h1 class="gl-celebration-title">CONGRATULATIONS, INVESTIGATOR!</h1>
+        <p class="gl-celebration-subtitle">
+            You have successfully completed the full forensic assessment for <strong>Case NEX-042</strong> and contained the multi-layered ORION-NEXUS threat!
+        </p>
+
+        <!-- Stats Grid -->
+        <div class="gl-celebration-stats-grid">
+            <div class="gl-cel-stat-box">
+                <div class="gl-cel-stat-lbl">TOTAL XP AWARDED</div>
+                <div class="gl-cel-stat-val gl-gold-text">+1,500 XP</div>
+            </div>
+            <div class="gl-cel-stat-box">
+                <div class="gl-cel-stat-lbl">INVESTIGATION STATUS</div>
+                <div class="gl-cel-stat-val gl-cyan-text">CONTAINED 🏁</div>
+            </div>
+            <div class="gl-cel-stat-box">
+                <div class="gl-cel-stat-lbl">QUIZ ACCURACY</div>
+                <div class="gl-cel-stat-val gl-green-text" id="modal-accuracy-val">100%</div>
+            </div>
+            <div class="gl-cel-stat-box">
+                <div class="gl-cel-stat-lbl">EVIDENCE VAULT</div>
+                <div class="gl-cel-stat-val gl-cyan-text">5 / 5 VERIFIED</div>
+            </div>
+        </div>
+
+        <!-- Rank Hero Box -->
+        <div class="gl-celebration-rank-card">
+            <div class="gl-cel-rank-tag">SECURITY CLEARANCE LEVEL 5 // ACCREDITED</div>
+            <div class="gl-cel-rank-title" id="modal-rank-title">🛡️ CERTIFIED WEB3 &amp; AI THREAT HUNTER ⭐⭐⭐⭐⭐</div>
+            <div class="gl-cel-rank-desc" id="modal-rank-desc">
+                Demonstrated superior threat hunting acumen across blockchain transactions, AI context provenance, and Zero-Trust defense.
+            </div>
+        </div>
+
+        <!-- Celebration Action Buttons -->
+        <div class="gl-celebration-actions">
+            <a href="{{ url_for('labs.labs') }}" class="gl-cel-btn primary">
+                <span>🏠</span> Return to Mission Dashboard
+            </a>
+            <button class="gl-cel-btn secondary" onclick="closePostCelebrationModal(); showSection('reveal');">
+                <span>🔴</span> Reveal Campaign Intelligence &rarr;
+            </button>
+            <button class="gl-cel-btn outline" onclick="closePostCelebrationModal()">
+                <span>🔍</span> Review Score Card
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/ghost_ledger_post.js') }}"></script>
+{% endblock %}

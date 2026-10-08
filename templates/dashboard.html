@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - HACK THE AI{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="dashboard-welcome" style="margin-bottom: var(--space-6);">
+        <h2 class="cyber-text" style="font-size: 2rem;">Welcome_back, <span class="text-accent">{{ session.get('username') }}</span><span class="cursor" style="animation: blink 1s step-end infinite;">_</span></h2>
+        <p class="text-secondary mono">&gt; System status: ONLINE | User authenticated</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="card elevated">
+            <div class="stat-label">Total XP</div>
+            <div class="stat-value">1500</div>
+        </div>
+        <div class="card elevated">
+            <div class="stat-label">Labs Completed</div>
+            <div class="stat-value">{{ completed }} / {{ total_labs }}</div>
+        </div>
+        <div class="card elevated">
+            <div class="stat-label">Missions Done</div>
+            <div class="stat-value">5</div>
+        </div>
+        <div class="card elevated">
+            <div class="stat-label">Achievements</div>
+            <div class="stat-value">2</div>
+        </div>
+    </div>
+
+    <div class="dashboard-sections">
+        <!-- Main Area: Learning Progress / Recent Labs -->
+        <div class="card">
+            <h3 style="margin-bottom: var(--space-6);">Learning Progress</h3>
+            
+            {% if labs %}
+                <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+                {% for lab in labs %}
+                    <div style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-sm); background-color: rgba(0,0,0,0.3); transition: all var(--transition-fast); {% if lab.status == 'COMPLETED' %}border-color: var(--success); box-shadow: 0 0 10px rgba(57, 255, 20, 0.1) inset;{% endif %}">
+                        <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background-color: var(--bg-elevated); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                            {% if lab.status == 'COMPLETED' %}
+                                <span class="text-success">✓</span>
+                            {% elif lab.status == 'IN PROGRESS' %}
+                                <span class="text-warning">●</span>
+                            {% elif lab.status == 'AVAILABLE' %}
+                                <span class="text-accent">▶</span>
+                            {% else %}
+                                <span class="text-muted">🔒</span>
+                            {% endif %}
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="margin-bottom: 0; font-family: var(--font-mono); text-transform: uppercase;">{{ lab.name }}</h4>
+                            <div class="text-secondary mono" style="font-size: 0.8rem;">{{ lab.topic }}</div>
+                        </div>
+                        <div>
+                            {% if lab.status == 'COMPLETED' %}
+                                <span class="badge badge-success">Completed</span>
+                            {% elif lab.status == 'IN PROGRESS' %}
+                                <a href="{{ url_for('labs.workstation', lab_id=lab.id) }}" class="btn btn-primary btn-sm">Continue</a>
+                            {% elif lab.status == 'AVAILABLE' %}
+                                <a href="{{ url_for('labs.workstation', lab_id=lab.id) }}" class="btn btn-outline btn-sm">Start Lab</a>
+                            {% else %}
+                                <span class="badge badge-secondary">Locked</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p>No labs found. Seed the database to get started.</p>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar Area: Recent Activity -->
+        <div class="card">
+            <h3 style="margin-bottom: var(--space-6);">Recent Activity</h3>
+            <div class="recent-activity-list">
+                <!-- Mock Activity for UI Display -->
+                <div class="activity-item">
+                    <div class="activity-icon">🏆</div>
+                    <div class="activity-details">
+                        <div class="activity-title">Logged in successfully</div>
+                        <div class="activity-time">Just now</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">🚩</div>
+                    <div class="activity-details">
+                        <div class="activity-title">Flag Captured</div>
+                        <div class="activity-time">2 hours ago</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">✓</div>
+                    <div class="activity-details">
+                        <div class="activity-title">Mission Completed</div>
+                        <div class="activity-time">Yesterday</div>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="#" class="btn btn-secondary btn-block" style="margin-top: var(--space-4);">View All Activity</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

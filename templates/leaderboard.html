@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - HACK THE AI{% endblock %}
+{% block page_title %}Global Leaderboard{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="card elevated">
+        <h3 style="margin-bottom: var(--space-6);">Top Hackers</h3>
+        
+        {% if leaders %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <th style="padding: var(--space-3) var(--space-4); color: var(--text-secondary);">Rank</th>
+                            <th style="padding: var(--space-3) var(--space-4); color: var(--text-secondary);">Username</th>
+                            <th style="padding: var(--space-3) var(--space-4); color: var(--text-secondary);">Total XP</th>
+                            <th style="padding: var(--space-3) var(--space-4); color: var(--text-secondary);">Labs Completed</th>
+                            <th style="padding: var(--space-3) var(--space-4); color: var(--text-secondary);">Missions Completed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in leaders %}
+                            <tr style="border-bottom: 1px solid var(--border); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--bg-elevated)'" onmouseout="this.style.backgroundColor='transparent'">
+                                <td style="padding: var(--space-4);">
+                                    {% if loop.index == 1 %}
+                                        <span style="font-size: 1.5rem;" title="1st Place">🥇</span>
+                                    {% elif loop.index == 2 %}
+                                        <span style="font-size: 1.5rem;" title="2nd Place">🥈</span>
+                                    {% elif loop.index == 3 %}
+                                        <span style="font-size: 1.5rem;" title="3rd Place">🥉</span>
+                                    {% else %}
+                                        <span class="text-secondary" style="font-weight: bold; margin-left: var(--space-2);">{{ loop.index }}</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: var(--space-4); font-weight: bold; {% if loop.index <= 3 %}color: var(--accent);{% endif %}">{{ user.username }}</td>
+                                <td style="padding: var(--space-4);"><span class="badge badge-primary">{{ user.total_xp }} XP</span></td>
+                                <td style="padding: var(--space-4);">{{ user.labs_completed }}</td>
+                                <td style="padding: var(--space-4);">{{ user.missions_completed }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted" style="text-align: center; padding: var(--space-8);">No data available yet. Start hacking to see your name here!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

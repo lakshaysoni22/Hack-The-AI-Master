@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel — TechCorp Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">TECH<span>CORP</span> EMPLOYEE MANAGEMENT PORTAL</div>
+    <div class="userinfo">Welcome, {{ user['display_name'] }} &middot; <a href="{{ url_for('logout') }}" style="color:var(--text-dim);">Logout</a></div>
+  </div>
+  <div class="container">
+    <nav class="portal-nav">
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('profile') }}">My Profile</a>
+      <a href="{{ url_for('team') }}">Team Management</a>
+      <a class="active" href="{{ url_for('admin') }}">Admin Panel</a>
+    </nav>
+
+    <div class="card">
+      <h2>Administrator Panel</h2>
+      <p style="color:var(--text-dim); font-size:14px;">
+        Access granted based on role: <span class="badge badge-{{ page_role }}">{{ page_role }}</span>
+      </p>
+      <p style="font-size:14px;">System settings, user management, and audit logs would normally
+      appear here for administrators only.</p>
+
+      {% if flag_awarded or flag_previously_captured %}
+      <div class="flag-box">
+        <strong>Access Control Bypass Confirmed</strong>
+        <p style="font-size:13px; color:var(--text-dim); margin: 6px 0 0;">
+          Your authenticated account role did not match the role used to grant this page.
+        </p>
+        <code>FLAG: TC{broken_access_control}</code>
+      </div>
+      <p style="font-size:13px; color:var(--text-dim); margin-top:14px;">
+        Head back to the task panel to submit this flag.
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

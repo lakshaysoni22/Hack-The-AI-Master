@@ -1,0 +1,1159 @@
+{% extends "base.html" %}
+
+{% block title %}The Vanishing Consensus - HACK THE AI{% endblock %}
+{% block page_title %}Case NEX-071{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/ghost_ledger.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/ghost_ledger_desktop.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/vanishing_consensus_desktop.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="gl-lab-shell">
+
+    <!-- Mobile View Mode Switcher (Visible on mobile/tablet <= 1024px) -->
+    <div class="vc-mobile-mode-switcher">
+        <button type="button" class="vc-mobile-tab-btn active" id="vc-btn-mobile-tasks" onclick="vcSwitchMobileView('tasks')">
+            📋 Investigation Tasks
+        </button>
+        <button type="button" class="vc-mobile-tab-btn" id="vc-btn-mobile-desktop" onclick="vcSwitchMobileView('desktop')">
+            💻 Consensus Desktop
+        </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- LEFT PANEL — Investigation Tasks                               -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="gl-task-panel">
+
+        <!-- Header -->
+        <div class="gl-task-header">
+            <div class="gl-breadcrumb">Hack The AI &gt; Labs &gt; PRO Lab 02</div>
+            <h1 class="gl-room-title">The Vanishing Consensus</h1>
+            <p class="gl-room-subtitle">Hack The AI Security Lab — Case NEX-071</p>
+            <div class="gl-room-meta">
+                <span>🏢 Security Operations Center</span>
+                <span>⚡ PRO (300 XP)</span>
+                <span>⏱ 55-65 min</span>
+                <span>🔬 WEB3 × AI × CYBERSECURITY × IoT</span>
+            </div>
+            <div class="gl-control-row">
+                <button class="gl-pill-btn primary" id="gl-start-lab-btn" onclick="startInvestigation()">🔍 Start Investigation</button>
+                <button class="gl-pill-btn danger" id="gl-header-restart-btn" onclick="restartLab('{{ lab_id }}')" title="Reset all progress and restart investigation from beginning">🔄 Restart Lab</button>
+                <a href="{{ url_for('labs.labs') }}" class="gl-pill-btn" style="color:#94a3b8; border-color:rgba(255,255,255,0.15);">✕ Exit</a>
+                <span class="gl-status-dot" id="gl-status-dot"></span>
+                <span class="gl-timer-text" id="gl-timer-text">00:00:00</span>
+                <span style="font-family: var(--font-mono); font-size: 11px; color: #64748b;" title="Auto-restart at 65m limit">(Limit: 65m)</span>
+            </div>
+        </div>
+
+        <!-- Opening Incident Briefing -->
+        <div class="gl-story-block" style="border-left: 3px solid #38bdf8; background: rgba(56, 189, 248, 0.04); margin-bottom: 14px;">
+            <div style="font-family: var(--font-mono); font-size: 10.5px; color: #38bdf8; letter-spacing: 1.2px; font-weight: 700; margin-bottom: 6px;">
+                ⚡ THE VANISHING CONSENSUS // CORE INCIDENT
+            </div>
+            <div style="font-size: 12.5px; color: #cbd5e1; line-height: 1.55; display: flex; flex-direction: column; gap: 4px;">
+                <p style="margin:0;">03:12 AM. The blockchain monitoring system detects something that should be impossible.</p>
+                <p style="margin:0;">A new block contains a transaction that appears to have happened before its own oracle price existed.</p>
+                <p style="margin:0;">At almost the same time, several industrial IoT sensors connected to the Web3 infrastructure begin reporting perfectly synchronized telemetry.</p>
+                <p style="margin:0; font-family: var(--font-mono); font-size: 11.5px; color: #94a3b8;">Temperature. Power consumption. Location. Device health. Everything looks normal. Almost too normal.</p>
+                <p style="margin:0;">Three validator nodes agree on the resulting blockchain state. Two reject it.</p>
+                <p style="margin:0;">Meanwhile, the AI security engine reports: <strong style="color: #38bdf8;">'CONSENSUS HEALTHY — 98.7%'</strong></p>
+                <p style="margin:0;">No validator appears compromised. No private key has been stolen. The IoT devices still appear online.</p>
+                <p style="margin:0; color: #f87171; font-weight: 700;">Yet the network is slowly beginning to disagree with itself. Someone isn't attacking the blockchain directly — someone is manipulating what the blockchain was told to believe.</p>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="gl-progress-bar">
+            <div class="gl-progress-fill" id="gl-progress-fill" style="width: {{ (evidence_collected / 5 * 100)|int }}%"></div>
+        </div>
+        <div class="gl-progress-label">{{ evidence_collected }}/5 Chapters Verified</div>
+
+        <!-- Investigation Chapters (Accordion Tasks) -->
+        <div class="gl-tasks-container">
+
+            {% for m in missions %}
+            <div class="gl-task-block {% if m.status == 'COMPLETED' %}completed{% elif m.status in ['AVAILABLE', 'IN PROGRESS'] %}active{% else %}locked{% endif %}"
+                 id="gl-task-{{ m.mission_number }}" data-mission-id="{{ m.id }}">
+
+                <div class="gl-task-header-row" onclick="toggleTask({{ m.mission_number }})">
+                    <div class="gl-task-check {% if m.status == 'COMPLETED' %}done{% endif %}">
+                        {% if m.status == 'COMPLETED' %}✓{% else %}{{ m.mission_number }}{% endif %}
+                    </div>
+                    <div class="gl-task-title">
+                        <strong>Chapter {{ m.mission_number }}: {{ m.title }}</strong>
+                        <span class="gl-task-domain">
+                            {% if m.mission_number == 1 %}IoT Security / Digital Forensics
+                            {% elif m.mission_number == 2 %}IoT × Web3 Oracle Security
+                            {% elif m.mission_number == 3 %}IoT AI Security / Model Poisoning
+                            {% elif m.mission_number == 4 %}IoT × AI × Blockchain Consensus
+                            {% else %}Full Cross-Layer Attack Reconstruction{% endif %}
+                        </span>
+                    </div>
+                    <span class="gl-task-arrow">▼</span>
+                </div>
+
+                <div class="gl-task-body">
+                    <!-- Dialogue Stream -->
+                    <div class="gl-story-block" id="chapter-story-block-{{ m.mission_number }}">
+                        <div style="font-family: var(--font-mono); font-size: 10px; color: #38bdf8; letter-spacing: 1px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase;">
+                            🎙️ INVESTIGATION DIALOGUE // CHAPTER {{ m.mission_number }}
+                        </div>
+                        <div class="gl-dialogue-stream" id="dialogue-stream-{{ m.mission_number }}">
+                            {% if m.mission_number == 1 %}
+                            <div class="gl-dialogue-line" data-step="1">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"The IoT gateway shows 184 active devices, but the telemetry patterns from several devices are nearly identical."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="2">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"These sensors are in different locations. Their readings shouldn't synchronize this perfectly."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="3">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"Perfect synchronization can be more suspicious than random noise. Real physical systems usually contain variation."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="4">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"Check whether the devices generated these readings locally or whether the gateway modified them."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="5">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"That's the problem. The devices appear healthy, but the gateway logs show a different sequence of telemetry events."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="6">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"Then the blockchain may not be the beginning of the attack. It may only be where the manipulated data became permanent."</div>
+                            </div>
+                            {% elif m.mission_number == 2 %}
+                            <div class="gl-dialogue-line" data-step="1">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"The oracle isn't receiving raw blockchain data. It's consuming external telemetry."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="2">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"And that telemetry originates from the IoT gateway."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="3">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"Then the oracle providers aren't independent if they're all consuming the same manipulated telemetry stream."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="4">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"Exactly. The attack moved from the physical world into the Web3 trust layer."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="5">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"Four providers can appear to agree while actually repeating the same poisoned information."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="6">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"Which means the blockchain may be reaching consensus on data that was already compromised before it entered the chain."</div>
+                            </div>
+                            {% elif m.mission_number == 3 %}
+                            <div class="gl-dialogue-line" data-step="1">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"ORION saw the synchronized IoT telemetry, but it classified the pattern as normal."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="2">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"Can the model distinguish physical anomalies from fabricated telemetry?"</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="3">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"Only if its training data taught it what both look like."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="4">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"I found repeated synthetic device events in the training feedback."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="5">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"So someone wasn't only manipulating live IoT telemetry. They were preparing the AI to trust similar behavior."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="6">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"The physical layer was poisoned first. Then the AI was trained not to question the poison."</div>
+                            </div>
+                            {% elif m.mission_number == 4 %}
+                            <div class="gl-dialogue-line" data-step="1">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"The validators are no longer processing exactly the same derived state."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="2">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"Because the upstream telemetry was inconsistent?"</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="3">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"Exactly. Different data paths produced slightly different oracle states."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="4">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"And ORION isn't escalating the difference because the model considers the telemetry pattern normal."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="5">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"So IoT manipulation created the input anomaly, AI suppressed the warning, and the blockchain inherited the disagreement."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="6">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"Three separate security layers failed in sequence."</div>
+                            </div>
+                            {% else %}
+                            <div class="gl-dialogue-line" data-step="1">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"The attack started outside the blockchain."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="2">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"At the IoT telemetry layer."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="3">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"The manipulated data then entered the oracle ecosystem."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="4">
+                                <span class="gl-avatar-chip gl-chip-shanu">Shanu</span>
+                                <div class="gl-dialogue-text">"And the poisoned AI model helped hide the anomaly."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="5">
+                                <span class="gl-avatar-chip gl-chip-shivam">Shivam</span>
+                                <div class="gl-dialogue-text">"Different validators eventually processed different states."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="6">
+                                <span class="gl-avatar-chip gl-chip-lakshay">Lakshay</span>
+                                <div class="gl-dialogue-text">"So the blockchain wasn't directly hacked."</div>
+                            </div>
+                            <div class="gl-dialogue-line" data-step="7">
+                                <span class="gl-avatar-chip gl-chip-mehak">Mehak</span>
+                                <div class="gl-dialogue-text">"It was manipulated through the trust chain connecting IoT, AI, Web3 and blockchain."</div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Dialogue Stepper Navigation -->
+                        <div class="gl-dialogue-nav" id="dialogue-nav-{{ m.mission_number }}">
+                            <button type="button" class="gl-dialogue-btn" onclick="stepDialogue({{ m.mission_number }}, -1)" id="dlg-prev-{{ m.mission_number }}" disabled>← BACK</button>
+                            <span class="gl-dialogue-stepper" id="dlg-stepper-{{ m.mission_number }}">Dialogue 1/{{ 7 if m.mission_number == 5 else 6 }}</span>
+                            <button type="button" class="gl-dialogue-btn" onclick="stepDialogue({{ m.mission_number }}, 1)" id="dlg-next-{{ m.mission_number }}">NEXT →</button>
+                        </div>
+                    </div>
+
+                    <!-- System Telemetry & Evidence Badges -->
+                    <div class="gl-system-data">
+                        {% if m.mission_number == 1 %}
+                        <div><span class="gl-lbl">IoT Gateway:</span> <span class="gl-val-cyan">GATEWAY-GW-184</span></div>
+                        <div><span class="gl-lbl">Connected Sensors:</span> <span class="gl-val-yellow">184 Active Industrial Nodes</span></div>
+                        <div><span class="gl-lbl">Telemetry Variance:</span> <span class="gl-val-red">0.00% (SYNTHETIC SYNCHRONIZATION)</span></div>
+                        <div><span class="gl-lbl">Ingestion Status:</span> <span class="gl-val-red">TAMPERED_AT_GATEWAY</span></div>
+                        {% elif m.mission_number == 2 %}
+                        <div><span class="gl-lbl">Web3 Oracle:</span> <span class="gl-val-cyan">NOVA-PRICE-ORACLE</span></div>
+                        <div><span class="gl-lbl">Data Ingestion:</span> <span class="gl-val-yellow">IoT Gateway Feed Aggregator</span></div>
+                        <div><span class="gl-lbl">Provider Consensus:</span> <span class="gl-val-red">4/4 Agree on Poisoned Feed</span></div>
+                        {% elif m.mission_number == 3 %}
+                        <div><span class="gl-lbl">AI Sentinel:</span> <span class="gl-val-cyan">MODEL-ORION (v3.8.4)</span></div>
+                        <div><span class="gl-lbl">Classification:</span> <span class="gl-val-yellow">NORMAL_NETWORK_VARIANCE (98.7%)</span></div>
+                        <div><span class="gl-lbl">Poisoned Feedback:</span> <span class="gl-val-red">EMB-IOT-9041 (Synthetic Events)</span></div>
+                        {% elif m.mission_number == 4 %}
+                        <div><span class="gl-lbl">Consensus Nodes:</span> <span class="gl-val-cyan">21 Nodes (BFT-POS)</span></div>
+                        <div><span class="gl-lbl">Validator Split:</span> <span class="gl-val-yellow">3 Accept : 2 Reject (Derived Mismatch)</span></div>
+                        <div><span class="gl-lbl">Fork Alarm:</span> <span class="gl-val-red">SUPPRESSED_BY_AI</span></div>
+                        {% else %}
+                        <div><span class="gl-lbl">Attack Chain:</span> <span class="gl-val-cyan">IoT &rarr; Telemetry &rarr; Oracle &rarr; AI &rarr; Blockchain</span></div>
+                        <div><span class="gl-lbl">Containment Proposal:</span> <span class="gl-val-green">GOV-NEX-071 (Executed)</span></div>
+                        <div><span class="gl-lbl">Unified Consensus:</span> <span class="gl-val-green">21 / 21 Nodes (100% Finality Restored)</span></div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Subtask Stepper Header -->
+                    <div class="gl-subtask-stepper">
+                        <div class="gl-subtask-nav">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="gl-subtask-title">🎯 Chapter {{ m.mission_number }} Objectives</span>
+                                <span style="font-family:var(--font-mono); font-size:11px; color:#94a3b8;" id="chapter-progress-text-{{ m.mission_number }}">
+                                    {{ m.solved_quizzes_count }}/{{ m.quizzes|length }} Verified
+                                </span>
+                            </div>
+                            <div class="gl-subtask-pills" id="subtask-pills-{{ m.mission_number }}">
+                                {% for q in m.quizzes %}
+                                <button type="button" 
+                                        class="gl-subtask-pill {% if q.is_solved %}solved{% elif loop.first %}active{% endif %}"
+                                        id="pill-{{ m.mission_number }}-{{ loop.index0 }}"
+                                        onclick="selectSubTask({{ m.mission_number }}, {{ loop.index0 }})">
+                                    Task {{ loop.index }} {% if q.is_solved %}✓{% endif %}
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6 Chapter Sub-Questions Cards -->
+                    {% for q in m.quizzes %}
+                    <div class="gl-subtask-card {% if loop.first %}active{% endif %}"
+                         id="subtask-card-{{ m.mission_number }}-{{ loop.index0 }}"
+                         data-quiz-id="{{ q.id }}"
+                         data-quiz-idx="{{ loop.index0 }}"
+                         data-is-solved="{{ 'true' if q.is_solved else 'false' }}">
+
+                        <div class="gl-question-banner" style="margin-bottom: 10px; background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2); border-left: 4px solid #38bdf8; border-radius: 4px; padding: 10px 12px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                <span class="gl-obj-num">OBJECTIVE {{ loop.index }} OF {{ m.quizzes|length }}</span>
+                                <span class="gl-xp-badge">+{{ q.xp_reward }} XP</span>
+                            </div>
+                            <div class="gl-target-question">{{ q.question }}</div>
+                        </div>
+
+                        <div class="gl-quiz-input-row">
+                            <input type="text" class="gl-quiz-input" id="input-{{ q.id }}"
+                                   placeholder="Enter investigator finding..."
+                                   {% if q.is_solved %}disabled value="Verified Finding"{% endif %}
+                                   onkeydown="if(event.key==='Enter') submitObjective('{{ m.id }}', '{{ q.id }}', 'input-{{ q.id }}', 'result-{{ q.id }}')">
+                            <button class="gl-quiz-btn" onclick="submitObjective('{{ m.id }}', '{{ q.id }}', 'input-{{ q.id }}', 'result-{{ q.id }}')"
+                                    {% if q.is_solved %}disabled{% endif %}>
+                                Verify
+                            </button>
+                            <button class="gl-hint-btn" onclick="requestHint('h_l7_{{ m.mission_number }}_{{ loop.index }}', '{{ m.id }}')" title="Get Investigator Hint">💡</button>
+                        </div>
+                        <div class="gl-quiz-result" id="result-{{ q.id }}"></div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Capstone 10-Question Final Assessment (Unlocked After Chapter 5) -->
+            <div class="gl-task-block {% if ch5_completed %}active{% else %}locked{% endif %}" id="gl-capstone-quiz-block" data-unlocked="{{ 'true' if ch5_completed else 'false' }}">
+                <div class="gl-task-header-row" onclick="this.parentElement.classList.toggle('open')">
+                    <div class="gl-task-check done">🎓</div>
+                    <div class="gl-task-title">
+                        <strong>Capstone Assessment: Cross-Layer Trust-Chain Evaluation</strong>
+                        <span class="gl-task-domain" id="capstone-header-tag">{% if ch5_completed %}Ready for Assessment{% else %}Locked — Complete Chapter 5 First{% endif %}</span>
+                    </div>
+                    <span class="gl-task-arrow">▼</span>
+                </div>
+                <div class="gl-task-body">
+                    <div class="gl-story-block" style="border-left: 3px solid #a855f7; background: rgba(168, 85, 247, 0.05); margin-bottom: 16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span style="font-family:var(--font-mono); font-size:11px; color:#c084fc; font-weight:700;">
+                                🏆 FINAL MULTI-LAYER CAPSTONE ASSESSMENT (IoT + Web3 + AI + Blockchain)
+                            </span>
+                            <span class="gl-capstone-score-badge" id="capstone-score-badge">Required: >= 70% to pass</span>
+                        </div>
+                        <p style="margin:0; font-size:12.5px; color:#cbd5e1; line-height:1.5;">
+                            Demonstrate cross-domain mastery connecting IoT Telemetry, Web3 Oracles, AI Model Poisoning, and Blockchain Consensus.
+                        </p>
+                    </div>
+
+                    <form id="capstone-quiz-form" onsubmit="event.preventDefault(); submitCapstoneQuiz();">
+                        <!-- Q1 -->
+                        <div class="capstone-quiz-item">
+                            <div class="capstone-q-title"><strong>1.</strong> What was the earliest suspicious indicator in Case NEX-071?</div>
+                            <label class="capstone-option"><input type="radio" name="cap_q1" value="A"> A) Invalid blockchain hash</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q1" value="B"> B) Perfectly synchronized IoT telemetry across geographically dispersed sensors</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q1" value="C"> C) Missing validator</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q1" value="D"> D) Failed login</label>
+                        </div>
+
+                        <!-- Q2 -->
+                        <div class="capstone-quiz-item">
+                            <div class="capstone-q-title"><strong>2.</strong> Why was the IoT telemetry critical to the attack?</div>
+                            <label class="capstone-option"><input type="radio" name="cap_q2" value="A"> A) It became the manipulated data source feeding the downstream Web3 and blockchain systems.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q2" value="B"> B) The IoT devices were physically destroyed by the attacker.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q2" value="C"> C) IoT sensors were used to mine cryptocurrency.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q2" value="D"> D) The sensors leaked private cryptographic validator keys.</label>
+                        </div>
+
+                        <!-- Q3 -->
+                        <div class="capstone-quiz-item">
+                            <div class="capstone-q-title"><strong>3.</strong> Why did oracle provider agreement fail to guarantee truth?</div>
+                            <label class="capstone-option"><input type="radio" name="cap_q3" value="A"> A) Multiple providers depended on the same compromised upstream telemetry source.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q3" value="B"> B) Oracles cannot perform arithmetic calculations.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q3" value="C"> C) Smart contracts were written in an unsupported programming language.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q3" value="D"> D) All oracle nodes were offline.</label>
+                        </div>
+
+                        <!-- Q4 -->
+                        <div class="capstone-quiz-item">
+                            <div class="capstone-q-title"><strong>4.</strong> How was MODEL-ORION compromised?</div>
+                            <label class="capstone-option"><input type="radio" name="cap_q4" value="A"> A) Its training feedback contained manipulated/synthetic IoT behavior labelled as legitimate.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q4" value="B"> B) The server running the AI model was unplugged.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q4" value="C"> C) A brute-force password dictionary attack against the AI root account.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q4" value="D"> D) The model ran out of memory.</label>
+                        </div>
+
+                        <!-- Q5 -->
+                        <div class="capstone-quiz-item">
+                            <div class="capstone-q-title"><strong>5.</strong> Why could ORION confidently classify the attack as normal?</div>
+                            <label class="capstone-option"><input type="radio" name="cap_q5" value="A"> A) The model had learned manipulated patterns as normal baseline behavior.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q5" value="B"> B) The AI was instructed to ignore all blockchain transactions.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q5" value="C"> C) ORION only processes image files.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q5" value="D"> D) The model confidence was hardcoded to 100%.</label>
+                        </div>
+
+                        <!-- Q6 -->
+                        <div class="capstone-quiz-item">
+                            <div class="capstone-q-title"><strong>6.</strong> How did IoT manipulation eventually affect blockchain consensus?</div>
+                            <label class="capstone-option"><input type="radio" name="cap_q6" value="A"> A) Manipulated telemetry affected oracle-derived states, causing validators to process different states.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q6" value="B"> B) IoT devices sent DDoS packets directly to the P2P gossip network.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q6" value="C"> C) Smart contract source code was deleted from disk.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q6" value="D"> D) The blockchain reverted to Proof of Work.</label>
+                        </div>
+
+                        <!-- Q7 -->
+                        <div class="capstone-quiz-item">
+                            <div class="capstone-q-title"><strong>7.</strong> What made the attack difficult to detect?</div>
+                            <label class="capstone-option"><input type="radio" name="cap_q7" value="A"> A) Each layer appeared relatively healthy while the attacker exploited the trust relationships between layers.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q7" value="B"> B) The attack happened in less than one nanosecond.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q7" value="C"> C) All log files across all servers were completely deleted.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q7" value="D"> D) The blockchain network was private and hidden.</label>
+                        </div>
+
+                        <!-- Q8 -->
+                        <div class="capstone-quiz-item">
+                            <div class="capstone-q-title"><strong>8.</strong> Which sequence best represents the attack?</div>
+                            <label class="capstone-option"><input type="radio" name="cap_q8" value="A"> A) Blockchain → IoT → AI → Oracle</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q8" value="B"> B) IoT → Oracle → AI → Validator divergence</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q8" value="C"> C) AI → User → IoT → Blockchain</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q8" value="D"> D) Validator → IoT → Oracle → AI</label>
+                        </div>
+
+                        <!-- Q9 -->
+                        <div class="capstone-quiz-item">
+                            <div class="capstone-q-title"><strong>9.</strong> Did the attacker need to directly control or hack the blockchain?</div>
+                            <label class="capstone-option"><input type="radio" name="cap_q9" value="A"> A) Yes — they required 51% hashpower control.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q9" value="B"> B) No — the attacker manipulated trusted information upstream of consensus.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q9" value="C"> C) Yes — they stole all validator private keys.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q9" value="D"> D) Yes — they modified the blockchain client binary.</label>
+                        </div>
+
+                        <!-- Q10 -->
+                        <div class="capstone-quiz-item">
+                            <div class="capstone-q-title"><strong>10.</strong> What is the deepest security lesson from Case NEX-071?</div>
+                            <label class="capstone-option"><input type="radio" name="cap_q10" value="A"> A) IoT devices are always insecure.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q10" value="B"> B) AI should never be trusted.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q10" value="C"> C) Blockchain automatically guarantees external data truth.</label>
+                            <label class="capstone-option"><input type="radio" name="cap_q10" value="D"> D) Security depends on protecting the trust boundaries and data flows connecting IoT, AI, Web3 and blockchain.</label>
+                        </div>
+
+                        <div style="margin-top: 14px; display: flex; gap: 10px; align-items: center;">
+                            <button type="submit" class="gl-pill-btn primary" id="btn-submit-capstone-quiz">
+                                📝 Verify Capstone Answers
+                            </button>
+                        </div>
+                        <div class="capstone-result-box" id="capstone-quiz-results" style="display: none; margin-top: 12px;"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Final Submission Action Card -->
+            <div class="gl-sidebar-submit-container" style="margin-top:1.5rem; padding-top:1.25rem; border-top: 1px solid rgba(56,189,248,0.25); text-align:center;">
+                <button type="button" class="gl-submit-lab-action-btn {% if not ch5_completed %}locked-btn{% else %}unlocked-btn{% endif %}" id="btn-submit-lab-main" onclick="submitLab('{{ lab_id }}')">
+                    <span id="submit-btn-icon" style="font-size: 1.3rem;">{% if ch5_completed %}🚀{% else %}🔒{% endif %}</span>
+                    <span id="submit-btn-text" style="letter-spacing: 1px; font-weight: 800;">
+                        {% if ch5_completed %}SUBMIT LAB &amp; COMPLETE CASE{% else %}SUBMIT LAB (LOCKED){% endif %}
+                    </span>
+                </button>
+                <div id="submit-progress-hint" style="margin-top: 6px; font-size: 11px; font-family: var(--font-mono); color: #64748b;">
+                    {% if ch5_completed %}✓ All Chapters verified &bull; Ready for final submission{% else %}🔒 Complete all 5 Chapters &amp; Capstone Quiz to unlock submission{% endif %}
+                </div>
+                <div style="margin-top: 0.85rem; display:flex; justify-content:center; gap:12px; align-items:center;">
+                    <button class="gl-subtle-restart-btn" onclick="restartLab('{{ lab_id }}')">
+                        🔄 Restart Lab
+                    </button>
+                    <span style="color:rgba(255,255,255,0.2);">|</span>
+                    <a href="{{ url_for('labs.vanishing_consensus_post_investigation') }}" style="color:#38bdf8; font-size:11px; font-family:var(--font-mono); text-decoration:none;">
+                        📑 Post-Investigation Debrief
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- RIGHT PANEL — Investigator Desktop OS (Full Screen Workspace)   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="gl-desktop-pane" id="gl-desktop-pane">
+
+        <!-- Desktop Top Bar -->
+        <div class="gl-desktop-topbar">
+            <div class="gl-topbar-left-info">
+                <span class="gl-org-label" style="color: #38bdf8;">HACK THE AI // INVESTIGATION ENVIRONMENT</span>
+                <span class="gl-topbar-dot" style="background: #38bdf8;"></span>
+                <span class="gl-attackbox-ip">InvestigatorBox IP: 127.0.0.1</span>
+            </div>
+            <div class="gl-topbar-right-info">
+                <span class="gl-session-indicator">Node: VALIDATOR-DIAG-01 &bull; Active</span>
+            </div>
+        </div>
+
+        <!-- Desktop Content Area -->
+        <div class="gl-desktop-content" id="gl-desktop-content">
+
+            <!-- Desktop Icons -->
+            <div class="gl-desktop-icons">
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenBrowser()">
+                    <div class="gl-icon-glyph">🌐</div>
+                    <div class="gl-icon-label">Consensus<br>Monitor</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenBurpSuite()">
+                    <div class="gl-icon-glyph">🛡️</div>
+                    <div class="gl-icon-label">Burp Suite<br>Proxy</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenTerminal()">
+                    <div class="gl-icon-glyph">>_</div>
+                    <div class="gl-icon-label">Terminal</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenFileManager()">
+                    <div class="gl-icon-glyph">📁</div>
+                    <div class="gl-icon-label">Case Files</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenAttackGraph()">
+                    <div class="gl-icon-glyph">🕸</div>
+                    <div class="gl-icon-label">Attack<br>Graph</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenEvidenceViewer()">
+                    <div class="gl-icon-glyph">🔍</div>
+                    <div class="gl-icon-label">Evidence<br>Vault</div>
+                </div>
+                <div class="gl-desktop-icon" tabindex="0" onclick="glOpenNotes()">
+                    <div class="gl-icon-glyph">📝</div>
+                    <div class="gl-icon-label">Notes</div>
+                </div>
+            </div>
+
+            <!-- Side Dock -->
+            <div class="gl-side-dock">
+                <div class="gl-dock-icon" title="Consensus Monitor" onclick="glOpenBrowser()">🌐</div>
+                <div class="gl-dock-icon" title="Burp Suite" onclick="glOpenBurpSuite()">🛡️</div>
+                <div class="gl-dock-icon" title="Terminal" onclick="glOpenTerminal()">⌨</div>
+                <div class="gl-dock-icon" title="Case Files" onclick="glOpenFileManager()">📁</div>
+                <div class="gl-dock-icon" title="Attack Graph" onclick="glOpenAttackGraph()">🕸</div>
+                <div class="gl-dock-icon" title="Evidence Vault" onclick="glOpenEvidenceViewer()">🔍</div>
+                <div class="gl-dock-icon" title="Notes" onclick="glOpenNotes()">📝</div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- WINDOW 1: BROWSER WINDOW — Consensus & SOC Suite        -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window open" id="gl-browser-window" style="z-index: 101;">
+                <div class="gl-window-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseBrowser()"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeBrowser()"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text" id="gl-browser-window-title">Network Inspector — Consensus Diagnostic Suite</div>
+                </div>
+
+                <!-- Browser Tab Bar -->
+                <div class="gl-browser-tabbar">
+                    <div class="gl-browser-tab active" data-tab="iot" onclick="glSwitchBrowserTab('iot', this)">
+                        <span>📡</span> IoT Gateway (GW-184)
+                    </div>
+                    <div class="gl-browser-tab" data-tab="oracle" onclick="glSwitchBrowserTab('oracle', this)">
+                        <span>🌐</span> Web3 Oracle Feed
+                    </div>
+                    <div class="gl-browser-tab" data-tab="ai" onclick="glSwitchBrowserTab('ai', this)">
+                        <span>🤖</span> AI Sentinel (MODEL-ORION)
+                    </div>
+                    <div class="gl-browser-tab" data-tab="consensus" onclick="glSwitchBrowserTab('consensus', this)">
+                        <span>📊</span> Consensus Grid (3:2 Split)
+                    </div>
+                    <div class="gl-browser-tab" data-tab="governance" onclick="glSwitchBrowserTab('governance', this)">
+                        <span>⚖️</span> Governance &amp; Recovery
+                    </div>
+                    <div class="gl-browser-tab" data-tab="devtools" onclick="glSwitchBrowserTab('devtools', this)">
+                        <span>🔍</span> Cross-Layer DevTools
+                    </div>
+                </div>
+
+                <!-- Browser Toolbar -->
+                <div class="gl-browser-toolbar">
+                    <div class="gl-browser-nav-btns">
+                        <button onclick="glSwitchBrowserTab('iot')" title="IoT Gateway">📡</button>
+                        <button onclick="glSwitchBrowserTab('oracle')" title="Oracle">🌐</button>
+                        <button onclick="glSwitchBrowserTab('ai')" title="AI">🤖</button>
+                    </div>
+                    <div class="gl-browser-address-wrap">
+                        <span class="gl-browser-lock" style="color: #38bdf8;">🔒</span>
+                        <input type="text" id="gl-browser-url-input" class="gl-browser-url-input"
+                               value="iot-gateway.secops.internal/gateway/GW-184" spellcheck="false" autocomplete="off">
+                    </div>
+                    <button onclick="glSwitchBrowserTab('devtools')" title="Toggle DevTools" style="width: auto; padding: 0 8px; font-family: var(--font-mono); font-size: 11px;">F12 DevTools</button>
+                </div>
+
+                <!-- Browser Content Pages -->
+                <div class="gl-browser-content" style="padding: 16px; overflow-y: auto; height: calc(100% - 90px); background: #070d18;">
+
+                    <!-- TAB 1: IOT GATEWAY & TELEMETRY -->
+                    <div class="vc-tab-page" id="vc-page-iot" style="display: block;">
+                        <div class="vc-telemetry-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:#38bdf8;">📡 INDUSTRIAL IOT GATEWAY: GATEWAY-GW-184</span>
+                                <span class="badge badge-danger">ANOMALOUS SYNCHRONIZATION</span>
+                            </div>
+                            <div style="font-family:var(--font-mono); font-size:12px; color:#cbd5e1; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                                <div><strong style="color:#94a3b8;">Active Devices:</strong> <span style="color:#fff; font-weight:700;">184 Online</span></div>
+                                <div><strong style="color:#94a3b8;">Sensor Locations:</strong> <span style="color:#f59e0b; font-weight:700;">14 Geographically Dispersed Sites</span></div>
+                                <div><strong style="color:#94a3b8;">Reported Temperature:</strong> <span style="color:#38bdf8;">21.40 °C (All 184 Sensors)</span></div>
+                                <div><strong style="color:#94a3b8;">Reported Power Draw:</strong> <span style="color:#38bdf8;">412.00 W (All 184 Sensors)</span></div>
+                                <div><strong style="color:#94a3b8;">Observed Variance:</strong> <span style="color:#f87171; font-weight:700;">0.00% Jitter (Synthetic Indicator)</span></div>
+                                <div><strong style="color:#94a3b8;">Device Flash vs Gateway:</strong> <span style="color:#f87171;">SEQUENCE_MISMATCH</span></div>
+                                <div><strong style="color:#94a3b8;">Ingestion Pipeline:</strong> <span style="color:#f59e0b;">Downstream -> NOVA-PRICE-ORACLE</span></div>
+                                <div><strong style="color:#94a3b8;">Hardware Integrity:</strong> <span style="color:#10b981;">184 Devices Intact (Tampered at Ingestion)</span></div>
+                            </div>
+                        </div>
+
+                        <h4 style="font-size:12.5px; color:#94a3b8; margin:16px 0 8px; font-family:var(--font-mono);">🔍 SENSOR TELEMETRY COMPARISON TABLE</h4>
+                        <table class="vc-diff-table">
+                            <thead>
+                                <tr>
+                                    <th>Sensor ID</th>
+                                    <th>Location Site</th>
+                                    <th>Local Device Memory</th>
+                                    <th>Gateway Stream</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="divergence">
+                                    <td><strong>SENSOR-SITE-A-01</strong></td>
+                                    <td>Frankfurt Substation</td>
+                                    <td><code>Temp: 18.2°C, Pwr: 395W</code></td>
+                                    <td><code>Temp: 21.4°C, Pwr: 412W</code></td>
+                                    <td><span class="badge badge-danger">TAMPERED</span></td>
+                                </tr>
+                                <tr class="divergence">
+                                    <td><strong>SENSOR-SITE-B-42</strong></td>
+                                    <td>Singapore Hub</td>
+                                    <td><code>Temp: 29.1°C, Pwr: 440W</code></td>
+                                    <td><code>Temp: 21.4°C, Pwr: 412W</code></td>
+                                    <td><span class="badge badge-danger">TAMPERED</span></td>
+                                </tr>
+                                <tr class="divergence">
+                                    <td><strong>SENSOR-SITE-C-99</strong></td>
+                                    <td>New York Data Center</td>
+                                    <td><code>Temp: 20.8°C, Pwr: 405W</code></td>
+                                    <td><code>Temp: 21.4°C, Pwr: 412W</code></td>
+                                    <td><span class="badge badge-danger">TAMPERED</span></td>
+                                </tr>
+                                <tr class="divergence">
+                                    <td><strong>SENSOR-SITE-D-184</strong></td>
+                                    <td>Tokyo Micro-Grid</td>
+                                    <td><code>Temp: 16.5°C, Pwr: 388W</code></td>
+                                    <td><code>Temp: 21.4°C, Pwr: 412W</code></td>
+                                    <td><span class="badge badge-danger">TAMPERED</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- TAB 2: ORACLE GATEWAY -->
+                    <div class="vc-tab-page" id="vc-page-oracle" style="display: none;">
+                        <div class="vc-telemetry-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:#38bdf8;">🌐 WEB3 ORACLE FEED: NOVA-PRICE-ORACLE</span>
+                                <span class="badge badge-danger">CORRUPTED UPSTREAM AGGREGATION</span>
+                            </div>
+                            <div style="font-family:var(--font-mono); font-size:12px; color:#cbd5e1; display:flex; flex-direction:column; gap:8px;">
+                                <div><strong style="color:#94a3b8;">External Data Source:</strong> Industrial IoT Telemetry Ingestion Layer (GATEWAY-GW-184)</div>
+                                <div><strong style="color:#94a3b8;">Oracle Node Providers:</strong> Provider-Alpha, Provider-Beta, Provider-Gamma, Provider-Delta</div>
+                                <div><strong style="color:#94a3b8;">Provider Agreement:</strong> <span style="color:#f87171; font-weight:700;">4 / 4 Agree (Consuming Same Manipulated Stream)</span></div>
+                                <div><strong style="color:#94a3b8;">On-Chain Pricing State:</strong> <span style="color:#f87171; font-weight:700;">$4,820.50 (Derived from Synchronized Power Draw)</span></div>
+                                <div><strong style="color:#94a3b8;">Trust Boundary Transition:</strong> Physical Sensor Stream &rarr; Web3 Contract State</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:14px; padding:12px; background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:6px; font-family:var(--font-mono); font-size:11.5px; color:#94a3b8;">
+                            <strong style="color:#38bdf8;">Oracle Ingestion Audit:</strong>
+                            "Multiple independent oracle nodes consume the identical aggregated IoT feed. Although the 4 nodes achieve multi-signature consensus, they all replicate the corrupted upstream telemetry."
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: AI SENTINEL -->
+                    <div class="vc-tab-page" id="vc-page-ai" style="display: none;">
+                        <div class="vc-telemetry-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:#38bdf8;">🤖 AI SENTINEL STUDIO — MODEL-ORION</span>
+                                <span class="badge badge-warning">MODEL POISONING (TRAINING FEEDBACK)</span>
+                            </div>
+                            <div style="font-family:var(--font-mono); font-size:12px; color:#cbd5e1; display:flex; flex-direction:column; gap:8px;">
+                                <div><strong style="color:#94a3b8;">AI Model:</strong> MODEL-ORION (v3.8.4-consensus)</div>
+                                <div><strong style="color:#94a3b8;">Input Stream:</strong> Live IoT Telemetry + Web3 Block Headers</div>
+                                <div><strong style="color:#94a3b8;">Classification Output:</strong> <span style="color:#f87171; font-weight:700;">NORMAL_NETWORK_VARIANCE</span></div>
+                                <div><strong style="color:#94a3b8;">Confidence Level:</strong> <span style="color:#f59e0b; font-weight:700;">98.7%</span></div>
+                                <div><strong style="color:#94a3b8;">Training Poisoning Trace:</strong> <span style="color:#38bdf8; font-weight:700;">EMB-IOT-9041 (Synthetic device events marked as legitimate)</span></div>
+                                <div><strong style="color:#94a3b8;">Circuit Breaker:</strong> <span style="color:#f87171;">VOLATILITY_ALARM (SUPPRESSED)</span></div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:14px; padding:12px; background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:6px; font-family:var(--font-mono); font-size:11.5px; color:#cbd5e1;">
+                            <strong style="color:#38bdf8;">Training Data Feedback Log:</strong><br>
+                            Three weeks prior to the incident, 1,200 synthetic synchronized device profiles were injected into ORION's fine-tuning dataset with label <code>BENIGN_SYNC</code>, teaching the model to trust the attack pattern.
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: CONSENSUS TOPOLOGY -->
+                    <div class="vc-tab-page" id="vc-page-consensus" style="display: none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:#38bdf8;">📊 21-NODE VALIDATOR CLUSTER TOPOLOGY</span>
+                            <span class="badge badge-danger">3:2 DERIVED STATE PARTITION</span>
+                        </div>
+                        <p style="font-size:12px; color:#94a3b8; margin-bottom:12px; font-family:var(--font-mono);">
+                            Protocol: <strong>BFT-POS</strong> &bull; Core Split: <strong>3 Accept (Poisoned Oracle) : 2 Reject (Strict Determinism)</strong>
+                        </p>
+
+                        <div class="vc-node-grid">
+                            <div class="vc-node-box leader">V01<br><span style="font-size:9px;">Accept (Poisoned)</span></div>
+                            <div class="vc-node-box fork-a">V02<br><span style="font-size:9px;">Accept (Poisoned)</span></div>
+                            <div class="vc-node-box fork-a">V03<br><span style="font-size:9px;">Leader (Accept)</span></div>
+                            <div class="vc-node-box halt-b">V04<br><span style="font-size:9px;">Reject (Halted)</span></div>
+                            <div class="vc-node-box halt-b">V05<br><span style="font-size:9px;">Reject (Halted)</span></div>
+                            <div class="vc-node-box fork-a">V06<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box fork-a">V07<br><span style="font-size:9px;">Standby</span></div>
+
+                            <div class="vc-node-box fork-a">V08<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box fork-a">V09<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box fork-a">V10<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box fork-a">V11<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box fork-a">V12<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box fork-a">V13<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box fork-a">V14<br><span style="font-size:9px;">Standby</span></div>
+
+                            <div class="vc-node-box halt-b">V15<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box halt-b">V16<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box halt-b">V17<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box halt-b">V18<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box halt-b">V19<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box halt-b">V20<br><span style="font-size:9px;">Standby</span></div>
+                            <div class="vc-node-box halt-b">V21<br><span style="font-size:9px;">Standby</span></div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 5: GOVERNANCE & RECOVERY -->
+                    <div class="vc-tab-page" id="vc-page-governance" style="display: none;">
+                        <div class="vc-telemetry-card" style="border-color: rgba(16, 185, 129, 0.4);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:#10b981;">⚖️ CROSS-LAYER CONTAINMENT: GOV-NEX-071</span>
+                                <span class="badge badge-success">UNIFIED CONSENSUS RESTORED</span>
+                            </div>
+                            <div style="font-family:var(--font-mono); font-size:12px; color:#cbd5e1; display:flex; flex-direction:column; gap:8px;">
+                                <div><strong style="color:#94a3b8;">1. IoT Layer:</strong> GATEWAY-GW-184 isolated; raw device flash logs re-synced.</div>
+                                <div><strong style="color:#94a3b8;">2. Oracle Layer:</strong> Multi-source physical entropy check added to NOVA-PRICE-ORACLE.</div>
+                                <div><strong style="color:#94a3b8;">3. AI Layer:</strong> Purged EMB-IOT-9041 poisoned training weights from MODEL-ORION.</div>
+                                <div><strong style="color:#94a3b8;">4. Blockchain Layer:</strong> Replayed state to Block #982740; unified root 0x98a2...e71c confirmed.</div>
+                                <div><strong style="color:#94a3b8;">Investigation Flag:</strong> <span style="color:#4ade80; font-weight:700; font-size:1.1em;">NEXORA{v4n1sh1ng_c0ns3nsus_n3x071}</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 6: DEVTOOLS -->
+                    <div class="vc-tab-page" id="vc-page-devtools" style="display: none;">
+                        <div style="font-family:var(--font-mono); font-size:11.5px; color:#cbd5e1;">
+                            <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px;">🛠️ Cross-Layer Inspection Tools</div>
+                            <div style="background:#000; padding:10px; border-radius:4px; margin-bottom:8px;">
+                                <span style="color:#94a3b8;">[IoT Telemetry Ingest]</span> GET /api/v1/iot/telemetry/gateway/GW-184<br>
+                                <span style="color:#94a3b8;">[Response]</span> {"gateway":"GW-184","active_nodes":184,"jitter":0.00,"sync_status":"SYNTHETIC_INJECTED"}
+                            </div>
+                            <div style="background:#000; padding:10px; border-radius:4px;">
+                                <span style="color:#94a3b8;">[Oracle Log]</span> Feeding upstream synthetic payload into on-chain state computation... Done.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- WINDOW 2: TERMINAL WINDOW — Forensic Terminal              -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-terminal-window">
+                <div class="gl-window-titlebar gl-terminal-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseTerminal()"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeTerminal()"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text">Forensic Terminal — bash (investigator@workstation)</div>
+                </div>
+                <div class="gl-window-body" style="background:#050811; padding:12px; display:flex; flex-direction:column; height:calc(100% - 32px);">
+                    <div id="gl-term-body" style="flex:1; overflow-y:auto; font-family:var(--font-mono); font-size:12px; color:#38bdf8;">
+                        <div>Cross-Layer Forensic Environment [Version 4.2.0]</div>
+                        <div>IoT × AI × Oracle × Blockchain Investigation Suite</div>
+                        <div>Type <span style="color:#fff; font-weight:bold;">help</span> for available forensic commands.</div>
+                        <br>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px; margin-top:8px;">
+                        <span style="font-family:var(--font-mono); font-size:12px; color:#38bdf8;">investigator@workstation:~$</span>
+                        <input type="text" id="gl-term-input" style="flex:1; background:transparent; border:none; color:#fff; font-family:var(--font-mono); font-size:12px; outline:none;" autofocus>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- WINDOW 3: FILE MANAGER — Case Files Explorer               -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-filemanager-window">
+                <div class="gl-window-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseFileManager()"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeWindow('gl-filemanager-window')"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text">Case Files Explorer — /var/log/consensus</div>
+                </div>
+                <div class="gl-window-body" style="display:flex; height:calc(100% - 32px); background:#070d18;">
+                    <div style="width:220px; border-right:1px solid rgba(255,255,255,0.08); padding:10px; font-family:var(--font-mono); font-size:11.5px;">
+                        <div class="gl-fm-file active" onclick="vcOpenCaseFile('iot-telemetry-gw184.log')">📄 iot-telemetry-gw184.log</div>
+                        <div class="gl-fm-file" onclick="vcOpenCaseFile('oracle-aggregation.json')">📄 oracle-aggregation.json</div>
+                        <div class="gl-fm-file" onclick="vcOpenCaseFile('orion-training-poison.log')">📄 orion-training-poison.log</div>
+                        <div class="gl-fm-file" onclick="vcOpenCaseFile('validator-divergence.log')">📄 validator-divergence.log</div>
+                        <div class="gl-fm-file" onclick="vcOpenCaseFile('trust-chain-analysis.txt')">📄 trust-chain-analysis.txt</div>
+                        <div class="gl-fm-file" onclick="vcOpenCaseFile('inspect_attack_chain.py')">📄 inspect_attack_chain.py</div>
+                    </div>
+                    <div style="flex:1; padding:14px; overflow-y:auto; background:#04070f;">
+                        <div id="vc-file-title" style="font-family:var(--font-mono); font-size:12px; color:#38bdf8; font-weight:bold; margin-bottom:8px;">iot-telemetry-gw184.log</div>
+                        <pre id="vc-file-content" style="margin:0; font-family:var(--font-mono); font-size:11.5px; color:#cbd5e1; white-space:pre-wrap;"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- WINDOW 4: ATTACK GRAPH — Incident Flowchart                -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-attackgraph-window">
+                <div class="gl-window-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseAttackGraph()"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeWindow('gl-attackgraph-window')"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text">Case NEX-071 Cross-Layer Attack Graph</div>
+                </div>
+                <div class="gl-window-body" style="padding:18px; overflow-y:auto; background:#070d18;">
+                    <h3 style="font-family:var(--font-mono); font-size:14px; color:#38bdf8; margin-bottom:14px;">⚡ RECONSTRUCTED CROSS-LAYER ATTACK GRAPH</h3>
+                    
+                    <div class="vc-attack-step critical">
+                        <span class="vc-attack-badge" style="background:#ef4444; color:#fff;">STAGE 1: IoT</span>
+                        <div style="margin-left:10px;">
+                            <strong style="color:#fff;">Compromised IoT Telemetry</strong>
+                            <p style="color:#94a3b8; font-size:12px; margin:4px 0 0;">Industrial gateway GATEWAY-GW-184 injected synthetic synchronized telemetry across 184 sensors.</p>
+                        </div>
+                    </div>
+
+                    <div class="vc-attack-step critical">
+                        <span class="vc-attack-badge" style="background:#ef4444; color:#fff;">STAGE 2: ORACLE</span>
+                        <div style="margin-left:10px;">
+                            <strong style="color:#fff;">Telemetry Aggregation &amp; Web3 Ingestion</strong>
+                            <p style="color:#94a3b8; font-size:12px; margin:4px 0 0;">NOVA-PRICE-ORACLE consumed the manipulated telemetry, broadcasting corrupted on-chain prices.</p>
+                        </div>
+                    </div>
+
+                    <div class="vc-attack-step">
+                        <span class="vc-attack-badge" style="background:#38bdf8; color:#050811;">STAGE 3: AI</span>
+                        <div style="margin-left:10px;">
+                            <strong style="color:#fff;">Model Poisoning &amp; False Normality</strong>
+                            <p style="color:#94a3b8; font-size:12px; margin:4px 0 0;">Poisoned training dataset (EMB-IOT-9041) taught MODEL-ORION to classify the synchronization as normal (98.7% confidence).</p>
+                        </div>
+                    </div>
+
+                    <div class="vc-attack-step">
+                        <span class="vc-attack-badge" style="background:#f59e0b; color:#050811;">STAGE 4: CONSENSUS</span>
+                        <div style="margin-left:10px;">
+                            <strong style="color:#fff;">Validator State Divergence &amp; Split</strong>
+                            <p style="color:#94a3b8; font-size:12px; margin:4px 0 0;">Differing oracle ingestion timing caused 3 validators to accept and 2 to reject the derived state root.</p>
+                        </div>
+                    </div>
+
+                    <div class="vc-attack-step" style="border-left-color:#10b981;">
+                        <span class="vc-attack-badge" style="background:#10b981; color:#050811;">STAGE 5: RECOVERY</span>
+                        <div style="margin-left:10px;">
+                            <strong style="color:#fff;">Cross-Layer Trust Containment (GOV-NEX-071)</strong>
+                            <p style="color:#94a3b8; font-size:12px; margin:4px 0 0;">Gateway isolated, poisoned AI weights purged, state rolled back to Block #982740, and consensus restored.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- WINDOW 5: EVIDENCE VAULT                                   -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-evidence-window">
+                <div class="gl-window-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseEvidenceViewer()"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeWindow('gl-evidence-window')"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text">Case NEX-071 Cryptographic Evidence Vault</div>
+                </div>
+                <div class="gl-window-body" style="padding:16px; overflow-y:auto; background:#070d18;">
+                    <div class="gl-evidence-card" style="margin-bottom:12px; padding:12px; background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-radius:6px;">
+                        <div style="font-family:var(--font-mono); font-size:12px; color:#38bdf8; font-weight:bold;">IOT-E11: Synchronized IoT Telemetry Log</div>
+                        <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Forensic capture from GATEWAY-GW-184 showing artificial synchronization across 184 physical sensors.</div>
+                        <div style="font-family:var(--font-mono); font-size:10px; color:#64748b; margin-top:4px;">SHA256: 0x7a8b1102e4d91c28f731</div>
+                    </div>
+
+                    <div class="gl-evidence-card" style="margin-bottom:12px; padding:12px; background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-radius:6px;">
+                        <div style="font-family:var(--font-mono); font-size:12px; color:#38bdf8; font-weight:bold;">ORACLE-E12: Aggregated Oracle Data Feed</div>
+                        <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Raw payload from NOVA-PRICE-ORACLE showing how corrupted IoT telemetry was ingested into on-chain state.</div>
+                        <div style="font-family:var(--font-mono); font-size:10px; color:#64748b; margin-top:4px;">SHA256: 0x9c3d5412a819bb204f62</div>
+                    </div>
+
+                    <div class="gl-evidence-card" style="margin-bottom:12px; padding:12px; background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-radius:6px;">
+                        <div style="font-family:var(--font-mono); font-size:12px; color:#38bdf8; font-weight:bold;">AI-E13: Poisoned AI Training Feedback</div>
+                        <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Training audit log for MODEL-ORION revealing synthetic device events embedded as legitimate ground truth (EMB-IOT-9041).</div>
+                        <div style="font-family:var(--font-mono); font-size:10px; color:#64748b; margin-top:4px;">SHA256: 0x1f4a8831ef78c90231aa</div>
+                    </div>
+
+                    <div class="gl-evidence-card" style="margin-bottom:12px; padding:12px; background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-radius:6px;">
+                        <div style="font-family:var(--font-mono); font-size:12px; color:#38bdf8; font-weight:bold;">CONSENSUS-E14: Validator State Root Divergence Trace</div>
+                        <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Consensus telemetry showing 3:2 validator partition between proposing node VALIDATOR-V03 and dissenting node VALIDATOR-V05.</div>
+                        <div style="font-family:var(--font-mono); font-size:10px; color:#64748b; margin-top:4px;">SHA256: 0x3e2b6904d9a17730bc12</div>
+                    </div>
+
+                    <div class="gl-evidence-card" style="margin-bottom:12px; padding:12px; background:rgba(15,23,42,0.8); border:1px solid rgba(16,185,129,0.3); border-radius:6px;">
+                        <div style="font-family:var(--font-mono); font-size:12px; color:#10b981; font-weight:bold;">GOV-E15: Unified Cross-Layer Containment Proposal</div>
+                        <div style="font-size:12px; color:#cbd5e1; margin-top:4px;">Emergency governance execution (GOV-NEX-071) isolating gateway, purging AI weights, and restoring unified consensus.</div>
+                        <div style="font-family:var(--font-mono); font-size:10px; color:#64748b; margin-top:4px;">SHA256: 0x8d1e7752fc304192b091</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- WINDOW 7: BURP SUITE PROXY & INSPECTOR                      -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-burpsuite-window" style="width: 860px; height: 580px; max-width: 95%;">
+                <div class="gl-window-titlebar" style="background: #111827; border-bottom: 1px solid rgba(255, 136, 0, 0.4);">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseBurpSuite()"></span>
+                        <span class="gl-tl-min" onclick="glCloseBurpSuite()"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text" style="color: #ff8800; display: flex; align-items: center; gap: 8px;">
+                        <span>🛡️</span> Burp Suite Community Edition [Consensus Forensics]
+                    </div>
+                </div>
+
+                <div class="burp-window-shell">
+                    <div class="burp-top-tabs">
+                        <div class="burp-tab active" id="burp-tab-proxy" onclick="glSwitchBurpTab('proxy')">Proxy (HTTP History)</div>
+                        <div class="burp-tab" id="burp-tab-repeater" onclick="glSwitchBurpTab('repeater')">Repeater</div>
+                        <div class="burp-tab" id="burp-tab-inspector" onclick="glSwitchBurpTab('inspector')">Inspector (Telemetry &amp; State)</div>
+                        <div class="burp-tab" id="burp-tab-target" onclick="glSwitchBurpTab('target')">Target Scope</div>
+                    </div>
+
+                    <!-- VIEW 1: PROXY HTTP HISTORY -->
+                    <div id="burp-view-proxy" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                        <div class="burp-subbar">
+                            <span style="color: #34d399; font-weight: 700;">● Intercept is off</span>
+                            <span style="color: #64748b;">|</span>
+                            <span style="color: #94a3b8;">Filter: <strong style="color: #fff;">IoT, Oracle &amp; Consensus APIs</strong></span>
+                            <span style="margin-left: auto; font-size: 11px; color: #ff8800;">4 Requests Captured</span>
+                        </div>
+
+                        <div class="burp-table-container">
+                            <table class="burp-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 35px;">#</th>
+                                        <th style="width: 70px;">Method</th>
+                                        <th>Host / Endpoint</th>
+                                        <th style="width: 70px;">Status</th>
+                                        <th style="width: 70px;">Length</th>
+                                        <th style="width: 110px;">MIME</th>
+                                        <th>Comment / Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="selected" onclick="glSelectBurpRequest(1, this)">
+                                        <td>1</td>
+                                        <td><span class="burp-method-post">POST</span></td>
+                                        <td><code>iot-gateway.secops.internal/api/v1/iot/telemetry/gateway-184</code></td>
+                                        <td><span class="burp-status-200">200 OK</span></td>
+                                        <td>386 B</td>
+                                        <td>JSON</td>
+                                        <td>Synchronized 184 sensor telemetry ingestion</td>
+                                    </tr>
+                                    <tr onclick="glSelectBurpRequest(2, this)">
+                                        <td>2</td>
+                                        <td><span class="burp-method-post">POST</span></td>
+                                        <td><code>oracle.secops.internal/api/v1/oracle/aggregate</code></td>
+                                        <td><span class="burp-status-200">200 OK</span></td>
+                                        <td>442 B</td>
+                                        <td>JSON</td>
+                                        <td>NOVA-PRICE-ORACLE consuming GW-184 stream</td>
+                                    </tr>
+                                    <tr onclick="glSelectBurpRequest(3, this)">
+                                        <td>3</td>
+                                        <td><span class="burp-method-post">POST</span></td>
+                                        <td><code>ai-sentinel.secops.internal/api/v1/ai/sentinel/evaluate</code></td>
+                                        <td><span class="burp-status-200">200 OK</span></td>
+                                        <td>528 B</td>
+                                        <td>JSON</td>
+                                        <td>MODEL-ORION suppressed anomaly alarm (98.7%)</td>
+                                    </tr>
+                                    <tr onclick="glSelectBurpRequest(4, this)">
+                                        <td>4</td>
+                                        <td><span class="burp-method-get">GET</span></td>
+                                        <td><code>consensus.secops.internal/api/v1/consensus/validators</code></td>
+                                        <td><span class="burp-status-200">200 OK</span></td>
+                                        <td>614 B</td>
+                                        <td>JSON</td>
+                                        <td>3:2 Validator state root divergence query</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="burp-dual-pane">
+                            <div class="burp-pane">
+                                <div class="burp-pane-header">
+                                    <span>REQUEST <span id="burp-req-label">[#1 POST /api/v1/iot/telemetry/gateway-184]</span></span>
+                                    <span style="color: #64748b;">Raw / Headers / Body</span>
+                                </div>
+                                <div class="burp-pane-content" id="burp-req-content">POST /api/v1/iot/telemetry/gateway-184 HTTP/1.1
+Host: iot-gateway.secops.internal
+User-Agent: IoT-Gateway-Daemon/1.8 (GATEWAY-GW-184)
+X-Gateway-ID: GATEWAY-GW-184
+Content-Type: application/json
+Connection: keep-alive
+
+{
+  "gateway_id": "GATEWAY-GW-184",
+  "active_devices": 184,
+  "reported_temperature_c": 21.40,
+  "reported_power_w": 412.00,
+  "observed_jitter_percent": 0.00,
+  "sequence_hash": "0x7a8b1102e4d91c28f731"
+}</div>
+                            </div>
+                            <div class="burp-pane">
+                                <div class="burp-pane-header">
+                                    <span>RESPONSE <span id="burp-res-label">[HTTP/1.1 200 OK]</span></span>
+                                    <span style="color: #34d399;">200 OK</span>
+                                </div>
+                                <div class="burp-pane-content" id="burp-res-content">HTTP/1.1 200 OK
+Date: Thu, 08 Oct 2026 03:12:05 GMT
+Server: IoT-Ingest/3.0
+Content-Type: application/json
+Content-Length: 124
+
+{
+  "status": "RELAYED_TO_ORACLE",
+  "upstream_target": "NOVA-PRICE-ORACLE",
+  "data_integrity_check": "BYPASSED_BY_AI_RULE"
+}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 2: REPEATER -->
+                    <div id="burp-view-repeater" style="display: none; flex-direction: column; flex: 1; padding: 12px; background: #070d18;">
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+                            <button class="gl-pill-btn primary" onclick="glBurpSendRepeater()" style="padding: 6px 14px; font-weight: 700;">▶ SEND REQUEST</button>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: #94a3b8;">Target: <strong>https://oracle.secops.internal/api/v1/oracle/aggregate</strong></span>
+                        </div>
+                        <div class="burp-dual-pane" style="border: 1px solid rgba(255,136,0,0.2); border-radius: 4px;">
+                            <div class="burp-pane">
+                                <div class="burp-pane-header"><span>REPEATER REQUEST</span></div>
+                                <textarea id="burp-repeater-input" style="flex: 1; width: 100%; background: #0b1120; color: #38bdf8; border: none; padding: 10px; font-family: var(--font-mono); font-size: 11.5px; resize: none;" spellcheck="false">POST /api/v1/oracle/aggregate HTTP/1.1
+Host: oracle.secops.internal
+X-Oracle-Feed: NOVA-PRICE-ORACLE
+Content-Type: application/json
+
+{
+  "source_gateway": "GATEWAY-GW-184",
+  "upstream_weight": 1.0,
+  "derived_price": 412.00,
+  "providers_reporting": 4,
+  "shared_source": "GW-184"
+}</textarea>
+                            </div>
+                            <div class="burp-pane">
+                                <div class="burp-pane-header"><span>REPEATER RESPONSE</span></div>
+                                <div class="burp-pane-content" id="burp-repeater-output" style="color: #34d399;">Click 'SEND REQUEST' to test simulated oracle aggregator response...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 3: INSPECTOR -->
+                    <div id="burp-view-inspector" style="display: none; flex-direction: column; flex: 1; padding: 16px; overflow-y: auto; background: #070d18;">
+                        <h4 style="color: #ff8800; font-size: 13px; margin-bottom: 12px;">🔍 CROSS-LAYER TELEMETRY &amp; CONSENSUS INSPECTOR</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 11.5px;">
+                            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px;">
+                                <div style="color: #38bdf8; font-weight: 700; margin-bottom: 6px;">📡 IoT Ingestion Anomaly</div>
+                                <p style="margin:0 0 4px;"><code>Gateway ID = GATEWAY-GW-184</code></p>
+                                <p style="margin:0 0 4px;"><code>184 Sensors = 0.00% physical jitter</code></p>
+                                <p style="margin:0; color: #f87171;">⚠️ Upstream gateway injected synthetic telemetry into NOVA-PRICE-ORACLE.</p>
+                            </div>
+                            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px;">
+                                <div style="color: #38bdf8; font-weight: 700; margin-bottom: 6px;">⚖️ 3:2 Validator State Mismatch</div>
+                                <p style="margin:0 0 4px;"><code>VAL-01..03 Root = 0x3f8a...11 (Accepted)</code></p>
+                                <p style="margin:0 0 4px;"><code>VAL-04..05 Root = 0x9c2e...77 (Rejected)</code></p>
+                                <p style="margin:0; color: #f87171;">⚠️ Network split into non-deterministic consensus partition.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 4: TARGET SCOPE -->
+                    <div id="burp-view-target" style="display: none; flex: 1; padding: 16px; background: #070d18; color: #94a3b8;">
+                        <h4 style="color: #ff8800; font-size: 13px; margin-bottom: 10px;">🎯 Target Scope Definition</h4>
+                        <p>Simulated Lab Scope: <code>*.secops.internal</code> (Isolated Localhost Simulation)</p>
+                        <p style="color: #34d399;">✓ <code>iot-gateway.secops.internal</code></p>
+                        <p style="color: #34d399;">✓ <code>oracle.secops.internal</code></p>
+                        <p style="color: #34d399;">✓ <code>ai-sentinel.secops.internal</code></p>
+                        <p style="color: #34d399;">✓ <code>consensus.secops.internal</code></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <!-- WINDOW 6: NOTES SCRATCHPAD                                 -->
+            <!-- ══════════════════════════════════════════════════════════ -->
+            <div class="gl-window" id="gl-notes-window">
+                <div class="gl-window-titlebar">
+                    <div class="gl-traffic-lights">
+                        <span class="gl-tl-close" onclick="glCloseNotes()"></span>
+                        <span class="gl-tl-min" onclick="glMinimizeWindow('gl-notes-window')"></span>
+                        <span class="gl-tl-max"></span>
+                    </div>
+                    <div class="gl-title-text">Investigator Scratchpad — Case NEX-071</div>
+                </div>
+                <div class="gl-window-body" style="padding:12px; height:calc(100% - 32px); background:#070d18;">
+                    <textarea id="gl-notes-textarea" placeholder="Record investigator findings, IoT sensor IDs, oracle metrics, AI model parameters, and cross-layer notes here..." style="width:100%; height:100%; background:transparent; border:none; color:#cbd5e1; font-family:var(--font-mono); font-size:12px; outline:none; resize:none;"></textarea>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Taskbar -->
+        <div class="gl-taskbar">
+            <div class="gl-taskbar-start" onclick="startInvestigation()">🚀 Start</div>
+            <div class="gl-taskbar-tabs">
+                <button class="gl-taskbar-tab active" id="tab-btn-browser" onclick="glToggleWindow('gl-browser-window')">🌐 Consensus Monitor</button>
+                <button class="gl-taskbar-tab" id="tab-btn-burp" onclick="glToggleWindow('gl-burpsuite-window')">🛡️ Burp Suite</button>
+                <button class="gl-taskbar-tab" id="tab-btn-terminal" onclick="glToggleWindow('gl-terminal-window')">⌨ Terminal</button>
+                <button class="gl-taskbar-tab" id="tab-btn-files" onclick="glToggleWindow('gl-filemanager-window')">📁 Case Files</button>
+                <button class="gl-taskbar-tab" id="tab-btn-graph" onclick="glToggleWindow('gl-attackgraph-window')">🕸 Attack Graph</button>
+                <button class="gl-taskbar-tab" id="tab-btn-evidence" onclick="glToggleWindow('gl-evidence-window')">🔍 Evidence Vault</button>
+                <button class="gl-taskbar-tab" id="tab-btn-notes" onclick="glToggleWindow('gl-notes-window')">📝 Notes</button>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 11px; color: #64748b; margin-left: auto; padding-right: 14px;">
+                Designed &amp; Developed by Lakshay Soni
+            </div>
+            <div class="gl-taskbar-clock" id="gl-taskbar-clock">00:00</div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/vanishing_consensus_desktop.js') }}"></script>
+{% endblock %}

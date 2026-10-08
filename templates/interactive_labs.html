@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Interactive Labs - HACK THE AI{% endblock %}
+{% block page_title %}Interactive Labs{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/lab_engine.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="labs-header" style="margin-bottom: var(--space-6);">
+        <p class="text-secondary">Hands-on cyber security labs with real vulnerable applications. Upload-generated interactive environments.</p>
+    </div>
+
+    {% if labs %}
+    <div class="interactive-labs-grid">
+        {% for lab in labs %}
+        <div class="ilab-card{% if lab.locked %} ilab-card-locked{% endif %}">
+            <div class="ilab-card-glow"></div>
+            <div class="ilab-card-inner">
+                <div class="ilab-card-header">
+                    <div class="ilab-difficulty-badge diff-{{ 'pro' if lab.difficulty|lower == 'intermediate' else lab.difficulty|lower }}">{{ 'Pro' if lab.difficulty == 'Intermediate' else lab.difficulty }}</div>
+                    {% if lab.status == 'completed' %}
+                    <span class="ilab-status-badge completed">✓ Completed</span>
+                    {% elif lab.status == 'in_progress' %}
+                    <span class="ilab-status-badge in-progress">● In Progress</span>
+                    {% elif lab.locked %}
+                    <span class="ilab-status-badge locked">🔒 Locked</span>
+                    {% endif %}
+                </div>
+
+                <h3 class="ilab-title">{{ lab.title }}</h3>
+
+                <div class="ilab-meta">
+                    <span class="ilab-meta-item">🏷️ {{ lab.category }}</span>
+                    {% if lab.concept %}<span class="ilab-meta-item">🔐 {{ lab.concept }}</span>{% endif %}
+                </div>
+
+                {% if lab.description %}
+                <p class="ilab-description">{{ lab.description[:120] }}{% if lab.description|length > 120 %}...{% endif %}</p>
+                {% endif %}
+
+                <div class="ilab-stats">
+                    <span>🎯 {{ lab.mission_count }} Missions</span>
+                    <span>⏱️ {{ lab.estimated_time }} min</span>
+                    <span>⚡ {{ lab.total_points }} pts</span>
+                </div>
+
+                <div class="ilab-card-actions">
+                    {% if lab.status == 'completed' %}
+                    <div style="display: flex; gap: var(--space-2);">
+                        <a href="{{ url_for('labs.interactive_lab_detail', lab_id=lab.id) }}" class="btn btn-outline" style="flex: 1;">Review Lab</a>
+                        <button type="button" class="btn btn-outline btn-sm restart-ilab-btn" onclick="restartInteractiveLab('{{ lab.id }}')" title="Restart Lab">🔄 Restart</button>
+                    </div>
+                    {% elif lab.status == 'in_progress' %}
+                    <div style="display: flex; gap: var(--space-2);">
+                        <a href="{{ url_for('labs.interactive_lab_play', lab_id=lab.id) }}" class="btn btn-primary" style="flex: 1;">Continue Lab</a>
+                        <button type="button" class="btn btn-outline btn-sm restart-ilab-btn" onclick="restartInteractiveLab('{{ lab.id }}')" title="Restart Lab">🔄 Restart</button>
+                    </div>
+                    {% elif lab.locked %}
+                    <button class="btn btn-block" disabled title="Complete the previous lab in the path to unlock this one.">🔒 Locked</button>
+                    {% else %}
+                    <div style="display: flex; gap: var(--space-2);">
+                        <a href="{{ url_for('labs.interactive_lab_detail', lab_id=lab.id) }}" class="btn btn-primary" style="flex: 1;">Start Lab</a>
+                        <button type="button" class="btn btn-outline btn-sm restart-ilab-btn" onclick="restartInteractiveLab('{{ lab.id }}')" title="Restart Lab">🔄 Restart</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card elevated text-center" style="padding: var(--space-8);">
+        <h3 style="margin-bottom: var(--space-4);">No Interactive Labs Available</h3>
+        <p class="text-secondary">Labs will appear here once an instructor uploads and publishes them.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function restartInteractiveLab(labId) {
+    if (!confirm('Are you sure you want to restart this lab? Your session will be reset.')) return;
+    fetch('/api/lab-engine/restart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.csrfToken
+        },
+        body: JSON.stringify({ lab_id: labId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to restart lab');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Network error while restarting lab.');
+    });
+}
+</script>
+{% endblock %}

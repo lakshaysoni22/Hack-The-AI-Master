@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Team Management — TechCorp Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">TECH<span>CORP</span> EMPLOYEE MANAGEMENT PORTAL</div>
+    <div class="userinfo">Welcome, {{ user['display_name'] }} &middot; <a href="{{ url_for('logout') }}" style="color:var(--text-dim);">Logout</a></div>
+  </div>
+  <div class="container">
+    <nav class="portal-nav">
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('profile') }}">My Profile</a>
+      <a class="active" href="{{ url_for('team') }}">Team Management</a>
+      <a href="{{ url_for('admin') }}">Admin Panel</a>
+    </nav>
+
+    <div class="card">
+      <h2>Team Management</h2>
+      <p style="color:var(--text-dim); font-size:14px;">Viewing as role: <span class="badge badge-{{ page_role }}">{{ page_role }}</span></p>
+      <table>
+        <tr><th>Name</th><th>Role</th><th>Department</th></tr>
+        {% for m in team_members %}
+        <tr>
+          <td>{{ m['display_name'] }}</td>
+          <td><span class="badge badge-{{ m['role'] }}">{{ m['role'] }}</span></td>
+          <td>{{ m['department'] }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</body>
+</html>
