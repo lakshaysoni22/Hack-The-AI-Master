@@ -96,6 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Default case file
     vcOpenCaseFile('iot-telemetry-gw184.log');
 
+    // Load saved notes
+    loadSavedNotes();
+
+    // Initialize panel splitter resize and window controls
+    initPanelResize();
+    initWindowControls();
+
     // ── Restore Capstone Quiz state ──────────────────────────────────
     if (sessionStorage.getItem('lab7_capstone_passed') === 'true' || sessionStorage.getItem('nexora_lab7_capstone_passed') === 'true') {
         const submitBtn = document.getElementById('btn-submit-lab-main');
@@ -155,6 +162,13 @@ function glMinimizeWindow(winId) {
     glCloseWindow(winId);
 }
 
+function glToggleMaximize(winId) {
+    const win = typeof winId === 'string' ? document.getElementById(winId) : winId;
+    if (!win) return;
+    glBringToFront(win.id);
+    win.classList.toggle('maximized');
+}
+
 function glToggleWindow(winId) {
     const win = document.getElementById(winId);
     if (!win) return;
@@ -171,6 +185,214 @@ function glMinimizeBrowser() { glMinimizeWindow('gl-browser-window'); }
 
 function glOpenBurpSuite() { glBringToFront('gl-burpsuite-window'); }
 function glCloseBurpSuite() { glCloseWindow('gl-burpsuite-window'); }
+
+function glOpenTerminal() {
+    glBringToFront('gl-terminal-window');
+    document.getElementById('gl-terminal-input')?.focus();
+}
+function glCloseTerminal() { glCloseWindow('gl-terminal-window'); }
+function glMinimizeTerminal() { glMinimizeWindow('gl-terminal-window'); }
+
+function glOpenFileManager() { glBringToFront('gl-filemanager-window'); }
+function glCloseFileManager() { glCloseWindow('gl-filemanager-window'); }
+
+function glOpenNotes() {
+    glBringToFront('gl-notes-window');
+    loadSavedNotes();
+}
+function glCloseNotes() { glCloseWindow('gl-notes-window'); }
+
+function glOpenAttackGraph() { glBringToFront('gl-attackgraph-window'); }
+function glCloseAttackGraph() { glCloseWindow('gl-attackgraph-window'); }
+
+function glOpenEvidenceViewer() { glBringToFront('gl-evidence-window'); }
+function glCloseEvidenceViewer() { glCloseWindow('gl-evidence-window'); }
+
+// ── Browser Tab Switching for Lab 2 ──────────────────────────────────
+function glSwitchBrowserTab(tabName, clickedTabEl) {
+    document.querySelectorAll('.gl-browser-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.vc-tab-page').forEach(v => {
+        v.style.display = 'none';
+        v.classList.remove('active');
+    });
+
+    if (clickedTabEl) {
+        clickedTabEl.classList.add('active');
+    } else {
+        const targetTab = document.querySelector(`.gl-browser-tab[data-tab="${tabName}"]`);
+        if (targetTab) targetTab.classList.add('active');
+    }
+
+    const pageEl = document.getElementById(`vc-page-${tabName}`);
+    if (pageEl) {
+        pageEl.style.display = 'block';
+        pageEl.classList.add('active');
+    }
+
+    const urlInput = document.getElementById('gl-browser-url-input');
+    const urls = {
+        'iot': 'iot-gateway.secops.internal/gateway/GW-184',
+        'oracle': 'oracle-aggregator.secops.internal/feed/NOVA-PRICE-ORACLE',
+        'ai': 'ai-sentinel.secops.internal/model/ORION-v4.2.1',
+        'consensus': 'consensus.secops.internal/validators/bft-pos',
+        'governance': 'governance.secops.internal/proposal/GOV-NEX-071',
+        'devtools': 'diagnostics.internal/devtools'
+    };
+    if (urlInput && urls[tabName]) {
+        urlInput.value = urls[tabName];
+    }
+}
+
+// ── Panel Resizer & Window Drag/Resize Controllers ─────────────────────
+function initPanelResize() {
+    const divider = document.getElementById('gl-panel-divider');
+    const taskPanel = document.querySelector('.gl-task-panel');
+    const shell = document.querySelector('.gl-lab-shell');
+    if (!divider || !taskPanel || !shell) return;
+
+    let isDragging = false;
+
+    divider.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        divider.classList.add('active');
+        taskPanel.classList.add('is-resizing');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const shellRect = shell.getBoundingClientRect();
+        const offset = e.clientX - shellRect.left;
+        const totalWidth = shellRect.width;
+        let percentage = (offset / totalWidth) * 100;
+
+        if (percentage < 15) percentage = 15;
+        if (percentage > 75) percentage = 75;
+
+        taskPanel.style.width = `${percentage}%`;
+        taskPanel.classList.remove('collapsed');
+    });
+
+    const stopDragging = () => {
+        if (isDragging) {
+            isDragging = false;
+            divider.classList.remove('active');
+            taskPanel.classList.remove('is-resizing');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+    };
+
+    document.addEventListener('mouseup', stopDragging);
+
+    // Double-click on divider to collapse / expand panel
+    divider.addEventListener('dblclick', () => {
+        if (taskPanel.classList.contains('collapsed')) {
+            taskPanel.classList.remove('collapsed');
+            taskPanel.style.width = '38%';
+        } else {
+            taskPanel.classList.add('collapsed');
+        }
+    });
+}
+
+function initWindowControls() {
+    const windows = document.querySelectorAll('.gl-window');
+
+    windows.forEach(win => {
+        win.addEventListener('mousedown', () => {
+            glBringToFront(win.id);
+        });
+
+        // Maximize button handler (.gl-tl-max)
+        const maxBtn = win.querySelector('.gl-tl-max');
+        if (maxBtn) {
+            maxBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                glToggleMaximize(win.id);
+            });
+        }
+
+        // Titlebar dragging & double-click to maximize
+        const titlebar = win.querySelector('.gl-window-titlebar');
+        if (titlebar) {
+            titlebar.addEventListener('dblclick', () => {
+                glToggleMaximize(win.id);
+            });
+
+            let isDragging = false;
+            let startX = 0, startY = 0;
+            let initialLeft = 0, initialTop = 0;
+
+            titlebar.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.gl-traffic-lights') || win.classList.contains('maximized')) return;
+
+                isDragging = true;
+                glBringToFront(win.id);
+
+                const winRect = win.getBoundingClientRect();
+                const parentRect = win.parentElement.getBoundingClientRect();
+
+                startX = e.clientX;
+                startY = e.clientY;
+                initialLeft = winRect.left - parentRect.left;
+                initialTop = winRect.top - parentRect.top;
+
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+
+                const parentRect = win.parentElement.getBoundingClientRect();
+                let newLeft = initialLeft + dx;
+                let newTop = initialTop + dy;
+
+                if (newTop < 0) newTop = 0;
+                if (newLeft < -win.offsetWidth + 80) newLeft = -win.offsetWidth + 80;
+                if (newLeft > parentRect.width - 80) newLeft = parentRect.width - 80;
+                if (newTop > parentRect.height - 40) newTop = parentRect.height - 40;
+
+                win.style.left = `${newLeft}px`;
+                win.style.top = `${newTop}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    document.body.style.userSelect = '';
+                }
+            });
+        }
+    });
+}
+
+// ── Mobile / Desktop Responsive View Mode Switcher for Lab 2 ───────────────
+function vcSwitchMobileView(mode) {
+    const taskPanel = document.querySelector('.gl-task-panel');
+    const desktopPane = document.querySelector('.gl-desktop-pane');
+    const btnTasks = document.getElementById('vc-btn-mobile-tasks');
+    const btnDesktop = document.getElementById('vc-btn-mobile-desktop');
+
+    if (!taskPanel || !desktopPane) return;
+
+    if (mode === 'tasks') {
+        taskPanel.classList.remove('vc-mobile-hidden');
+        desktopPane.classList.add('vc-mobile-hidden');
+        if (btnTasks) btnTasks.classList.add('active');
+        if (btnDesktop) btnDesktop.classList.remove('active');
+    } else {
+        taskPanel.classList.add('vc-mobile-hidden');
+        desktopPane.classList.remove('vc-mobile-hidden');
+        if (btnTasks) btnTasks.classList.remove('active');
+        if (btnDesktop) btnDesktop.classList.add('active');
+    }
+}
 
 function glSwitchBurpTab(tabId) {
     ['proxy', 'repeater', 'inspector', 'target'].forEach(t => {

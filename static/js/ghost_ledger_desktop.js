@@ -96,6 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial default case file preview
     glOpenCaseFile('wallet-report.txt');
 
+    // Initialize panel splitter resize and window controls
+    initPanelResize();
+    initWindowControls();
+
     // ── Restore Capstone Quiz & Submit state if previously passed ──────
     if (sessionStorage.getItem('lab6_capstone_passed') === 'true' || sessionStorage.getItem('nexora_lab6_capstone_passed') === 'true') {
         const submitBtn = document.getElementById('btn-submit-lab-main');
@@ -1059,6 +1063,141 @@ function glCloseWindow(winId) {
 
 function glMinimizeWindow(winId) {
     glCloseWindow(winId);
+}
+
+function glToggleMaximize(winId) {
+    const win = typeof winId === 'string' ? document.getElementById(winId) : winId;
+    if (!win) return;
+    glBringToFront(win.id);
+    win.classList.toggle('maximized');
+}
+
+function initPanelResize() {
+    const divider = document.getElementById('gl-panel-divider');
+    const taskPanel = document.querySelector('.gl-task-panel');
+    const shell = document.querySelector('.gl-lab-shell');
+    if (!divider || !taskPanel || !shell) return;
+
+    let isDragging = false;
+
+    divider.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        divider.classList.add('active');
+        taskPanel.classList.add('is-resizing');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const shellRect = shell.getBoundingClientRect();
+        const offset = e.clientX - shellRect.left;
+        const totalWidth = shellRect.width;
+        let percentage = (offset / totalWidth) * 100;
+
+        if (percentage < 15) percentage = 15;
+        if (percentage > 75) percentage = 75;
+
+        taskPanel.style.width = `${percentage}%`;
+        taskPanel.classList.remove('collapsed');
+    });
+
+    const stopDragging = () => {
+        if (isDragging) {
+            isDragging = false;
+            divider.classList.remove('active');
+            taskPanel.classList.remove('is-resizing');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+    };
+
+    document.addEventListener('mouseup', stopDragging);
+
+    // Double-click on divider to collapse / expand panel
+    divider.addEventListener('dblclick', () => {
+        if (taskPanel.classList.contains('collapsed')) {
+            taskPanel.classList.remove('collapsed');
+            taskPanel.style.width = '38%';
+        } else {
+            taskPanel.classList.add('collapsed');
+        }
+    });
+}
+
+function initWindowControls() {
+    const windows = document.querySelectorAll('.gl-window');
+
+    windows.forEach(win => {
+        win.addEventListener('mousedown', () => {
+            glBringToFront(win.id);
+        });
+
+        // Maximize button handler (.gl-tl-max)
+        const maxBtn = win.querySelector('.gl-tl-max');
+        if (maxBtn) {
+            maxBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                glToggleMaximize(win.id);
+            });
+        }
+
+        // Titlebar dragging & double-click to maximize
+        const titlebar = win.querySelector('.gl-window-titlebar');
+        if (titlebar) {
+            titlebar.addEventListener('dblclick', () => {
+                glToggleMaximize(win.id);
+            });
+
+            let isDragging = false;
+            let startX = 0, startY = 0;
+            let initialLeft = 0, initialTop = 0;
+
+            titlebar.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.gl-traffic-lights') || win.classList.contains('maximized')) return;
+
+                isDragging = true;
+                glBringToFront(win.id);
+
+                const winRect = win.getBoundingClientRect();
+                const parentRect = win.parentElement.getBoundingClientRect();
+
+                startX = e.clientX;
+                startY = e.clientY;
+                initialLeft = winRect.left - parentRect.left;
+                initialTop = winRect.top - parentRect.top;
+
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+
+                const parentRect = win.parentElement.getBoundingClientRect();
+                let newLeft = initialLeft + dx;
+                let newTop = initialTop + dy;
+
+                if (newTop < 0) newTop = 0;
+                if (newLeft < -win.offsetWidth + 80) newLeft = -win.offsetWidth + 80;
+                if (newLeft > parentRect.width - 80) newLeft = parentRect.width - 80;
+                if (newTop > parentRect.height - 40) newTop = parentRect.height - 40;
+
+                win.style.left = `${newLeft}px`;
+                win.style.top = `${newTop}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    document.body.style.userSelect = '';
+                }
+            });
+        }
+    });
 }
 
 function glToggleWindow(winId) {
