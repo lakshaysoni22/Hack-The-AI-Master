@@ -382,8 +382,33 @@
   pointer-events: none; z-index: 1;
 }
 
-/* ── Desktop Icons & Side Dock Removed / Hidden ──────────────────────── */
-.gl-desktop-icons, .gl-side-dock {
+/* ── Left Desktop Icons ──────────────────────────────────────────────── */
+.gl-desktop-icons {
+  position: absolute;
+  top: 16px; left: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  z-index: 5;
+}
+
+.gl-desktop-icon {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; padding: 8px 6px; border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 82px; text-align: center;
+  background: rgba(10, 18, 35, 0.45);
+  border: 1px solid rgba(0, 240, 255, 0.12);
+  backdrop-filter: blur(8px);
+}
+.gl-desktop-icon:hover {
+  background: rgba(0, 240, 255, 0.18);
+  border-color: rgba(0, 240, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 240, 255, 0.25);
+}
+.gl-icon-glyph { font-size: 24px; line-height: 1; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+.gl-icon-label { font-size: 10.5px; color: #cbd5e1; font-family: var(--font-mono); line-height: 1.2; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+
+.gl-side-dock {
   display: none !important;
 }
 
@@ -416,14 +441,14 @@
   border: none !important;
 }
 
-/* Window positions — full clean fit without obstructing icons */
-#gl-browser-window { top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px); }
-#gl-burpsuite-window { top: 14px; left: 14px; width: calc(100% - 28px); height: calc(100% - 28px); }
-#gl-terminal-window { top: 18px; left: 18px; width: calc(100% - 36px); height: calc(100% - 36px); }
-#gl-filemanager-window { top: 14px; left: 14px; width: calc(100% - 28px); height: calc(100% - 28px); }
-#gl-notes-window { top: 22px; left: 22px; width: calc(100% - 44px); height: calc(100% - 44px); }
-#gl-attackgraph-window { top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px); }
-#gl-evidence-window { top: 14px; left: 14px; width: calc(100% - 28px); height: calc(100% - 28px); }
+/* Window positions — default open alongside desktop icons, resizable & draggable anywhere */
+#gl-browser-window { top: 12px; left: 106px; width: calc(100% - 118px); height: calc(100% - 24px); }
+#gl-burpsuite-window { top: 16px; left: 110px; width: calc(100% - 124px); height: calc(100% - 32px); }
+#gl-terminal-window { top: 22px; left: 116px; width: calc(100% - 134px); height: calc(100% - 44px); }
+#gl-filemanager-window { top: 18px; left: 112px; width: calc(100% - 128px); height: calc(100% - 36px); }
+#gl-notes-window { top: 26px; left: 120px; width: calc(100% - 142px); height: calc(100% - 52px); }
+#gl-attackgraph-window { top: 12px; left: 106px; width: calc(100% - 118px); height: calc(100% - 24px); }
+#gl-evidence-window { top: 16px; left: 110px; width: calc(100% - 124px); height: calc(100% - 32px); }
 
 /* Window title bar */
 .gl-window-titlebar {

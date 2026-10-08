@@ -44,6 +44,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+
+        // Sidebar Resizer Splitter & Collapse Button
+        const sidebarResizer = document.getElementById('sidebar-resizer');
+        const collapseBtn = document.getElementById('sidebar-collapse-btn');
+
+        if (collapseBtn) {
+            collapseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('collapsed');
+                if (sidebar.classList.contains('collapsed')) {
+                    sidebar.style.width = '64px';
+                } else {
+                    sidebar.style.width = '240px';
+                }
+            });
+        }
+
+        if (sidebarResizer) {
+            let isDraggingSidebar = false;
+
+            sidebarResizer.addEventListener('mousedown', (e) => {
+                isDraggingSidebar = true;
+                sidebarResizer.classList.add('active');
+                sidebar.classList.add('is-resizing');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDraggingSidebar) return;
+                let newWidth = e.clientX;
+                if (newWidth < 64) newWidth = 64;
+                if (newWidth > 420) newWidth = 420;
+                sidebar.style.width = `${newWidth}px`;
+                if (newWidth <= 90) {
+                    sidebar.classList.add('collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                }
+            });
+
+            const stopSidebarDrag = () => {
+                if (isDraggingSidebar) {
+                    isDraggingSidebar = false;
+                    sidebarResizer.classList.remove('active');
+                    sidebar.classList.remove('is-resizing');
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            };
+
+            document.addEventListener('mouseup', stopSidebarDrag);
+
+            sidebarResizer.addEventListener('dblclick', () => {
+                sidebar.classList.toggle('collapsed');
+                if (sidebar.classList.contains('collapsed')) {
+                    sidebar.style.width = '64px';
+                } else {
+                    sidebar.style.width = '240px';
+                }
+            });
+        }
     }
 
     // Workstation Tabs

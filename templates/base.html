@@ -21,10 +21,11 @@
     
     {% if session.get('user_id') %}
     <div class="app-container">
-        <!-- Sidebar -->
+        <!-- Sidebar (Adjustable & Collapsible Dashboard Navigation) -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header cyber-text">
-                HACK THE AI
+                <span class="sidebar-brand-text">HACK THE AI</span>
+                <button type="button" class="sidebar-collapse-btn" id="sidebar-collapse-btn" title="Toggle Dashboard Sidebar">◀</button>
             </div>
             <nav class="sidebar-nav">
                 <a href="{{ url_for('dashboard.dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
@@ -74,6 +75,9 @@
                 </a>
             </div>
         </aside>
+
+        <!-- Sidebar Resizer Splitter -->
+        <div class="sidebar-resizer" id="sidebar-resizer" title="Drag to adjust Dashboard Sidebar width (Double-click to toggle)"></div>
 
         <!-- Main Content -->
         <main class="main-content">
