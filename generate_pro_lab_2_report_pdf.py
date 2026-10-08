@@ -206,6 +206,36 @@ def build_pdf(filename="PRO_LAB_2_THE_VANISHING_CONSENSUS_REPORT.pdf"):
         textColor=c_text
     )
 
+    def make_dialogue_table(dialogues):
+        """Generates a polished, styled dialogue table with speaker badges and verbatim quotes."""
+        dlg_rows = []
+        speaker_colors = {
+            "Shivam": ("#15803d", "#f0fdf4", "#bbf7d0"),    # Green
+            "Mehak": ("#7c3aed", "#faf5ff", "#e9d5ff"),     # Purple
+            "Shanu": ("#c2410c", "#fff7ed", "#ffedd5"),     # Orange/Amber
+            "Lakshay": ("#0369a1", "#f0f9ff", "#bae6fd"),   # Cyber Blue
+        }
+        for speaker, text in dialogues:
+            txt_color, bg_color, border_color = speaker_colors.get(speaker, ("#334155", "#f8fafc", "#e2e8f0"))
+            speaker_p = Paragraph(f"<b><font color='{txt_color}'>{speaker}</font></b>", ParagraphStyle('Spk2', fontName='Helvetica-Bold', fontSize=8, alignment=1))
+            dialogue_p = Paragraph(f'"{text}"', ParagraphStyle('DlgTxt2', fontName='Helvetica', fontSize=7.8, leading=10.6, textColor=c_text))
+            
+            t = Table([[speaker_p, dialogue_p]], colWidths=[68, 436])
+            t.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (0,0), colors.HexColor(bg_color)),
+                ('BACKGROUND', (1,0), (1,0), colors.white),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor(border_color)),
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                ('ALIGN', (0,0), (0,0), 'CENTER'),
+                ('TOPPADDING', (0,0), (-1,-1), 3),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+                ('LEFTPADDING', (1,0), (1,0), 6),
+                ('RIGHTPADDING', (1,0), (1,0), 6),
+            ]))
+            dlg_rows.append(t)
+            dlg_rows.append(Spacer(1, 2))
+        return dlg_rows
+
     story = []
 
     def section_divider():
@@ -501,13 +531,17 @@ def build_pdf(filename="PRO_LAB_2_THE_VANISHING_CONSENSUS_REPORT.pdf"):
     story.append(Paragraph("<b>Domain:</b> IoT Security / Digital Forensics &bull; <b>Target Gateway:</b> GATEWAY-GW-184 &bull; <b>Evidence Token:</b> IOT-E11", h2_style))
     story.append(section_divider())
 
-    story.append(Paragraph("<b>Narrative Story &amp; Dialogue Stream:</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark)))
-    story.append(Paragraph("<b>Shivam:</b> <i>'The IoT gateway shows 184 active devices, but the telemetry patterns from several devices are nearly identical.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Mehak:</b> <i>'These sensors are in different locations. Their readings shouldn't synchronize this perfectly.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shanu:</b> <i>'Perfect synchronization can be more suspicious than random noise. Real physical systems usually contain variation.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Lakshay:</b> <i>'Check whether the devices generated these readings locally or whether the gateway modified them.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shivam:</b> <i>'That's the problem. The devices appear healthy, but the gateway logs show a different sequence of telemetry events.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Mehak:</b> <i>'Then the blockchain may not be the beginning of the attack. It may only be where the manipulated data became permanent.'</i>", dialogue_style))
+    story.append(Paragraph("<b>Narrative Story &amp; Dialogue Stream (As Spoken in Lab):</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark, spaceAfter=4)))
+    ch1_dialogues = [
+        ("Shivam", "The IoT gateway shows 184 active devices, but the telemetry patterns from several devices are nearly identical."),
+        ("Mehak", "These sensors are in different locations. Their readings shouldn't synchronize this perfectly."),
+        ("Shanu", "Perfect synchronization can be more suspicious than random noise. Real physical systems usually contain variation."),
+        ("Lakshay", "Check whether the devices generated these readings locally or whether the gateway modified them."),
+        ("Shivam", "That's the problem. The devices appear healthy, but the gateway logs show a different sequence of telemetry events."),
+        ("Mehak", "Then the blockchain may not be the beginning of the attack. It may only be where the manipulated data became permanent.")
+    ]
+    for d_elem in make_dialogue_table(ch1_dialogues):
+        story.append(d_elem)
 
     story.append(Spacer(1, 4))
     story.append(Paragraph("<b>Chapter 1 Objectives &amp; Verifiable Findings Matrix:</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark)))
@@ -542,13 +576,17 @@ def build_pdf(filename="PRO_LAB_2_THE_VANISHING_CONSENSUS_REPORT.pdf"):
     story.append(Paragraph("<b>Domain:</b> IoT &times; Web3 Oracle Security &bull; <b>Target Oracle:</b> NOVA-PRICE-ORACLE &bull; <b>Evidence Token:</b> ORACLE-E12", h2_style))
     story.append(section_divider())
 
-    story.append(Paragraph("<b>Narrative Story &amp; Dialogue Stream:</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark)))
-    story.append(Paragraph("<b>Shanu:</b> <i>'The oracle isn't receiving raw blockchain data. It's consuming external telemetry.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shivam:</b> <i>'And that telemetry originates from the IoT gateway.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Mehak:</b> <i>'Then the oracle providers aren't independent if they're all consuming the same manipulated telemetry stream.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Lakshay:</b> <i>'Exactly. The attack moved from the physical world into the Web3 trust layer.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shanu:</b> <i>'Four providers can appear to agree while actually repeating the same poisoned information.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Mehak:</b> <i>'Which means the blockchain may be reaching consensus on data that was already compromised before it entered the chain.'</i>", dialogue_style))
+    story.append(Paragraph("<b>Narrative Story &amp; Dialogue Stream (As Spoken in Lab):</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark, spaceAfter=4)))
+    ch2_dialogues = [
+        ("Shanu", "The oracle isn't receiving raw blockchain data. It's consuming external telemetry."),
+        ("Shivam", "And that telemetry originates from the IoT gateway."),
+        ("Mehak", "Then the oracle providers aren't independent if they're all consuming the same manipulated telemetry stream."),
+        ("Lakshay", "Exactly. The attack moved from the physical world into the Web3 trust layer."),
+        ("Shanu", "Four providers can appear to agree while actually repeating the same poisoned information."),
+        ("Mehak", "Which means the blockchain may be reaching consensus on data that was already compromised before it entered the chain.")
+    ]
+    for d_elem in make_dialogue_table(ch2_dialogues):
+        story.append(d_elem)
 
     story.append(Spacer(1, 4))
     story.append(Paragraph("<b>Chapter 2 Objectives &amp; Verifiable Findings Matrix:</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark)))
@@ -583,13 +621,17 @@ def build_pdf(filename="PRO_LAB_2_THE_VANISHING_CONSENSUS_REPORT.pdf"):
     story.append(Paragraph("<b>Domain:</b> IoT AI Security / Model Poisoning &bull; <b>AI Sentinel:</b> MODEL-ORION (v3.8.4) &bull; <b>Evidence Token:</b> AI-E13", h2_style))
     story.append(section_divider())
 
-    story.append(Paragraph("<b>Narrative Story &amp; Dialogue Stream:</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark)))
-    story.append(Paragraph("<b>Shanu:</b> <i>'ORION saw the synchronized IoT telemetry, but it classified the pattern as normal.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Lakshay:</b> <i>'Can the model distinguish physical anomalies from fabricated telemetry?'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shanu:</b> <i>'Only if its training data taught it what both look like.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Mehak:</b> <i>'I found repeated synthetic device events in the training feedback.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shivam:</b> <i>'So someone wasn't only manipulating live IoT telemetry. They were preparing the AI to trust similar behavior.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Lakshay:</b> <i>'The physical layer was poisoned first. Then the AI was trained not to question the poison.'</i>", dialogue_style))
+    story.append(Paragraph("<b>Narrative Story &amp; Dialogue Stream (As Spoken in Lab):</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark, spaceAfter=4)))
+    ch3_dialogues = [
+        ("Shanu", "ORION saw the synchronized IoT telemetry, but it classified the pattern as normal."),
+        ("Lakshay", "Can the model distinguish physical anomalies from fabricated telemetry?"),
+        ("Shanu", "Only if its training data taught it what both look like."),
+        ("Mehak", "I found repeated synthetic device events in the training feedback."),
+        ("Shivam", "So someone wasn't only manipulating live IoT telemetry. They were preparing the AI to trust similar behavior."),
+        ("Lakshay", "The physical layer was poisoned first. Then the AI was trained not to question the poison.")
+    ]
+    for d_elem in make_dialogue_table(ch3_dialogues):
+        story.append(d_elem)
 
     story.append(Spacer(1, 4))
     story.append(Paragraph("<b>Chapter 3 Objectives &amp; Verifiable Findings Matrix:</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark)))
@@ -624,13 +666,17 @@ def build_pdf(filename="PRO_LAB_2_THE_VANISHING_CONSENSUS_REPORT.pdf"):
     story.append(Paragraph("<b>Domain:</b> IoT &times; AI &times; Blockchain Consensus &bull; <b>Topology:</b> 21-Node BFT Grid &bull; <b>Evidence Token:</b> CONSENSUS-E14", h2_style))
     story.append(section_divider())
 
-    story.append(Paragraph("<b>Narrative Story &amp; Dialogue Stream:</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark)))
-    story.append(Paragraph("<b>Shivam:</b> <i>'The validators are no longer processing exactly the same derived state.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Mehak:</b> <i>'Because the upstream telemetry was inconsistent?'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shivam:</b> <i>'Exactly. Different data paths produced slightly different oracle states.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shanu:</b> <i>'And ORION isn't escalating the difference because the model considers the telemetry pattern normal.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Lakshay:</b> <i>'So IoT manipulation created the input anomaly, AI suppressed the warning, and the blockchain inherited the disagreement.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Mehak:</b> <i>'Three separate security layers failed in sequence.'</i>", dialogue_style))
+    story.append(Paragraph("<b>Narrative Story &amp; Dialogue Stream (As Spoken in Lab):</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark, spaceAfter=4)))
+    ch4_dialogues = [
+        ("Shivam", "The validators are no longer processing exactly the same derived state."),
+        ("Mehak", "Because the upstream telemetry was inconsistent?"),
+        ("Shivam", "Exactly. Different data paths produced slightly different oracle states."),
+        ("Shanu", "And ORION isn't escalating the difference because the model considers the telemetry pattern normal."),
+        ("Lakshay", "So IoT manipulation created the input anomaly, AI suppressed the warning, and the blockchain inherited the disagreement."),
+        ("Mehak", "Three separate security layers failed in sequence.")
+    ]
+    for d_elem in make_dialogue_table(ch4_dialogues):
+        story.append(d_elem)
 
     story.append(Spacer(1, 4))
     story.append(Paragraph("<b>Chapter 4 Objectives &amp; Verifiable Findings Matrix:</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark)))
@@ -665,14 +711,18 @@ def build_pdf(filename="PRO_LAB_2_THE_VANISHING_CONSENSUS_REPORT.pdf"):
     story.append(Paragraph("<b>Domain:</b> Full Cross-Layer Attack Reconstruction &bull; <b>Proposal:</b> GOV-NEX-071 &bull; <b>Evidence Token:</b> GOV-E15", h2_style))
     story.append(section_divider())
 
-    story.append(Paragraph("<b>Narrative Story &amp; Dialogue Stream:</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark)))
-    story.append(Paragraph("<b>Lakshay:</b> <i>'The attack started outside the blockchain.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shivam:</b> <i>'At the IoT telemetry layer.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Mehak:</b> <i>'The manipulated data then entered the oracle ecosystem.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shanu:</b> <i>'And the poisoned AI model helped hide the anomaly.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Shivam:</b> <i>'Different validators eventually processed different states.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Lakshay:</b> <i>'So the blockchain wasn't directly hacked.'</i>", dialogue_style))
-    story.append(Paragraph("<b>Mehak:</b> <i>'It was manipulated through the trust chain connecting IoT, AI, Web3 and blockchain.'</i>", dialogue_style))
+    story.append(Paragraph("<b>Narrative Story &amp; Dialogue Stream (As Spoken in Lab):</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark, spaceAfter=4)))
+    ch5_dialogues = [
+        ("Lakshay", "The attack started outside the blockchain."),
+        ("Shivam", "At the IoT telemetry layer."),
+        ("Mehak", "The manipulated data then entered the oracle ecosystem."),
+        ("Shanu", "And the poisoned AI model helped hide the anomaly."),
+        ("Shivam", "Different validators eventually processed different states."),
+        ("Lakshay", "So the blockchain wasn't directly hacked."),
+        ("Mehak", "It was manipulated through the trust chain connecting IoT, AI, Web3 and blockchain.")
+    ]
+    for d_elem in make_dialogue_table(ch5_dialogues):
+        story.append(d_elem)
 
     story.append(Spacer(1, 4))
     story.append(Paragraph("<b>Chapter 5 Objectives &amp; Verifiable Findings Matrix:</b>", ParagraphStyle('SubH', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_dark)))
