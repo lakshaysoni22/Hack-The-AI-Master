@@ -109,18 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ── Auto-open active task or first available task ─────────────────
-    const activeTask = document.querySelector('.gl-task-block.active');
-    if (activeTask) {
-        activeTask.classList.add('open');
-    } else {
-        const firstAvail = document.querySelector('.gl-task-block:not(.completed):not(.locked)');
-        if (firstAvail) {
-            firstAvail.classList.add('open');
-        } else {
-            const firstBlock = document.querySelector('.gl-task-block');
-            if (firstBlock) firstBlock.classList.add('open');
-        }
+    // ── Auto-open active task ONLY if investigation has already been started ───
+    if (startTime) {
+        const activeTask = document.querySelector('.gl-task-block.active') || document.querySelector('.gl-task-block:not(.completed):not(.locked)');
+        if (activeTask) activeTask.classList.add('open');
     }
 
     // Default open browser window on startup
@@ -280,6 +272,7 @@ function glSwitchBrowserTab(tabName, clickedTabEl) {
 function initPanelResize() {
     const divider = document.getElementById('gl-panel-divider');
     const taskPanel = document.querySelector('.gl-task-panel');
+    const desktopPane = document.getElementById('gl-desktop-pane');
     const shell = document.querySelector('.gl-lab-shell');
     if (!divider || !taskPanel || !shell) return;
 
@@ -289,67 +282,77 @@ function initPanelResize() {
         isDragging = true;
         divider.classList.add('active');
         taskPanel.classList.add('is-resizing');
+        shell.classList.add('is-resizing');
         document.body.style.cursor = 'col-resize';
         document.body.style.userSelect = 'none';
-        if (e.pointerId && divider.setPointerCapture) {
-            try { divider.setPointerCapture(e.pointerId); } catch(err){}
-        }
-        if (e.preventDefault) e.preventDefault();
+        if (e.cancelable && e.type !== 'touchstart') e.preventDefault();
     };
 
     const doDragging = (e) => {
         if (!isDragging) return;
         const shellRect = shell.getBoundingClientRect();
-        const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-        if (clientX === 0 && e.clientX === undefined && (!e.touches || !e.touches[0])) return;
-        
+        let clientX = 0;
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+        } else if (e.clientX !== undefined) {
+            clientX = e.clientX;
+        } else {
+            return;
+        }
+
         const offset = clientX - shellRect.left;
         const totalWidth = shellRect.width;
-        let percentage = (offset / totalWidth) * 100;
+        if (totalWidth <= 0) return;
 
+        let percentage = (offset / totalWidth) * 100;
         if (percentage < 15) percentage = 15;
-        if (percentage > 80) percentage = 80;
+        if (percentage > 85) percentage = 85;
 
         taskPanel.style.width = `${percentage}%`;
+        taskPanel.style.flex = `0 0 ${percentage}%`;
         taskPanel.classList.remove('collapsed');
+        if (desktopPane) {
+            desktopPane.style.flex = '1 1 0%';
+            desktopPane.style.minWidth = '0px';
+        }
     };
 
-    const stopDragging = (e) => {
+    const stopDragging = () => {
         if (isDragging) {
             isDragging = false;
             divider.classList.remove('active');
             taskPanel.classList.remove('is-resizing');
+            shell.classList.remove('is-resizing');
             document.body.style.cursor = '';
             document.body.style.userSelect = '';
-            if (e && e.pointerId && divider.releasePointerCapture) {
-                try { divider.releasePointerCapture(e.pointerId); } catch(err){}
-            }
         }
     };
 
-    // Pointer events (handles mouse, touch, pen)
-    divider.addEventListener('pointerdown', startDragging);
-    window.addEventListener('pointermove', doDragging);
-    window.addEventListener('pointerup', stopDragging);
-    window.addEventListener('pointercancel', stopDragging);
-
-    // Mouse events fallback
     divider.addEventListener('mousedown', startDragging);
-    document.addEventListener('mousemove', doDragging);
-    document.addEventListener('mouseup', stopDragging);
+    divider.addEventListener('touchstart', startDragging, { passive: true });
+    divider.addEventListener('pointerdown', startDragging);
 
-    // Touch events fallback
-    divider.addEventListener('touchstart', startDragging, { passive: false });
-    window.addEventListener('touchmove', doDragging, { passive: true });
-    window.addEventListener('touchend', stopDragging);
+    document.addEventListener('mousemove', doDragging);
+    document.addEventListener('touchmove', doDragging, { passive: true });
+    document.addEventListener('pointermove', doDragging);
+
+    document.addEventListener('mouseup', stopDragging);
+    document.addEventListener('touchend', stopDragging);
+    document.addEventListener('touchcancel', stopDragging);
+    document.addEventListener('pointerup', stopDragging);
+    document.addEventListener('pointercancel', stopDragging);
+    window.addEventListener('blur', stopDragging);
 
     // Double-click on divider to collapse / expand panel
     divider.addEventListener('dblclick', () => {
         if (taskPanel.classList.contains('collapsed')) {
             taskPanel.classList.remove('collapsed');
             taskPanel.style.width = '38%';
+            taskPanel.style.flex = '0 0 38%';
         } else {
             taskPanel.classList.add('collapsed');
+            taskPanel.style.width = '0%';
+            taskPanel.style.flex = '0 0 0%';
         }
     });
 }
