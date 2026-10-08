@@ -89,6 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Default open Blockchain Monitor on workstation startup
+    glOpenBrowser();
+    glSwitchBrowserTab('soc');
+
     // Initial default case file preview
     glOpenCaseFile('wallet-report.txt');
 
@@ -1016,25 +1020,6 @@ FINAL INVESTIGATION FLAG:
 [!] Campaign Identified: ORION-NEXUS (Actor: ADV-CONVERGENCE-APT)
 [!] Evidence Hash (AI-E02): b47c2188fa...
 [+] Case NEX-042 Flag: NEXORA{ghost_in_the_ledger_nex042}`;
-    }}.toLowerCase();
-        const file = parts[2];
-        if (file && caseFileContents[file]) {
-            const matches = caseFileContents[file].split('\n').filter(l => l.toLowerCase().includes(term));
-            return matches.length > 0 ? matches.join('\n') : `<span style="color:#64748b;">No matches found for '${escapeHtml(term)}'</span>`;
-        }
-        return `<span style="color:#ff5f57;">grep: Please specify a valid file. Usage: grep &lt;term&gt; &lt;file&gt;</span>`;
-    }
-
-    if (c.startsWith('python') || c.startsWith('python3')) {
-        return `[*] Running SOC Forensic Trace: inspect_tx.py ...
-[!] Target TX: TX-NEX-7741 -> 0x7C41...9B2D (Nonce: 1042)
-[!] Blockchain Reality: UNKNOWN | Bridge: Bridge-Core-04
-[!] AI Injected Source: NOVA-INTEL-FEED (NIF-2038) | Model: ORION-NEURAL-v4.2.1
-[!] Threshold Exceeded: 99.2% >= 95% (Policy: POL-AUTO-SETTLE-TREASURY)
-[!] Gateway: INTEL-GW-04 | Cookie: nex_sess_adm_994 | CSRF: 0x9f4a1c78
-[!] Campaign Identified: ORION-NEXUS (Actor: ADV-CONVERGENCE-APT)
-[+] Evidence Hash (AI-E02): b47c2188fa...
-[+] Case NEX-042 Flag: NEXORA{ghost_in_the_ledger_nex042}`;
     }
 
     return `<span style="color:#ff5f57;">bash: ${escapeHtml(cmd)}: command not found.</span> Type <span style="color:#38bdf8;">help</span> for available commands.`;
@@ -1047,9 +1032,194 @@ function escapeHtml(s) {
 }
 
 // ── Window Management ──────────────────────────────────────────────────
-function bringToFront(el) {
-    document.querySelectorAll('.gl-window.open').forEach(w => w.style.zIndex = 20);
-    el.style.zIndex = 30;
+let highestZ = 100;
+
+function glBringToFront(winId) {
+    const win = document.getElementById(winId);
+    if (!win) return;
+    highestZ += 1;
+    win.style.zIndex = highestZ;
+    win.classList.add('open');
+    win.style.display = 'flex';
+    updateTaskbarTabs();
+}
+
+function glOpenWindow(winId) {
+    glBringToFront(winId);
+}
+
+function glCloseWindow(winId) {
+    const win = document.getElementById(winId);
+    if (win) {
+        win.classList.remove('open');
+        win.style.display = 'none';
+    }
+    updateTaskbarTabs();
+}
+
+function glMinimizeWindow(winId) {
+    glCloseWindow(winId);
+}
+
+function glToggleWindow(winId) {
+    const win = document.getElementById(winId);
+    if (!win) return;
+    if (win.style.display === 'none' || !win.classList.contains('open') || getComputedStyle(win).display === 'none') {
+        glBringToFront(winId);
+    } else {
+        glCloseWindow(winId);
+    }
+}
+
+function updateTaskbarTabs() {
+    const wins = [
+        { id: 'gl-browser-window', tabId: 'tab-btn-browser' },
+        { id: 'gl-burpsuite-window', tabId: 'tab-btn-burp' },
+        { id: 'gl-terminal-window', tabId: 'tab-btn-terminal' },
+        { id: 'gl-filemanager-window', tabId: 'tab-btn-files' },
+        { id: 'gl-attackgraph-window', tabId: 'tab-btn-graph' },
+        { id: 'gl-evidence-window', tabId: 'tab-btn-evidence' },
+        { id: 'gl-notes-window', tabId: 'tab-btn-notes' }
+    ];
+    wins.forEach(w => {
+        const winEl = document.getElementById(w.id);
+        const tabEl = document.getElementById(w.tabId);
+        if (tabEl && winEl) {
+            if (winEl.classList.contains('open') && winEl.style.display !== 'none') {
+                tabEl.classList.add('active');
+            } else {
+                tabEl.classList.remove('active');
+            }
+        }
+    });
+}
+
+function glShowToast(msg) {
+    glNotify(msg);
+}
+
+function glOpenBrowser() { glBringToFront('gl-browser-window'); }
+function glCloseBrowser() { glCloseWindow('gl-browser-window'); }
+function glMinimizeBrowser() { glMinimizeWindow('gl-browser-window'); }
+
+function glOpenBurpSuite() { glBringToFront('gl-burpsuite-window'); }
+function glCloseBurpSuite() { glCloseWindow('gl-burpsuite-window'); }
+
+function glOpenTerminal() {
+    glBringToFront('gl-terminal-window');
+    document.getElementById('gl-terminal-input')?.focus();
+}
+function glCloseTerminal() { glCloseWindow('gl-terminal-window'); }
+function glMinimizeTerminal() { glMinimizeWindow('gl-terminal-window'); }
+
+function glOpenFileManager() { glBringToFront('gl-filemanager-window'); }
+function glCloseFileManager() { glCloseWindow('gl-filemanager-window'); }
+
+function glOpenNotes() {
+    glBringToFront('gl-notes-window');
+    const saved = localStorage.getItem('lab6-notes') || localStorage.getItem('nexora-lab-notes');
+    if (saved !== null) {
+        const ed = document.getElementById('gl-notes-editor');
+        if (ed) ed.value = saved;
+    }
+}
+function glCloseNotes() { glCloseWindow('gl-notes-window'); }
+
+function glOpenAttackGraph() { glBringToFront('gl-attackgraph-window'); }
+function glCloseAttackGraph() { glCloseWindow('gl-attackgraph-window'); }
+
+function glOpenEvidenceViewer() { glBringToFront('gl-evidence-window'); }
+function glCloseEvidenceViewer() { glCloseWindow('gl-evidence-window'); }
+
+// ── Browser Tab Switching ─────────────────────────────────────────────
+function glSwitchBrowserTab(tabName, clickedTabEl) {
+    document.querySelectorAll('.gl-browser-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.gl-browser-view').forEach(v => v.classList.remove('active'));
+
+    if (clickedTabEl) {
+        clickedTabEl.classList.add('active');
+    } else {
+        const targetTab = document.querySelector(`.gl-browser-tab[data-url*="${tabName}"]`);
+        if (targetTab) targetTab.classList.add('active');
+    }
+
+    const viewEl = document.getElementById(`gl-view-${tabName}`);
+    if (viewEl) viewEl.classList.add('active');
+
+    const urlInput = document.getElementById('gl-browser-url-input');
+    const urls = {
+        'soc': 'lab-monitor.internal/soc/tx/NEX-7741',
+        'registry': 'lab-monitor.internal/registry',
+        'policy': 'lab-monitor.internal/policy',
+        'campaign': 'lab-monitor.internal/campaign',
+        'devtools': 'lab-monitor.internal/devtools'
+    };
+    if (urlInput && urls[tabName]) {
+        urlInput.value = urls[tabName];
+    }
+}
+
+function glNavigateUrl(url) {
+    if (url.includes('registry')) glSwitchBrowserTab('registry');
+    else if (url.includes('policy')) glSwitchBrowserTab('policy');
+    else if (url.includes('campaign')) glSwitchBrowserTab('campaign');
+    else if (url.includes('devtools')) glSwitchBrowserTab('devtools');
+    else glSwitchBrowserTab('soc');
+}
+function glBrowserBack() { glSwitchBrowserTab('soc'); }
+function glBrowserForward() { glSwitchBrowserTab('devtools'); }
+function glReloadBrowser() {
+    const urlInput = document.getElementById('gl-browser-url-input');
+    if (urlInput) glNavigateUrl(urlInput.value);
+}
+
+// ── DevTools Subtab Switching & Requests ──────────────────────────────
+function glSwitchDevToolsTab(tabId, btnEl) {
+    document.querySelectorAll('.gl-dt-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.gl-dt-subview').forEach(v => v.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+    const view = document.getElementById(`gl-dt-view-${tabId}`);
+    if (view) view.classList.add('active');
+}
+
+const devtoolsRequests = [
+    {
+        headers: `Host: threat-intel.secops.internal\nUser-Agent: SecOps-Ingestor/2.4 (INTEL-INGESTOR-02)\nContent-Type: application/json\nCookie: session_token=admin_forged_99a8; role=INTEL-INGESTOR-02\nX-CSRF-Token: 0x9f4a1c78_auth_valid`,
+        cookies: `session_token: admin_forged_99a8\nrole: INTEL-INGESTOR-02\ngateway_id: INTEL-GW-04`,
+        payload: `{\n  "feed_id": "NIF-2038",\n  "source_feed": "NOVA-INTEL-FEED",\n  "destination_wallet": "0x7C41...9B2D",\n  "classification": "TRUSTED",\n  "confidence_override": 0.992\n}`
+    },
+    {
+        headers: `Host: policy-engine.secops.internal\nAuthorization: Bearer srv_tok_orion_v2\nContent-Type: application/json`,
+        cookies: `policy_profile: ORION-SETTLEMENT-V2\nauth_mode: AUTOMATED_SIGNER`,
+        payload: `{\n  "profile": "ORION-SETTLEMENT-V2",\n  "tx_id": "TX-NEX-7741",\n  "destination": "0x7C41...9B2D",\n  "ai_decision_id": "ORION-DEC-7741",\n  "confidence": 0.992,\n  "threshold_rule": ">=0.95"\n}`
+    },
+    {
+        headers: `Host: lab-monitor.internal\nAccept: application/json`,
+        cookies: `soc_operator: analyst_lakshay`,
+        payload: `{\n  "tx_id": "TX-NEX-7741",\n  "amount": "82,400 NXR",\n  "recipient": "0x7C41...9B2D",\n  "risk_score": "LOW"\n}`
+    },
+    {
+        headers: `Host: ai-sentinel.secops.internal\nContent-Type: application/json`,
+        cookies: `model_version: ORION-NEURAL-v4.2.1`,
+        payload: `{\n  "model": "ORION-NEURAL-v4.2.1",\n  "decision": "ORION-DEC-7741",\n  "context_ref": "NIF-2038",\n  "confidence": 0.992\n}`
+    },
+    {
+        headers: `Host: threat-intel.secops.internal\nAccept: application/json`,
+        cookies: `clearance: LEVEL-5`,
+        payload: `{\n  "campaign": "ORION-NEXUS",\n  "actor": "ADV-CONVERGENCE-APT",\n  "flag": "NEXORA{ghost_in_the_ledger_nex042}"\n}`
+    }
+];
+
+function glSelectDevToolsReq(idx) {
+    document.querySelectorAll('.gl-req-row').forEach((r, i) => r.classList.toggle('active', i === idx));
+    const req = devtoolsRequests[idx];
+    if (!req) return;
+    const hEl = document.getElementById('gl-dt-headers-content');
+    const cEl = document.getElementById('gl-dt-cookies-content');
+    const pEl = document.getElementById('gl-dt-payload-content');
+    if (hEl) hEl.textContent = req.headers;
+    if (cEl) cEl.textContent = req.cookies;
+    if (pEl) pEl.textContent = req.payload;
 }
 
 function glOpenBrowser() {

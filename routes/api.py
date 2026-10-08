@@ -12,13 +12,19 @@ from services.resume_service import extract_text_from_pdf, analyze_resume
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
 @api_bp.route('/quiz', methods=['POST'])
-@limiter.limit("20 per minute")
+@api_bp.route('/quiz/evaluate', methods=['POST'])
+@limiter.limit("60 per minute")
 def submit_quiz():
     if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+        return jsonify({'success': False, 'correct': False, 'message': 'Unauthorized'}), 401
     user_id = session['user_id']
     data = request.get_json()
-    
+    if not data:
+        return jsonify({'success': False, 'correct': False, 'message': 'Invalid input'}), 400
+        
+    lab_id = data.get('lab_id')
+    mission_id = data.get('mission_id')
+    answer = data.get('answer', '')
     question_id = data.get('question_id')
 
     success, message, xp, extra_data = evaluate_quiz(user_id, lab_id, mission_id, answer, question_id=question_id)
@@ -27,13 +33,13 @@ def submit_quiz():
         log_action(user_id, 'QUIZ_SUCCESS', f"Mission: {mission_id} Quiz: {question_id or 'default'}")
         update_unlocks(user_id)
         db.session.commit()
-        resp = {'success': True, 'message': message, 'xp': xp}
+        resp = {'success': True, 'correct': True, 'message': message, 'xp': xp}
         if extra_data:
             resp.update(extra_data)
         return jsonify(resp)
         
     log_action(user_id, 'QUIZ_FAILED', f"Mission: {mission_id} Quiz: {question_id or 'default'}")
-    resp = {'success': False, 'message': message}
+    resp = {'success': False, 'correct': False, 'message': message}
     if extra_data:
         resp.update(extra_data)
     return jsonify(resp)
