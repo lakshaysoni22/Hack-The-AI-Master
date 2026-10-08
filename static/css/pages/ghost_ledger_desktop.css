@@ -62,7 +62,17 @@
   z-index: 45;
   flex-shrink: 0;
   user-select: none;
+  touch-action: none;
   transition: background 0.15s, box-shadow 0.15s;
+}
+.gl-panel-divider::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -6px;
+  right: -6px;
+  z-index: 1;
 }
 .gl-panel-divider:hover, .gl-panel-divider.active {
   background: rgba(0, 240, 255, 0.35);
@@ -828,12 +838,6 @@
 .gl-method-tag.post { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
 .gl-method-tag.get { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
 
-/* ── Responsive ──────────────────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .gl-lab-shell { flex-direction: column; }
-  .gl-task-panel { width: 100%; max-width: unset; max-height: 50vh; }
-  .gl-desktop-pane { min-height: 50vh; }
-}
 
 /* ═══════════════════════════════════════════════════════════════════════
    CAPSTONE WEB3 & AI ASSESSMENT QUIZ STYLING

@@ -1114,40 +1114,63 @@ function initPanelResize() {
 
     let isDragging = false;
 
-    divider.addEventListener('mousedown', (e) => {
+    const startDragging = (e) => {
         isDragging = true;
         divider.classList.add('active');
         taskPanel.classList.add('is-resizing');
         document.body.style.cursor = 'col-resize';
         document.body.style.userSelect = 'none';
-        e.preventDefault();
-    });
+        if (e.pointerId && divider.setPointerCapture) {
+            try { divider.setPointerCapture(e.pointerId); } catch(err){}
+        }
+        if (e.preventDefault) e.preventDefault();
+    };
 
-    document.addEventListener('mousemove', (e) => {
+    const doDragging = (e) => {
         if (!isDragging) return;
         const shellRect = shell.getBoundingClientRect();
-        const offset = e.clientX - shellRect.left;
+        const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        if (clientX === 0 && e.clientX === undefined && (!e.touches || !e.touches[0])) return;
+        
+        const offset = clientX - shellRect.left;
         const totalWidth = shellRect.width;
         let percentage = (offset / totalWidth) * 100;
 
         if (percentage < 15) percentage = 15;
-        if (percentage > 75) percentage = 75;
+        if (percentage > 80) percentage = 80;
 
         taskPanel.style.width = `${percentage}%`;
         taskPanel.classList.remove('collapsed');
-    });
+    };
 
-    const stopDragging = () => {
+    const stopDragging = (e) => {
         if (isDragging) {
             isDragging = false;
             divider.classList.remove('active');
             taskPanel.classList.remove('is-resizing');
             document.body.style.cursor = '';
             document.body.style.userSelect = '';
+            if (e && e.pointerId && divider.releasePointerCapture) {
+                try { divider.releasePointerCapture(e.pointerId); } catch(err){}
+            }
         }
     };
 
+    // Pointer events (handles mouse, touch, pen)
+    divider.addEventListener('pointerdown', startDragging);
+    window.addEventListener('pointermove', doDragging);
+    window.addEventListener('pointerup', stopDragging);
+    window.addEventListener('pointercancel', stopDragging);
+
+    // Mouse events fallback
+    divider.addEventListener('mousedown', startDragging);
+    document.addEventListener('mousemove', doDragging);
     document.addEventListener('mouseup', stopDragging);
+
+    // Touch events fallback
+    divider.addEventListener('touchstart', startDragging, { passive: false });
+    window.addEventListener('touchmove', doDragging, { passive: true });
+    window.addEventListener('touchend', stopDragging);
 
     // Double-click on divider to collapse / expand panel
     divider.addEventListener('dblclick', () => {
