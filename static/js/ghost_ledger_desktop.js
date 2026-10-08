@@ -8,27 +8,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── 65-Minute Investigation Session Timer ─────────────────────────
     const MAX_SESSION_SECONDS = 65 * 60; // 3900 seconds (65 minutes)
     let startTime = sessionStorage.getItem('lab6_timer_start') || sessionStorage.getItem('nexora_lab6_timer_start');
-    if (!startTime) {
-        startTime = Date.now();
-        sessionStorage.setItem('lab6_timer_start', startTime);
-    } else {
-        startTime = parseInt(startTime, 10);
-    }
-
-    const timerText = document.getElementById('gl-timer-text');
+    let timerInterval = null;
     let timerExpired = false;
 
-    const timerInterval = setInterval(() => {
+    function updateTimerDisplay(elapsed) {
+        const timerText = document.getElementById('gl-timer-text');
+        if (!timerText) return;
+        const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+        const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+        const s = String(elapsed % 60).padStart(2, '0');
+        timerText.textContent = `${h}:${m}:${s}`;
+    }
+
+    function runTimerTick() {
+        if (!startTime) return;
         const elapsed = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
         
         // Check 65-minute timeout
         if (elapsed >= MAX_SESSION_SECONDS && !timerExpired) {
             timerExpired = true;
-            clearInterval(timerInterval);
+            if (timerInterval) clearInterval(timerInterval);
             sessionStorage.removeItem('lab6_timer_start');
             sessionStorage.removeItem('nexora_lab6_timer_start');
             localStorage.removeItem('lab6-notes');
             localStorage.removeItem('nexora-lab-notes');
+            const timerText = document.getElementById('gl-timer-text');
             if (timerText) timerText.textContent = '01:05:00';
             
             alert('⏰ Investigation Time Limit (65 min) reached!\nCase NEX-042 will now automatically restart from the beginning.');
@@ -43,11 +47,41 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-        const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-        const s = String(elapsed % 60).padStart(2, '0');
-        if (timerText) timerText.textContent = `${h}:${m}:${s}`;
-    }, 1000);
+        updateTimerDisplay(elapsed);
+    }
+
+    // Check if session is already active (page refresh)
+    if (startTime) {
+        startTime = parseInt(startTime, 10);
+        const btn = document.getElementById('gl-start-lab-btn');
+        if (btn) { btn.textContent = '🔍 Investigation Active'; btn.disabled = true; }
+        const dot = document.getElementById('gl-status-dot');
+        if (dot) dot.style.background = 'var(--success)';
+        runTimerTick();
+        timerInterval = setInterval(runTimerTick, 1000);
+    } else {
+        const timerText = document.getElementById('gl-timer-text');
+        if (timerText) timerText.textContent = '00:00:00';
+        const dot = document.getElementById('gl-status-dot');
+        if (dot) dot.style.background = '#64748b';
+    }
+
+    window.startInvestigation = function() {
+        if (!startTime) {
+            startTime = Date.now();
+            sessionStorage.setItem('lab6_timer_start', startTime);
+            runTimerTick();
+            if (!timerInterval) timerInterval = setInterval(runTimerTick, 1000);
+        }
+        const btn = document.getElementById('gl-start-lab-btn');
+        if (btn) { btn.textContent = '🔍 Investigation Active'; btn.disabled = true; }
+        const dot = document.getElementById('gl-status-dot');
+        if (dot) dot.style.background = 'var(--success)';
+        glOpenBrowser();
+        const firstTask = document.getElementById('gl-task-1');
+        if (firstTask && !firstTask.classList.contains('locked')) firstTask.classList.add('open');
+        glNotify('Investigation started. Blockchain Monitor and Terminal are ready.');
+    };
 
     // Taskbar Clock
     const clockEl = document.getElementById('gl-taskbar-clock');
@@ -1626,14 +1660,7 @@ function glNotify(msg) {
     setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-function startInvestigation() {
-    const btn = document.getElementById('gl-start-lab-btn');
-    if (btn) { btn.textContent = '🔍 Investigation Active'; btn.disabled = true; }
-    const dot = document.getElementById('gl-status-dot');
-    if (dot) dot.style.background = 'var(--success)';
-    glOpenBrowser();
-    glNotify('Investigation started. Blockchain Monitor and Terminal are ready.');
-}
+// startInvestigation is initialized in DOMContentLoaded with timer binding
 
 // ── Task Accordion ─────────────────────────────────────────────────────
 function toggleTask(num) {

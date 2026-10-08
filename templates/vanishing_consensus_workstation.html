@@ -40,7 +40,7 @@
             <div class="gl-control-row">
                 <button class="gl-pill-btn primary" id="gl-start-lab-btn" onclick="startInvestigation()">🔍 Start Investigation</button>
                 <button class="gl-pill-btn danger" id="gl-header-restart-btn" onclick="restartLab('{{ lab_id }}')" title="Reset all progress and restart investigation from beginning">🔄 Restart Lab</button>
-                <a href="{{ url_for('labs.labs') }}" class="gl-pill-btn" style="color:#94a3b8; border-color:rgba(255,255,255,0.15);">✕ Exit</a>
+                <a href="{{ url_for('labs.labs') }}" class="gl-pill-btn" onclick="sessionStorage.removeItem('lab7_timer_start'); sessionStorage.removeItem('nexora_lab7_timer_start');" style="color:#94a3b8; border-color:rgba(255,255,255,0.15);">✕ Exit</a>
                 <span class="gl-status-dot" id="gl-status-dot"></span>
                 <span class="gl-timer-text" id="gl-timer-text">00:00:00</span>
                 <span style="font-family: var(--font-mono); font-size: 11px; color: #64748b;" title="Auto-restart at 65m limit">(Limit: 65m)</span>
@@ -504,7 +504,7 @@
             <div class="gl-desktop-icons">
                 <div class="gl-desktop-icon" tabindex="0" onclick="glOpenBrowser()">
                     <div class="gl-icon-glyph">🌐</div>
-                    <div class="gl-icon-label">Consensus<br>Monitor</div>
+                    <div class="gl-icon-label">Blockchain<br>Monitor</div>
                 </div>
                 <div class="gl-desktop-icon" tabindex="0" onclick="glOpenBurpSuite()">
                     <div class="gl-icon-glyph">🛡️</div>
@@ -542,7 +542,7 @@
                         <span class="gl-tl-min" onclick="glMinimizeBrowser()"></span>
                         <span class="gl-tl-max"></span>
                     </div>
-                    <div class="gl-title-text" id="gl-browser-window-title">Network Inspector — Consensus Diagnostic Suite</div>
+                    <div class="gl-title-text" id="gl-browser-window-title">Blockchain Monitor — Consensus Diagnostic Suite</div>
                 </div>
 
                 <!-- Browser Tab Bar -->
@@ -1131,7 +1131,7 @@ Content-Type: application/json
         <div class="gl-taskbar">
             <div class="gl-taskbar-start" onclick="startInvestigation()">🚀 Start</div>
             <div class="gl-taskbar-tabs">
-                <button class="gl-taskbar-tab active" id="tab-btn-browser" onclick="glToggleWindow('gl-browser-window')">🌐 Consensus Monitor</button>
+                <button class="gl-taskbar-tab active" id="tab-btn-browser" onclick="glToggleWindow('gl-browser-window')">🌐 Blockchain Monitor</button>
                 <button class="gl-taskbar-tab" id="tab-btn-burp" onclick="glToggleWindow('gl-burpsuite-window')">🛡️ Burp Suite</button>
                 <button class="gl-taskbar-tab" id="tab-btn-terminal" onclick="glToggleWindow('gl-terminal-window')">⌨ Terminal</button>
                 <button class="gl-taskbar-tab" id="tab-btn-files" onclick="glToggleWindow('gl-filemanager-window')">📁 Case Files</button>

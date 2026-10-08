@@ -9,26 +9,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── 65-Minute Investigation Session Timer ─────────────────────────
     const MAX_SESSION_SECONDS = 65 * 60; // 3900 seconds (65 minutes)
     let startTime = sessionStorage.getItem('lab7_timer_start') || sessionStorage.getItem('nexora_lab7_timer_start');
-    if (!startTime) {
-        startTime = Date.now();
-        sessionStorage.setItem('lab7_timer_start', startTime);
-    } else {
-        startTime = parseInt(startTime, 10);
-    }
-
-    const timerText = document.getElementById('gl-timer-text');
+    let timerInterval = null;
     let timerExpired = false;
 
-    const timerInterval = setInterval(() => {
+    function updateTimerDisplay(elapsed) {
+        const timerText = document.getElementById('gl-timer-text');
+        if (!timerText) return;
+        const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+        const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+        const s = String(elapsed % 60).padStart(2, '0');
+        timerText.textContent = `${h}:${m}:${s}`;
+    }
+
+    function runTimerTick() {
+        if (!startTime) return;
         const elapsed = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
         
         if (elapsed >= MAX_SESSION_SECONDS && !timerExpired) {
             timerExpired = true;
-            clearInterval(timerInterval);
+            if (timerInterval) clearInterval(timerInterval);
             sessionStorage.removeItem('lab7_timer_start');
             sessionStorage.removeItem('nexora_lab7_timer_start');
             sessionStorage.removeItem('lab7_capstone_passed');
             sessionStorage.removeItem('nexora_lab7_capstone_passed');
+            const timerText = document.getElementById('gl-timer-text');
             if (timerText) timerText.textContent = '01:05:00';
             
             alert('⏰ Investigation Time Limit (65 min) reached!\nCase NEX-071 will now automatically restart from the beginning.');
@@ -43,11 +47,40 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-        const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-        const s = String(elapsed % 60).padStart(2, '0');
-        if (timerText) timerText.textContent = `${h}:${m}:${s}`;
-    }, 1000);
+        updateTimerDisplay(elapsed);
+    }
+
+    // Check if session is already active (page refresh)
+    if (startTime) {
+        startTime = parseInt(startTime, 10);
+        const btn = document.getElementById('gl-start-lab-btn');
+        if (btn) { btn.textContent = '🔍 Investigation Active'; btn.disabled = true; }
+        const dot = document.getElementById('gl-status-dot');
+        if (dot) dot.style.background = 'var(--success)';
+        runTimerTick();
+        timerInterval = setInterval(runTimerTick, 1000);
+    } else {
+        const timerText = document.getElementById('gl-timer-text');
+        if (timerText) timerText.textContent = '00:00:00';
+        const dot = document.getElementById('gl-status-dot');
+        if (dot) dot.style.background = '#64748b';
+    }
+
+    window.startInvestigation = function() {
+        if (!startTime) {
+            startTime = Date.now();
+            sessionStorage.setItem('lab7_timer_start', startTime);
+            runTimerTick();
+            if (!timerInterval) timerInterval = setInterval(runTimerTick, 1000);
+        }
+        const btn = document.getElementById('gl-start-lab-btn');
+        if (btn) { btn.textContent = '🔍 Investigation Active'; btn.disabled = true; }
+        const dot = document.getElementById('gl-status-dot');
+        if (dot) dot.style.background = 'var(--success)';
+        const firstTask = document.getElementById('gl-task-1');
+        if (firstTask && !firstTask.classList.contains('locked')) firstTask.classList.add('open');
+        glOpenBrowser();
+    };
 
     // Taskbar Clock
     const clockEl = document.getElementById('gl-taskbar-clock');
@@ -940,11 +973,7 @@ function restartLab(labId) {
     });
 }
 
-function startInvestigation() {
-    const firstTask = document.getElementById('gl-task-1');
-    if (firstTask) firstTask.classList.add('open');
-    glOpenBrowser();
-}
+// startInvestigation is initialized in DOMContentLoaded with timer binding
 
 // ── Terminal Engine Setup ─────────────────────────────────────────────
 function setupTerminal() {
